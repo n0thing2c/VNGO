@@ -7,12 +7,16 @@ import {
   Marker,
   Popup,
   useMap,
+  CircleMarker,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Input } from "@/components/ui/input";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+import "leaflet-routing-machine";
+import WikiPanel from "@/components/wiki_panel.jsx";
 
-// Fix Leaflet marker icons
+// Fix Leaflet default icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -23,37 +27,111 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Component to fly to a new location
+// Fly animation for any position
 function FlyToLocation({ position }) {
   const map = useMap();
   useEffect(() => {
-    if (position) {
-      map.flyTo(position, 13);
-    }
+    if (position) map.flyTo(position, 15);
   }, [position, map]);
   return null;
 }
 
-export default function Map({ width = "100%", height = "500px" }) {
+// Routing stops
+function RoutingMachine({ waypoints }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!map || waypoints.length < 2) return;
+
+    const controls = [];
+    const routeColors = [
+      "#e11d48",
+      "#10b981",
+      "#f59e0b",
+      "#8b5cf6",
+      "#14b8a6",
+      "#a16207",
+      "#ec4899",
+    ];
+
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const control = L.Routing.control({
+        waypoints: [
+          L.latLng(waypoints[i].lat, waypoints[i].lon),
+          L.latLng(waypoints[i + 1].lat, waypoints[i + 1].lon),
+        ],
+        lineOptions: { styles: [{ color: routeColors[i % routeColors.length], weight: 5 }] },
+        show: false,
+        addWaypoints: false,
+        routeWhileDragging: false,
+        fitSelectedRoutes: false,
+        createMarker: () => null,
+      }).addTo(map);
+
+      controls.push(control);
+    }
+
+    return () => {
+      controls.forEach((control) => map.removeControl(control));
+    };
+  }, [map, waypoints]);
+
+  return null;
+}
+
+// Custom numbered marker icon
+const createNumberedIcon = (number) =>
+  L.divIcon({
+    className: "custom-numbered-marker",
+    html: `<div style="
+      background-color: #2563eb;
+      color: white;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border: 2px solid white;
+      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    ">${number}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14],
+  });
+
+export default function Map({ className = "", onLocationAdd, addedStops = [] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [markerPosition, setMarkerPosition] = useState(null);
   const [markerLabel, setMarkerLabel] = useState("");
   const [hasSelected, setHasSelected] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [wikiVisible, setWikiVisible] = useState(false);
   const inputRef = useRef(null);
 
-  // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Fetch suggestions with debounce
+  // Get user's location
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+      (err) => {
+        console.error("Error getting user location:", err);
+        if (!userLocation) setUserLocation([10.762622, 106.660172]);
+      }
+    );
+  }, []);
+
+  // Fetch suggestions
   useEffect(() => {
     if (!searchQuery || hasSelected) {
       setSuggestions([]);
       return;
     }
-
     const timeout = setTimeout(async () => {
       try {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
@@ -63,64 +141,54 @@ export default function Map({ width = "100%", height = "500px" }) {
         const data = await res.json();
         setSuggestions(data.slice(0, 5));
       } catch (err) {
-        console.error("Error fetching suggestions:", err);
+        console.error(err);
       }
     }, 300);
-
     return () => clearTimeout(timeout);
   }, [searchQuery, hasSelected]);
 
   const handleSelect = (place) => {
-    const position = [parseFloat(place.lat), parseFloat(place.lon)];
-    setMarkerPosition(position);
+    const pos = [parseFloat(place.lat), parseFloat(place.lon)];
+    setMarkerPosition(pos);
     setMarkerLabel(place.display_name);
     setSearchQuery(place.display_name);
     setSuggestions([]);
     setHasSelected(true);
+    setSelectedLocation(place);
+    setWikiVisible(true);
   };
 
-  const handleInputChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleAddToTour = () => {
+    if (!onLocationAdd || !markerPosition || !markerLabel) return;
+    onLocationAdd({ name: markerLabel, lat: markerPosition[0], lon: markerPosition[1] });
+    setMarkerPosition(null);
+    setMarkerLabel("");
+    setSearchQuery("");
     setHasSelected(false);
+    setWikiVisible(false)
   };
 
   return (
-    <div style={{ width }}>
-      {/* Search Input */}
-      <div style={{ width: 300, marginBottom: 16, position: "relative" }}>
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-full max-w-md relative z-[1001]">
         <Input
+          ref={inputRef}
           type="text"
           value={searchQuery}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setHasSelected(false);
+            setWikiVisible(false);
+          }}
           placeholder="Search location..."
           className="w-full"
-          ref={inputRef}
         />
         {!hasSelected && suggestions.length > 0 && (
-          <ul
-            style={{
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              width: "100%",
-              background: "white",
-              border: "1px solid #ccc",
-              maxHeight: 150,
-              overflowY: "auto",
-              margin: 0,
-              padding: 0,
-              listStyle: "none",
-              zIndex: 1000,
-            }}
-          >
+          <ul className="absolute top-full left-0 right-0 bg-white border border-gray-300 max-h-40 overflow-y-auto shadow-lg rounded-b-md">
             {suggestions.map((place, idx) => (
               <li
-                key={idx}
-                style={{
-                  padding: "5px 10px",
-                  cursor: "pointer",
-                  borderBottom: "1px solid #eee",
-                }}
+                key={place.place_id || idx}
+                className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   handleSelect(place);
@@ -133,27 +201,70 @@ export default function Map({ width = "100%", height = "500px" }) {
         )}
       </div>
 
-      {/* Map Display */}
-      <div style={{ width, height }}>
+      <div className={`relative overflow-hidden rounded-xl shadow-md ${className} z-0`}>
         <MapContainer
-          center={[10.762622, 106.660172]}
-          zoom={50}
-          style={{ width: "100%", height: "100%" }}
+          center={userLocation || [10.762622, 106.660172]}
+          zoom={13}
+          className="w-full h-full"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
+
+          {userLocation && <FlyToLocation position={userLocation} />}
+
+          {addedStops.length > 1 && <RoutingMachine waypoints={addedStops} />}
+
+          {addedStops.map((stop, idx) => (
+            <Marker
+              key={`${stop.lat}-${stop.lon}-${idx}`}
+              position={[stop.lat, stop.lon]}
+              icon={createNumberedIcon(idx + 1)}
+            >
+              <Popup>{stop.name}</Popup>
+            </Marker>
+          ))}
+
+          {userLocation && (
+            <CircleMarker
+              center={userLocation}
+              radius={10}
+              pathOptions={{ color: "white", fillColor: "#2563eb", fillOpacity: 1 }}
+            >
+              <Popup>You are here</Popup>
+            </CircleMarker>
+          )}
+
           {markerPosition && (
             <>
-              <Marker position={markerPosition}>
-                <Popup>{markerLabel}</Popup>
+              <Marker
+                position={markerPosition}
+                eventHandlers={{ add: (e) => e.target.openPopup() }}
+              >
+                <Popup className="!max-w-[90vw] text-center">
+                  <div className="space-y-2">
+                    <p className="font-semibold">{markerLabel.split(",")[0]}</p>
+                    <button
+                      onClick={handleAddToTour}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Add to Tour
+                    </button>
+                  </div>
+                </Popup>
               </Marker>
               <FlyToLocation position={markerPosition} />
             </>
           )}
         </MapContainer>
       </div>
+
+      {wikiVisible && selectedLocation && (
+        <div className="w-full">
+          <WikiPanel location={selectedLocation} />
+        </div>
+      )}
     </div>
   );
 }

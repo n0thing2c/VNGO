@@ -7,9 +7,10 @@ export default function VNDInput({
   value = 0,
   onChange,
   placeholder = "0₫",
-  className = "", // <-- pass custom Tailwind classes here
+  max = Infinity, // <-- new max parameter
+  className = "",
 }) {
-  const [rawValue, setRawValue] = useState(value); // store integer
+  const [rawValue, setRawValue] = useState(value);
   const inputRef = useRef(null);
 
   // Format number as VND
@@ -21,14 +22,17 @@ export default function VNDInput({
     const originalLength = e.target.value.length;
 
     // Remove non-digit characters
-    const numericValue = e.target.value.replace(/\D/g, "");
-    const intValue = parseInt(numericValue || "0", 10);
+    let numericValue = e.target.value.replace(/\D/g, "");
+    let intValue = parseInt(numericValue || "0", 10);
+
+    // Enforce max
+    if (intValue > max) intValue = max;
 
     setRawValue(intValue);
     if (onChange) onChange(intValue);
 
     // Update input value manually
-    const formatted = numericValue ? formatVND(intValue) : "";
+    const formatted = intValue ? formatVND(intValue) : "";
     e.target.value = formatted;
 
     // Adjust cursor to approximate correct position
@@ -44,7 +48,7 @@ export default function VNDInput({
       defaultValue={rawValue ? formatVND(rawValue) : ""}
       onChange={handleChange}
       placeholder={placeholder}
-      className={`text-right ${className}`} // <-- apply custom className
+      className={`text-right ${className}`}
     />
   );
 }
