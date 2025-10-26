@@ -56,8 +56,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt",
     "corsheaders",
     "VNGO",
+    "Authentication",
 ]
 
 MIDDLEWARE = [
@@ -101,6 +103,19 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = "Authentication.User"
+
+FRONTEND_BASE_URL = "http://localhost:5173"
+
+# SMTP config
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "noreply@vngo.com"
+EMAIL_HOST_PASSWORD = "yourpassword"
+DEFAULT_FROM_EMAIL = "noreply@vngo.com"
+EMAIL_VERIFICATION_EXPIRY = 10
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -145,7 +160,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Cho phép các domain (origin) được gọi tới API (gửi request CORS).
 CORS_ALLOW_ORIGINS = [
-    "http://localhost:8000",
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]
 
 # Cho phép gửi kèm thông tin xác thực trong request cross-origin
