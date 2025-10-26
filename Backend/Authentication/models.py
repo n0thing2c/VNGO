@@ -7,9 +7,9 @@ from django.conf import settings
 
 
 class User(AbstractUser):
-    ROLE_TRAVELER = "traveler"
+    ROLE_TOURIST = "tourist"
     ROLE_GUIDE = "guide"
-    ROLE_CHOICES = [(ROLE_TRAVELER, "Traveler"), (ROLE_GUIDE, "Guide")]
+    ROLE_CHOICES = [(ROLE_TOURIST, "Tourist"), (ROLE_GUIDE, "Guide")]
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, db_index=True)
     email = models.EmailField(unique=True)
@@ -55,7 +55,7 @@ class EmailVerificationToken(models.Model):
         if not self.used:
             self.used = True
             self.save(update_fields=["used"])
-            
+
     @classmethod
     def create_for_user(cls, user, ttl_minutes=60, purpose=PURPOSE_VERIFY_EMAIL):
         expires_at = timezone.now() + timedelta(minutes=ttl_minutes)
