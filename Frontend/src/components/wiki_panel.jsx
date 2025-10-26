@@ -79,12 +79,12 @@ export default function WikiPanel({ location }) {
 
   return (
     <div className="flex w-full p-2 bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-x-4">
         {wikiData.imageUrl && (
           <img
             src={wikiData.imageUrl}
             alt={wikiData.title}
-            className="w-full sm:w-1/3 h-auto object-cover rounded-md"
+            className="w-full sm:w-1/3 h-auto max-h-45 object-cover rounded-md"
           />
         )}
         <div className="flex-1">

@@ -1,5 +1,5 @@
 import Map from "../components/Map.jsx";
-import {useState} from "react";
+import {use, useState} from "react";
 import {
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
 } from "@/components/ui/card"
@@ -16,51 +16,181 @@ import {
     FieldTitle,
 } from "@/components/ui/field"
 import {Input} from "@/components/ui/input"
-import {IdCard, CarTaxiFront, Clock, UserPlus, Tag, Coins, PictureInPicture2Icon} from "lucide-react"
+import {
+    IdCard,
+    MotorbikeIcon,
+    Clock,
+    UserPlus,
+    Tag,
+    Coins,
+    PictureInPicture2Icon,
+    Pin,
+    CarFront,
+    BusFront,
+    Footprints,
+    CircleDollarSignIcon,
+    Edit2
+} from "lucide-react"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import TagSelector from "@/components/tagsselector.jsx";
 import VNDInput from "@/components/priceinput.jsx";
-
+import {Textarea} from "@/components/ui/textarea.jsx";
 import ImageUploader from "@/components/imageuploader.jsx";
 import DragList from "@/components/drag_list.jsx";
-
+import {toast} from "sonner";
 
 export default function TourCreate() {
+    //Tour name
+    const [tourname, settourname] = useState("");
     //People
     const min_people = 1;
     const max_people = 15;
-    const [people, setpeople] = useState("");
+    const [minpeople, setminpeople] = useState("");
+    const [maxpeople, setmaxpeople] = useState("");
+    //Transportation
+    const [transportation, setTransportation] = useState("");
+    const getTransportationIcon = (value) => {
+        switch (value) {
+            case "private":
+                return <MotorbikeIcon/>;
+            case "public":
+                return <BusFront/>;
+            case "walk":
+                return <Footprints/>;
+            default:
+                return <CarFront/>;
+        }
+    };
 
+    //Meeting place
+    const [meeting, setMeeting] = useState("");
     //Hour
     const min_hour = 1;
     const max_hour = 24;
     const [hour, sethour] = useState("");
     //Images
-    const [images, setImages] = useState([]);
-    const [thumbnailIdx, setThumbnailIdx] = useState(0);
+    const [imageData, setImageData] = useState({images: [], thumbnailIdx: 0});
     //Tags
+    const [selectedTags, setSelectedTags] = useState([]);
     const TagList = ["Nature", "History", "Festivals", "Nightlife", "Shopping", "Sightseeing", "Adventure", "Trekking", "Beach", "Food Tour", "Motorbike Trip"];
 
     //Price
     const [price, setprice] = useState("");
-
+    //Description
+    const [description, setdescription] = useState("");
     //Add Stops
     const [addedStops, setAddedStops] = useState([]);
 
     const handleAddStop = (newStop) => {
         setAddedStops((prevStops) => {
-            const isDuplicate = prevStops.some((stop) => stop.name === newStop.name && stop.lat === newStop.lat && stop.lon === newStop.lon);
-            if (isDuplicate) return prevStops;
+            const existingIndex = prevStops.findIndex(
+                (stop) => stop.lat === newStop.lat && stop.lon === newStop.lon
+            );
+
+            if (existingIndex !== -1) {
+                // Update existing stop (e.g., to add English name later)
+                const updatedStops = [...prevStops];
+                updatedStops[existingIndex] = {...prevStops[existingIndex], ...newStop};
+                return updatedStops;
+            }
+
+            // Add new stop if not exists
             return [...prevStops, newStop];
         });
     };
+
     const handleRemoveStop = (index) => {
         setAddedStops((prev) => prev.filter((_, i) => i !== index));
     };
+    const handleRenameStop = async (index, newName) => {
+        const englishName = await generateEnglishName(newName.trim() || addedStops[index].name);
+        setAddedStops((prevStops) =>
+            prevStops.map((stop, i) =>
+                i === index
+                    ? {
+                        ...stop,
+                        name: newName.trim() !== "" ? newName.trim() : stop.name,
+                        name_en: englishName,
+                    }
+                    : stop
+            )
+        );
+    };
 
-    return (<div className="flex flex-col-reverse md:flex-row gap-4 justify-center items-start">
+    const generateEnglishName = async (vietName) => {
+        if (!vietName || vietName.trim() === "") return "";
+
+        let englishName = vietName;
+
+        try {
+            const res = await fetch(
+                `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=en&dt=t&q=${encodeURIComponent(vietName)}`
+            );
+            const data = await res.json();
+            // The translated text is in data[0][0][0]
+            englishName = data[0][0][0];
+        } catch (err) {
+            console.error("Translation failed, using original name:", err);
+        }
+
+
+        return englishName
+    };
+
+
+    const handleSubmit = async () => {
+        try {
+            const formData = new FormData();
+
+            if (!tourname || !hour || !minpeople || !maxpeople || !transportation || !price || !meeting || !addedStops?.length || !imageData) {
+                toast.error("Please fill in all information !");
+                return;
+            }
+
+            formData.append("name", tourname);
+            formData.append("duration", hour || 0);
+            formData.append("min_people", minpeople || 1);
+            formData.append("max_people", maxpeople || 1);
+            formData.append("transportation", transportation);
+            formData.append("meeting_location", meeting);
+            formData.append("price", price || 0);
+            formData.append("places", JSON.stringify(addedStops || []));
+            formData.append("tags", JSON.stringify(selectedTags || []));
+            formData.append("description",description || "No description")
+            imageData.images.forEach((img) => {
+                if (img?.file) formData.append("images", img.file);
+            });
+            formData.append("thumbnail_idx", imageData.thumbnailIdx ?? 0);
+
+            //fetch safely
+            const res = await fetch("http://127.0.0.1:8000/api/create_tour/", {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success("Tour created successfully!");
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                toast.error("Failed to create tour", {
+                    description: data.error || "Unknown error",
+                });
+            }
+        } catch (err) {
+            console.error("Unexpected error:", err);
+            toast.error("Unable to connect to the server.", {
+                description: "Check your Django logs.",
+            });
+        }
+    };
+
+
+    return (
+        <div className="flex flex-col-reverse gap-4 md:flex-row justify-center items-start">
             <Card className="max-w-xl w-full md:w-xl">
                 <CardHeader>
                     <CardTitle>
@@ -77,15 +207,18 @@ export default function TourCreate() {
                     </div>
                     <FieldSeparator/>
                     <div className="space-y-2 w-full">
-                        <FieldLabel className="text-base">
-                            Tour Schedule
-                        </FieldLabel>
+                        <div className="rounded-2xl border-[#5A74F8] border-2 p-3">
+                            <FieldLabel className="text-base text-[#5A74F8] font-bold">
+                                Tour Schedule
+                            </FieldLabel>
+                        </div>
+
                         <DragList
                             items={addedStops}
                             onRemoveItem={handleRemoveStop}
                             onReorder={setAddedStops}
+                            onRenameItem={handleRenameStop}
                         />
-
                     </div>
                 </CardContent>
             </Card>
@@ -105,7 +238,12 @@ export default function TourCreate() {
                             </IdCard>
                             Tour name:
                         </FieldLabel>
-                        <Input className="flex-1" placeholder="My tour"></Input>
+                        <Input
+                            className="flex-1"
+                            placeholder="My tour"
+                            value={tourname}
+                            onChange={(e) => settourname(e.target.value)}
+                        />
                     </div>
                     <FieldSeparator/>
                     {/*row 2*/}
@@ -131,30 +269,54 @@ export default function TourCreate() {
                     {/*row 3*/}
                     <div className="flex justify-between gap-5">
                         <FieldLabel className="text-base">
-                            <UserPlus></UserPlus>
+                            <UserPlus/>
                             Party size:
                         </FieldLabel>
-                        <div className="flex justify-end gap-5 ">
-                            <FieldLabel>Up to </FieldLabel>
+                        <div className="flex justify-end gap-3">
                             <Input
                                 className="flex-1 text-center"
                                 type="number"
-                                value={people}
+                                value={minpeople}
                                 min={min_people}
                                 max={max_people}
-                                onChange={(e) => setpeople(e.target.value)}
+                                onChange={(e) => {
+                                    const value = parseInt(e.target.value) || "";
+                                    setminpeople(value);
+
+                                    // Auto-adjust max if min exceeds it
+                                    if (value !== "" && maxpeople !== "" && value > maxpeople) {
+                                        setmaxpeople(value);
+                                    }
+                                }}
+                            />
+                            <FieldLabel> - </FieldLabel>
+                            <Input
+                                className="flex-1 text-center"
+                                type="number"
+                                value={maxpeople}
+                                min={min_people}
+                                max={max_people}
+                                onChange={(e) => {
+                                    const value = parseInt(e.target.value) || "";
+                                    setmaxpeople(value);
+
+                                    // Auto-adjust min if max goes below it
+                                    if (value !== "" && minpeople !== "" && value < minpeople) {
+                                        setminpeople(value);
+                                    }
+                                }}
                             />
                             <FieldLabel>people</FieldLabel>
                         </div>
                     </div>
                     <FieldSeparator/>
-                    {/*row 4*/}
+                    {/*row 4.1*/}
                     <div className="flex justify-between gap-5">
                         <FieldLabel className="text-base">
-                            <CarTaxiFront></CarTaxiFront>
+                            {getTransportationIcon(transportation)}
                             Transportation:
                         </FieldLabel>
-                        <Select>
+                        <Select value={transportation} onValueChange={setTransportation}>
                             <SelectTrigger className="flex-1">
                                 <SelectValue placeholder="Select transportation"/>
                             </SelectTrigger>
@@ -166,10 +328,28 @@ export default function TourCreate() {
                         </Select>
                     </div>
                     <FieldSeparator/>
+                    {/*row 4.2*/}
+                    <div className="flex justify-between gap-5">
+                        <FieldLabel className="text-base">
+                            <Pin/>
+                            Meeting place:
+                        </FieldLabel>
+                        <Select value={meeting} onValueChange={setMeeting}>
+                            <SelectTrigger className="flex-1">
+                                <SelectValue placeholder="Select meeting location"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="mine">My Place</SelectItem>
+                                <SelectItem value="yours">Your Place</SelectItem>
+                                <SelectItem value="first">First Stop</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <FieldSeparator/>
                     {/*row 5*/}
                     <div className="flex justify-between gap-2">
                         <FieldLabel className="text-base">
-                            <Coins></Coins>
+                            <CircleDollarSignIcon/>
                             Price:
                         </FieldLabel>
                         <VNDInput
@@ -185,15 +365,33 @@ export default function TourCreate() {
                     <div className="flex justify-between gap-5">
                         <FieldLabel className="text-base">
                             <PictureInPicture2Icon/>
-                            Images:
+                            Photos:
                         </FieldLabel>
                         <ImageUploader
-                            images={images}
-                            onImagesChange={(imgs, thumbIdx) => {
-                                setImages(imgs);
-                                setThumbnailIdx(thumbIdx);
-                            }}
+                            images={imageData.images}
+                            onImagesChange={(imgs, thumbIdx) => setImageData({
+                                images: imgs,
+                                thumbnailIdx: thumbIdx
+                            })}
                         />
+                    </div>
+                    <FieldSeparator/>
+                    {/*row 6.1*/}
+                    <div className="flex flex-col w-full gap-2 relative">
+                        <FieldLabel className="text-base">
+                            <Edit2/>
+                            Description:
+                        </FieldLabel>
+                        <Textarea
+                            placeholder="Enter a short description of your tour"
+                            value={description}
+                            onChange={(e) => setdescription(e.target.value.length > 150 ? description : e.target.value)}
+                            rows={5} // controls initial height
+                            className="resize-none"
+                        />
+                        <span className="absolute bottom-1 right-2 text-xs text-gray-400 select-none">
+                            {description.length}/{150}
+                        </span>
                     </div>
                     <FieldSeparator/>
                     {/*row 7*/}
@@ -202,9 +400,22 @@ export default function TourCreate() {
                             <Tag></Tag>
                             Tags:
                         </FieldLabel>
-                        <TagSelector tags={TagList}></TagSelector>
+                        <TagSelector
+                            tags={TagList}
+                            selectedTags={selectedTags}
+                            setSelectedTags={setSelectedTags}
+                        />
                     </div>
                 </CardContent>
+                <FieldSeparator/>
+                <CardFooter className="flex justify-end">
+                    <button
+                        className="bg-[#5A74F8] text-white px-4 py-2 rounded-xl hover:bg-[#6F86F9] hover:text-black"
+                        onClick={handleSubmit}
+                    >
+                        Create Tour
+                    </button>
+                </CardFooter>
 
             </Card>
 

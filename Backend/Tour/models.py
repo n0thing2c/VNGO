@@ -1,16 +1,15 @@
 from django.db import models
-from django.db.models import ManyToManyField
-
+from django.db.models import JSONField
 
 class Transportation(models.TextChoices):
-    PUBLIC = 'public', 'Public transportation'
-    PRIVATE = 'private', 'Private transportation'
+    PUBLIC = 'public', 'Public Transportation'
+    PRIVATE = 'private', 'Private Transportation'
     WALKING = 'walking', 'Walking'
 
 
 class MeetingLocation(models.TextChoices):
-    MY = 'my', 'My Place'
-    YOUR = 'your', 'Your Place'
+    MY = 'mine', 'My Place'
+    YOUR = 'yours', 'Your Place'
     FIRST = 'first', 'First place'
 
 class Place(models.Model):
@@ -18,7 +17,9 @@ class Place(models.Model):
     lat = models.FloatField()
     lng = models.FloatField()
     name = models.CharField(max_length=100)
-
+    name_en = models.CharField(max_length=100)
+    def __str__(self):
+        return self.name  # or name_en if you want
 
 class Tour(models.Model):
     id = models.AutoField(primary_key=True)
@@ -29,12 +30,13 @@ class Tour(models.Model):
     transportation = models.CharField(choices=Transportation.choices,max_length=20)
     meeting_location = models.CharField(choices=MeetingLocation.choices,max_length=20)
     price = models.IntegerField()
-    thumbnail = models.ImageField(upload_to='tour_thumbnails/',null=True,blank=True)
     places = models.ManyToManyField(Place,related_name='tours',blank=True)
-
+    tags = JSONField(default=list, blank=True)
+    description = models.TextField(max_length=150, blank=True)
 
 class TourImage(models.Model):
     id = models.AutoField(primary_key=True)
     tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name='tour_images')
     image = models.ImageField(upload_to='tour_images/', null=True, blank=True)
+    isthumbnail = models.BooleanField(default=False)
 

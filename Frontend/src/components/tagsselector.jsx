@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 
-export default function TagSelector({ tags = [], initialSelected = [] }) {
-  const [selectedTags, setSelectedTags] = useState(initialSelected);
-
+export default function TagSelector({ tags = [], selectedTags = [], setSelectedTags }) {
   const toggleTag = (tag) => {
     setSelectedTags((prev) =>
       prev.includes(tag)
@@ -21,7 +19,7 @@ export default function TagSelector({ tags = [], initialSelected = [] }) {
         return (
           <Badge
             key={tag}
-            variant={isSelected ? "default" : "secondary"}
+            variant={isSelected ? "bluelavender" : "secondary"}
             className="cursor-pointer"
             onClick={() => toggleTag(tag)}
           >
