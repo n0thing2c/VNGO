@@ -112,6 +112,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [wikiVisible, setWikiVisible] = useState(false);
     const inputRef = useRef(null);
+    const [focusPos, setFocusPos] = useState(null);
 
     useEffect(() => {
         inputRef.current?.focus();
@@ -267,6 +268,9 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                             key={`${stop.lat}-${stop.lon}-${idx}`}
                             position={[stop.lat, stop.lon]}
                             icon={createNumberedIcon(idx + 1)}
+                            eventHandlers={{
+                                click: () => setFocusPos([stop.lat, stop.lon]), // 👈 this focuses
+                            }}
                         >
                             <Popup>{stop.name}</Popup>
                         </Marker>
@@ -303,6 +307,8 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                             <FlyToLocation position={markerPosition}/>
                         </>
                     )}
+                    {focusPos && <FlyToLocation position={focusPos}/>}
+
                 </MapContainer>
             </div>
 
@@ -312,5 +318,91 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                 </div>
             )}
         </div>
+    );
+}
+
+// --- Fit map to route bounds ---
+function FitToStops({Stops}) {
+    const map = useMap();
+    React.useEffect(() => {
+        if (Stops.length > 0) {
+            const bounds = L.latLngBounds(Stops.map((s) => [s.lat, s.lon]));
+            map.fitBounds(bounds, {padding: [30, 30]});
+        }
+    }, [Stops, map]);
+    return null;
+}
+
+export function TourRoute({Stops = []}) {
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    const [flyTo, setFlyTo] = useState(null);
+
+    const handleMarkerClick = async (stop) => {
+        setFlyTo([stop.lat, stop.lon]);
+
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(
+                    stop.name
+                )}&countrycodes=VN`
+            );
+            const data = await res.json();
+            setSelectedLocation(data?.[0] || null);
+        } catch {
+            setSelectedLocation(null);
+        }
+    };
+
+    if (Stops.length === 0)
+        return (
+            <p className="text-center text-gray-500 italic">No stops added yet</p>
+        );
+
+    return (
+        <div className="flex flex-col gap-3 w-full h-auto">
+            {/* Map Section */}
+            <div className="w-full min-w-[15vw] h-[30vh] sm:h-[25vh] md:h-[25vh] rounded-lg shadow-md overflow-hidden">
+                <MapContainer
+                    center={[Stops[0].lat, Stops[0].lon]}
+                    zoom={13}
+                    style={{width: "100%", height: "100%"}}
+                    className="rounded-lg"
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; OpenStreetMap contributors"
+                    />
+
+                    {/* Auto-fit route */}
+                    <FitToStops Stops={Stops}/>
+
+                    {/* Routing line */}
+                    <RoutingMachine waypoints={Stops}/>
+
+                    {/* Fly to marker */}
+                    {flyTo && <FlyToLocation position={flyTo}/>}
+
+                    {/* Markers */}
+                    {Stops.map((stop, idx) => (
+                        <Marker
+                            key={`${stop.lat}-${stop.lon}-${idx}`}
+                            position={[stop.lat, stop.lon]}
+                            icon={createNumberedIcon(idx + 1)}
+                            eventHandlers={{
+                                click: () => handleMarkerClick(stop),
+                            }}
+                        >
+                            <Popup>{stop.name}</Popup>
+                        </Marker>
+                    ))}
+                </MapContainer>
+            </div>
+
+            {/* Wiki Info Panel */}
+            <div className="w-full max-h-[20vh] overflow-auto border rounded-lg p-4 bg-white shadow-sm">
+                <WikiPanel location={selectedLocation}/>
+            </div>
+        </div>
+
     );
 }

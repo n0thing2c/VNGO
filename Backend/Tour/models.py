@@ -4,7 +4,7 @@ from django.db.models import JSONField
 class Transportation(models.TextChoices):
     PUBLIC = 'public', 'Public Transportation'
     PRIVATE = 'private', 'Private Transportation'
-    WALKING = 'walking', 'Walking'
+    WALKING = 'walk', 'Walking'
 
 
 class MeetingLocation(models.TextChoices):
@@ -15,7 +15,7 @@ class MeetingLocation(models.TextChoices):
 class Place(models.Model):
     id = models.AutoField(primary_key=True)
     lat = models.FloatField()
-    lng = models.FloatField()
+    lon = models.FloatField()
     name = models.CharField(max_length=100)
     name_en = models.CharField(max_length=100)
     def __str__(self):
@@ -33,6 +33,8 @@ class Tour(models.Model):
     places = models.ManyToManyField(Place,related_name='tours',blank=True)
     tags = JSONField(default=list, blank=True)
     description = models.TextField(max_length=150, blank=True)
+    rating = models.IntegerField(default=0)
+    rates = models.IntegerField(default=0)
 
 class TourImage(models.Model):
     id = models.AutoField(primary_key=True)

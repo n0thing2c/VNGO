@@ -145,7 +145,7 @@ export default function TourCreate() {
             const formData = new FormData();
 
             if (!tourname || !hour || !minpeople || !maxpeople || !transportation || !price || !meeting || !addedStops?.length || !imageData) {
-                toast.error("Please fill in all information !");
+                toast.error("Please fill in all information!");
                 return;
             }
 
@@ -158,15 +158,20 @@ export default function TourCreate() {
             formData.append("price", price || 0);
             formData.append("places", JSON.stringify(addedStops || []));
             formData.append("tags", JSON.stringify(selectedTags || []));
-            formData.append("description",description || "No description")
+            formData.append("description", description || "No description");
             imageData.images.forEach((img) => {
                 if (img?.file) formData.append("images", img.file);
             });
             formData.append("thumbnail_idx", imageData.thumbnailIdx ?? 0);
 
-            //fetch safely
+            // Get JWT token from localStorage
+            //const token = localStorage.getItem("access");
+
             const res = await fetch("http://127.0.0.1:8000/api/create_tour/", {
                 method: "POST",
+                // headers: {
+                //     Authorization: `Bearer ${token}`, // ✅ add auth header
+                // },
                 body: formData,
             });
 
@@ -176,8 +181,9 @@ export default function TourCreate() {
                 toast.success("Tour created successfully!");
                 setTimeout(() => window.location.reload(), 1500);
             } else {
+                console.error("Server response:", data);
                 toast.error("Failed to create tour", {
-                    description: data.error || "Unknown error",
+                    description: data.detail || data.error || "Unknown error",
                 });
             }
         } catch (err) {
@@ -270,7 +276,7 @@ export default function TourCreate() {
                     <div className="flex justify-between gap-5">
                         <FieldLabel className="text-base">
                             <UserPlus/>
-                            Party size:
+                            Group size:
                         </FieldLabel>
                         <div className="flex justify-end gap-3">
                             <Input

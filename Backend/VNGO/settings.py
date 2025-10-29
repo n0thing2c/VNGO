@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "VNGO",
     "Tour",
-    "Comment",
 ]
 
 MIDDLEWARE = [
@@ -158,3 +157,6 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 
 # Cho phép gửi kèm thông tin xác thực trong request cross-origin
 CORS_ALLOW_CREDENTIALS = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

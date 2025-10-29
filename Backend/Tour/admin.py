@@ -20,5 +20,5 @@ class TourAdmin(admin.ModelAdmin):
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):
-    list_display = ("name", "lat", "lng")
+    list_display = ("name", "lat", "lon")
     search_fields = ("name",)
