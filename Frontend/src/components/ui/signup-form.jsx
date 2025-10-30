@@ -40,42 +40,56 @@ export function SignupForm({ className, ...props }) {
     >
       <Card className="mx-auto mt-2 md:mt-0 w-[92%]  md:max-w-4xl overflow-hidden p-0 shadow-xl">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-4 md:p-8" onSubmit={handleSubmit}>
-            <FieldGroup className="gap-4 md:gap-6">
-              <div className="flex flex-col items-center gap-2 text-center mb-0 md:mb-0">
-                <h1 className="text-2xl md:text-3xl font-bold">Sign up</h1>
+          <form className="p-3 md:p-5" onSubmit={handleSubmit}>
+            <FieldGroup className="gap-3 md:gap-4 text-sm">
+              <div className="flex flex-col items-center gap-1 text-center mb-1 md:mb-2">
+                <h1 className="text-xl md:text-2xl font-bold">Sign up</h1>
               </div>
 
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel className="text-sm" htmlFor="email">
+                  Email
+                </FieldLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   placeholder="m@example.com"
                   required
+                  className="h-9 text-sm"
                 />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="username">Username</FieldLabel>
-                <Input id="username" name="username" type="username" required />
+                <FieldLabel className="text-sm" htmlFor="username">
+                  Username
+                </FieldLabel>
+                <Input
+                  id="username"
+                  name="username"
+                  type="username"
+                  required
+                  className="h-9 text-sm"
+                />
               </Field>
 
               <Field>
-                <Field className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Field>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <FieldLabel className="text-sm" htmlFor="password">
+                      Password
+                    </FieldLabel>
                     <Input
                       id="password"
                       name="password"
                       type="password"
                       required
+                      className="h-9 text-sm"
                     />
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="confirm-password">
+                    <FieldLabel className="text-sm" htmlFor="confirm-password">
                       Confirm Password
                     </FieldLabel>
                     <Input
@@ -83,32 +97,33 @@ export function SignupForm({ className, ...props }) {
                       name="confirm-password"
                       type="password"
                       required
+                      className="h-9 text-sm"
                     />
                   </Field>
                 </Field>
-                <FieldDescription>
+                <FieldDescription className="text-xs">
                   Must be at least 8 characters long.
                 </FieldDescription>
               </Field>
 
               <Field>
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-8">
-                  <label className="flex items-center gap-2">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+                  <label className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
                       name="role"
                       value="tourguide"
-                      className="h-4 w-4"
+                      className="h-3.5 w-3.5"
                       required
                     />
                     <span>Tourguide</span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
                       name="role"
                       value="tourist"
-                      className="h-4 w-4"
+                      className="h-3.5 w-3.5"
                       required
                     />
                     <span>Tourist</span>
@@ -117,12 +132,15 @@ export function SignupForm({ className, ...props }) {
               </Field>
 
               <Field>
-                <Button className="w-full md:w-auto" type="submit">
+                <Button
+                  className="w-full md:w-auto h-9 px-4 text-sm"
+                  type="submit"
+                >
                   Sign up
                 </Button>
               </Field>
 
-              <FieldDescription className="text-center">
+              <FieldDescription className="text-center text-sm">
                 Already have an account? <a href="/signin">Sign in</a>
               </FieldDescription>
             </FieldGroup>
@@ -138,7 +156,7 @@ export function SignupForm({ className, ...props }) {
         </CardContent>
       </Card>
 
-      <FieldDescription className="px-6 text-center mt-3">
+      <FieldDescription className="px-6 text-center mt-2 text-sm">
         By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
         and <a href="#">Privacy Policy</a>.
       </FieldDescription>
