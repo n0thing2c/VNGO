@@ -138,9 +138,10 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
 
         const timeout = setTimeout(async () => {
             try {
-                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=vn&q=${encodeURIComponent(
                     searchQuery
                 )}`;
+
                 const res = await fetch(url);
                 const data = await res.json();
 
@@ -321,22 +322,34 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     );
 }
 
-// --- Fit map to route bounds ---
-function FitToStops({Stops}) {
-    const map = useMap();
-    React.useEffect(() => {
-        if (Stops.length > 0) {
-            const bounds = L.latLngBounds(Stops.map((s) => [s.lat, s.lon]));
-            map.fitBounds(bounds, {padding: [30, 30]});
-        }
-    }, [Stops, map]);
-    return null;
-}
-
-export function TourRoute({Stops = []}) {
+export function TourRoute({ Stops = [] }) {
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [flyTo, setFlyTo] = useState(null);
 
+    // --- 3. Add state to hold the map instance ---
+    const [map, setMap] = useState(null);
+
+    // --- 4. This new useEffect fixes the problem ---
+    useEffect(() => {
+        // Run this only when the map instance is ready
+        if (map) {
+            // Wait 100ms for the dialog animation to finish
+            const timer = setTimeout(() => {
+                // A. Fixes the "offset" gray box issue
+                map.invalidateSize();
+
+                // B. Fixes the focus by running fitBounds *after* the map is visible
+                if (Stops.length > 0) {
+                    const bounds = L.latLngBounds(Stops.map((s) => [s.lat, s.lon]));
+                    map.fitBounds(bounds, { padding: [30, 30] });
+                }
+            }, 100); // 100ms is usually enough
+
+            return () => clearTimeout(timer);
+        }
+    }, [map, Stops]); // Re-run if the map or stops change
+
+    // ... (your handleMarkerClick function is fine) ...
     const handleMarkerClick = async (stop) => {
         setFlyTo([stop.lat, stop.lon]);
 
@@ -353,36 +366,39 @@ export function TourRoute({Stops = []}) {
         }
     };
 
+
     if (Stops.length === 0)
         return (
             <p className="text-center text-gray-500 italic">No stops added yet</p>
         );
 
     return (
-        <div className="flex flex-col gap-3 w-full h-auto">
-            {/* Map Section */}
-            <div className="w-full min-w-[15vw] h-[30vh] sm:h-[25vh] md:h-[25vh] rounded-lg shadow-md overflow-hidden">
+        <div className="flex flex-col gap-4 w-full h-auto">
+            <div className="w-full h-auto aspect-[4/3] md:h-[50vh] rounded-lg shadow-md overflow-hidden">
                 <MapContainer
                     center={[Stops[0].lat, Stops[0].lon]}
                     zoom={13}
-                    style={{width: "100%", height: "100%"}}
+                    style={{ width: "100%", height: "100%" }}
                     className="rounded-lg"
+
+                    // --- 5. Add whenCreated to get the map instance ---
+                    whenCreated={setMap}
                 >
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution="&copy; OpenStreetMap contributors"
                     />
 
-                    {/* Auto-fit route */}
-                    <FitToStops Stops={Stops}/>
+                    {/* --- 6. DELETE this line --- */}
+                    {/* <FitToStops Stops={Stops}/> */}
 
                     {/* Routing line */}
-                    <RoutingMachine waypoints={Stops}/>
+                    <RoutingMachine waypoints={Stops} />
 
                     {/* Fly to marker */}
-                    {flyTo && <FlyToLocation position={flyTo}/>}
+                    {flyTo && <FlyToLocation position={flyTo} />}
 
-                    {/* Markers */}
+                    {/* ... (rest of your markers) ... */}
                     {Stops.map((stop, idx) => (
                         <Marker
                             key={`${stop.lat}-${stop.lon}-${idx}`}
@@ -399,10 +415,9 @@ export function TourRoute({Stops = []}) {
             </div>
 
             {/* Wiki Info Panel */}
-            <div className="w-full max-h-[20vh] overflow-auto border rounded-lg p-4 bg-white shadow-sm">
-                <WikiPanel location={selectedLocation}/>
+            <div className="w-full max-h-64 overflow-auto border rounded-lg p-4 bg-white shadow-sm">
+                <WikiPanel location={selectedLocation} />
             </div>
         </div>
-
     );
 }

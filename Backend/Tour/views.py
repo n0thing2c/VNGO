@@ -30,7 +30,7 @@ def create_tour(request):
 
         for p in places_data:
             place, _ = Place.objects.get_or_create(
-                lat=p['lat'], lng=p['lon'],
+                lat=p['lat'], lon=p['lon'],
                 name=p['name'], name_en=p['name_en']
             )
             tour.places.add(place)

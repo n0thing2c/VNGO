@@ -266,7 +266,28 @@ export default function TourCreate() {
                                 value={hour}
                                 min={min_hour}
                                 max={max_hour}
+                                // 1. Update the state normally as the user types
                                 onChange={(e) => sethour(e.target.value)}
+
+                                // 2. When the user clicks away, validate and clamp the value
+                                onBlur={(e) => {
+                                    let value = parseInt(e.target.value, 10);
+
+                                    // If it's not a number, set it to the minimum
+                                    if (isNaN(value)) {
+                                        value = min_hour;
+                                    }
+
+                                    // Clamp the value between min and max
+                                    if (value > max_hour) {
+                                        value = max_hour;
+                                    } else if (value < min_hour) {
+                                        value = min_hour;
+                                    }
+
+                                    // Set the clamped value
+                                    sethour(value);
+                                }}
                             />
                             <FieldLabel>hour(s)</FieldLabel>
                         </div>
@@ -285,14 +306,32 @@ export default function TourCreate() {
                                 value={minpeople}
                                 min={min_people}
                                 max={max_people}
+                                // 1. onChange just updates the raw string value
                                 onChange={(e) => {
-                                    const value = parseInt(e.target.value) || "";
-                                    setminpeople(value);
+                                    setminpeople(e.target.value);
+                                }}
+                                // 2. onBlur does all parsing, clamping, and adjusting
+                                onBlur={(e) => {
+                                    // Get the current values from state, parsing them
+                                    let minVal = parseInt(minpeople, 10);
+                                    let maxVal = parseInt(maxpeople, 10);
 
-                                    // Auto-adjust max if min exceeds it
-                                    if (value !== "" && maxpeople !== "" && value > maxpeople) {
-                                        setmaxpeople(value);
+                                    // A. Validate and clamp minVal (the one that just blurred)
+                                    if (isNaN(minVal) || minVal < min_people) {
+                                        minVal = min_people;
+                                    } else if (minVal > max_people) {
+                                        minVal = max_people;
                                     }
+
+                                    // B. Validate maxVal (the *other* input)
+                                    // If maxVal is invalid OR is now less than our new minVal, adjust it
+                                    if (isNaN(maxVal) || maxVal < minVal) {
+                                        maxVal = minVal;
+                                    }
+
+                                    // C. Set both corrected states
+                                    setminpeople(minVal);
+                                    setmaxpeople(maxVal);
                                 }}
                             />
                             <FieldLabel> - </FieldLabel>
@@ -300,16 +339,34 @@ export default function TourCreate() {
                                 className="flex-1 text-center"
                                 type="number"
                                 value={maxpeople}
-                                min={min_people}
+                                min={min_people} // Use absolute min here
                                 max={max_people}
+                                // 1. onChange just updates the raw string value
                                 onChange={(e) => {
-                                    const value = parseInt(e.target.value) || "";
-                                    setmaxpeople(value);
+                                    setmaxpeople(e.target.value);
+                                }}
+                                // 2. onBlur does all parsing, clamping, and adjusting
+                                onBlur={(e) => {
+                                    // Get the current values from state, parsing them
+                                    let minVal = parseInt(minpeople, 10);
+                                    let maxVal = parseInt(maxpeople, 10);
 
-                                    // Auto-adjust min if max goes below it
-                                    if (value !== "" && minpeople !== "" && value < minpeople) {
-                                        setminpeople(value);
+                                    // A. Validate and clamp maxVal (the one that just blurred)
+                                    if (isNaN(maxVal) || maxVal > max_people) {
+                                        maxVal = max_people;
+                                    } else if (maxVal < min_people) {
+                                        maxVal = min_people;
                                     }
+
+                                    // B. Validate minVal (the *other* input)
+                                    // If minVal is invalid OR is now greater than our new maxVal, adjust it
+                                    if (isNaN(minVal) || minVal > maxVal) {
+                                        minVal = maxVal;
+                                    }
+
+                                    // C. Set both corrected states
+                                    setminpeople(minVal);
+                                    setmaxpeople(maxVal);
                                 }}
                             />
                             <FieldLabel>people</FieldLabel>

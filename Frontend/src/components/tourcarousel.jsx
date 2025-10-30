@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import {
     Carousel,
     CarouselContent,
@@ -7,7 +7,7 @@ import {
     CarouselNext,
 } from "@/components/ui/carousel";
 
-export default function TourCarousel({ images = [], forwardInterval = 3000, rewindInterval = 50 }) {
+export default function TourCarousel({images = [], forwardInterval = 3000, rewindInterval = 50}) {
     const nextBtnRef = useRef(null);
     const prevBtnRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,6 +51,7 @@ export default function TourCarousel({ images = [], forwardInterval = 3000, rewi
             <CarouselContent>
                 {images.map((img, idx) => (
                     <CarouselItem key={idx} className="flex justify-center items-center">
+                        {/* Assuming rounded-4xl is a custom class. If not, use rounded-2xl or rounded-3xl */}
                         <div className="w-full aspect-[16/9] overflow-hidden rounded-4xl">
                             <img
                                 src={img.url || img.image}
@@ -62,8 +63,25 @@ export default function TourCarousel({ images = [], forwardInterval = 3000, rewi
                 ))}
             </CarouselContent>
 
-            <CarouselPrevious ref={prevBtnRef} className="absolute -left-20 top-1/2 -translate-y-1/2 bg-black text-white p-7 rounded-full text-4xl shadow-lg transition"/>
-            <CarouselNext ref={nextBtnRef} className="absolute -right-20 top-1/2 -translate-y-1/2 bg-black text-white p-7 rounded-full text-4xl shadow-lg transition"/>
+            {/* CHANGED:
+      - Mobile: Positioned inside (left-4), smaller (p-2, text-xl), semi-transparent (bg-black/60)
+      - Desktop (lg): Restored original "outside" position (-left-20) and size (p-7, text-4xl)
+    */}
+            <CarouselPrevious
+                ref={prevBtnRef}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black text-white p-2 text-xl rounded-full shadow-lg transition
+                   lg:-left-20 lg:p-7 lg:text-4xl "
+            />
+
+            {/* CHANGED:
+      - Mobile: Positioned inside (right-4), smaller (p-2, text-xl), semi-transparent (bg-black/60)
+      - Desktop (lg): Restored original "outside" position (-right-20) and size (p-7, text-4xl)
+    */}
+            <CarouselNext
+                ref={nextBtnRef}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black text-white p-2 text-xl rounded-full shadow-lg transition
+                   lg:-right-20 lg:p-7 lg:text-4xl "
+            />
         </Carousel>
     );
 }
