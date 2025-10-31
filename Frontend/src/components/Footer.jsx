@@ -1,22 +1,14 @@
-// export default function Footer() {
-//   return (
-//     <div
-//       style={{
-//         background:
-//           "linear-gradient(180deg, #FFFFFF 0%, #59AEF1 50%, #347FE2 100%)",
-//       }}
-//       className="w-full h-50"
-//     ></div>
-//   );
-// }
+import Ig from "@/assets/ig.png";
+import LinkedIn from "@/assets/linkedIn.png";
+import X from "@/assets/x.png";
+
 export default function Footer() {
   return (
     <div
       style={{
-        background:
-          "linear-gradient(180deg, #FFFFFF 0%, #59AEF1 50%, #347FE2 100%)",
+        background: "black",
       }}
-      className="w-full p-12 text-gray-900"
+      className="w-full p-12 text-white"
     >
       <div className="container mx-auto flex justify-between items-start">
         {/* === CỘT BÊN TRÁI: Brand và Social === */}
@@ -29,9 +21,9 @@ export default function Footer() {
 
           {/* Social Icons */}
           <div className="flex gap-4 items-center">
-            <img src="ref" alt="Instagram" className="w-6 h-6" />
-            <img src="ref" alt="LinkedIn" className="w-6 h-6" />
-            <img src="ref" alt="X" className="w-5 h-5" />
+            <img src={Ig} alt="Instagram" className="w-6 h-6" />
+            <img src={LinkedIn} alt="LinkedIn" className="w-6 h-6" />
+            <img src={X} alt="X" className="w-5 h-5" />
           </div>
         </div>
 
