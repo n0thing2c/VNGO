@@ -5,8 +5,7 @@ export default function Header() {
     <div
       className="w-full"
       style={{
-        background:
-          "linear-gradient(180deg, #347FE2 0%, #59AEF1 50%, #FFFFFF 100%)",
+        background: "black",
       }}
     >
       <div className="w-full max-w-6xl px-4  h-20 relative">
