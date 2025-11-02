@@ -18,6 +18,21 @@ class SignUpView(generics.CreateAPIView):
     serializer_class = SignupSerializer
     permission_classes = [permissions.AllowAny]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        # Return simple success response
+        return Response(
+            {
+                "detail": "User created successfully. Please check your email to verify your account.",
+                "username": user.username,
+                "email": user.email,
+            },
+            status=status.HTTP_201_CREATED
+        )
+
 
 class ConfirmEmailView(generics.GenericAPIView):
     serializer_class = ConfirmEmailSerializer
