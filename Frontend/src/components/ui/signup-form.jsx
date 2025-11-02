@@ -11,8 +11,68 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import SignUpImg from "@/assets/sign_up_img.png";
+import { authService } from "@/services/authService";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+
+// Helper function to extract error message from API response
+const getErrorMessage = (error) => {
+  if (error.response?.data) {
+    const data = error.response.data;
+    // Check field-specific errors first (email, username, password, role)
+    const fieldErrors = ["email", "username", "password", "role"];
+    for (const field of fieldErrors) {
+      if (data[field]) {
+        return Array.isArray(data[field]) ? data[field][0] : data[field];
+      }
+    }
+    // Check general errors
+    if (data.detail) return data.detail;
+    if (data.non_field_errors) {
+      return Array.isArray(data.non_field_errors)
+        ? data.non_field_errors[0]
+        : data.non_field_errors;
+    }
+  }
+  if (error.request)
+    return "No response from server. Please check your connection.";
+  if (error.message) return error.message;
+  return "Failed to create account. Please try again.";
+};
 
 export function SignupForm({ className, ...props }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const handleEmailVerification = useCallback(
+    async (token) => {
+      try {
+        setIsLoading(true);
+        await authService.verifyEmail(token);
+        toast.success("Email verified successfully!");
+        navigate("/signin");
+      } catch (error) {
+        const errorMessage =
+          error.response?.data?.detail ||
+          error.response?.data?.token?.[0] ||
+          "Failed to verify email. The token may be invalid or expired.";
+        toast.error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [navigate]
+  );
+
+  // Check if there's a token in URL params for email verification
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+      handleEmailVerification(token);
+    }
+  }, [searchParams, handleEmailVerification]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -20,7 +80,7 @@ export function SignupForm({ className, ...props }) {
     const username = formData.get("username");
     const password = formData.get("password");
     const confirmPassword = formData.get("confirm-password");
-    const role = formData.get("role");
+    let role = formData.get("role");
 
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
@@ -30,6 +90,25 @@ export function SignupForm({ className, ...props }) {
     if (!role) {
       toast.error("Please select a role");
       return;
+    }
+
+    // Normalize role to lowercase (backend expects "tourist" or "guide")
+    role = role.toLowerCase();
+
+    try {
+      setIsLoading(true);
+      await authService.signUp(username, email, password, role);
+      toast.success(
+        "Account created successfully! Please check your email to verify your account."
+      );
+      // Optionally redirect to signin page
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -112,11 +191,11 @@ export function SignupForm({ className, ...props }) {
                     <input
                       type="radio"
                       name="role"
-                      value="tourguide"
+                      value="Guide"
                       className="h-3.5 w-3.5"
                       required
                     />
-                    <span>Tourguide</span>
+                    <span>Guide</span>
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -135,8 +214,9 @@ export function SignupForm({ className, ...props }) {
                 <Button
                   className="w-full md:w-auto h-9 px-4 text-sm"
                   type="submit"
+                  disabled={isLoading}
                 >
-                  Sign up
+                  {isLoading ? "Processing..." : "Sign up"}
                 </Button>
               </Field>
 

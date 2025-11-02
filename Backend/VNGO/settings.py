@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-cefi=#blfv5ztftncdl1b8smfm6#!!tw^aqth_)&b+ccszvve5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Cấu hình Rest framework và Simple JWT
 REST_FRAMEWORK = {
@@ -64,14 +64,19 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
 ]
+
+# Disable CSRF for API endpoints in development
+if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_HTTPONLY = False
 
 ROOT_URLCONF = "VNGO.urls"
 
@@ -164,5 +169,45 @@ CORS_ALLOW_ORIGINS = [
     "http://localhost:3000",
 ]
 
-# Cho phép gửi kèm thông tin xác thực trong request cross-origin
-CORS_ALLOW_CREDENTIALS = True
+# For development - allow all origins (remove in production)
+# Note: Cannot use CORS_ALLOW_CREDENTIALS with CORS_ALLOW_ALL_ORIGINS
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_CREDENTIALS = False
+else:
+    CORS_ALLOW_CREDENTIALS = True
+
+# Expose headers
+CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
+
+# Preflight cache duration
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Cho phép tất cả các headers
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Cho phép các methods
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Disable CSRF for API endpoints (since we're using JWT)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]

@@ -10,6 +10,7 @@ function App() {
           {/* public routes*/}
 
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/verify-email" element={<SignUpPage />} />
 
           {/* protected routes*/}
         </Routes>
