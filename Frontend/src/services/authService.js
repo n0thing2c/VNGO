@@ -16,6 +16,14 @@ export const authService = {
         );
 
         return response.data;
+    },
+    resendVerificationEmail: async (email) => {
+        const response = await api.post(
+            "/auth/email/resend/",
+            { email }
+        );
+
+        return response.data;
     }
 }
 

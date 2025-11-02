@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import SignUpPage from "./pages/SignUpPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import { Toaster } from "sonner";
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
           {/* public routes*/}
 
           <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/verify-email" element={<SignUpPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
 
           {/* protected routes*/}
         </Routes>
