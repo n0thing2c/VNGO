@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import SignUpImg from "@/assets/sign_up_img.png";
 import { authService } from "@/services/authService";
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
@@ -43,35 +43,6 @@ const getErrorMessage = (error) => {
 export function SignupForm({ className, ...props }) {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const handleEmailVerification = useCallback(
-    async (token) => {
-      try {
-        setIsLoading(true);
-        await authService.verifyEmail(token);
-        toast.success("Email verified successfully!");
-        navigate("/signin");
-      } catch (error) {
-        const errorMessage =
-          error.response?.data?.detail ||
-          error.response?.data?.token?.[0] ||
-          "Failed to verify email. The token may be invalid or expired.";
-        toast.error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [navigate]
-  );
-
-  // Check if there's a token in URL params for email verification
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-      handleEmailVerification(token);
-    }
-  }, [searchParams, handleEmailVerification]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -98,13 +69,15 @@ export function SignupForm({ className, ...props }) {
     try {
       setIsLoading(true);
       await authService.signUp(username, email, password, role);
+      // Store email in localStorage for resend functionality
+      localStorage.setItem("pendingVerificationEmail", email);
       toast.success(
         "Account created successfully! Please check your email to verify your account."
       );
-      // Optionally redirect to signin page
+      // Redirect to verify email page
       setTimeout(() => {
-        navigate("/signin");
-      }, 2000);
+        navigate("/verify-email");
+      }, 1500);
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
