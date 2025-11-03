@@ -19,7 +19,7 @@ export default function TagSelector({ tags = [], selectedTags = [], setSelectedT
         return (
           <Badge
             key={tag}
-            variant={isSelected ? "bluelavender" : "secondary"}
+            variant={isSelected ? "brightgreen" : "secondary"}
             className="cursor-pointer"
             onClick={() => toggleTag(tag)}
           >

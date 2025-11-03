@@ -38,7 +38,7 @@ export function Calendar22({
                         selected={date}
                         captionLayout="dropdown"
                         fromYear={new Date().getFullYear()}
-                        toYear={new Date().getFullYear() + 100}
+                        toYear={new Date().getFullYear() + 1}
                         onSelect={(selectedDate) => {
                             if (selectedDate) {
                                 onSelect && onSelect(selectedDate)

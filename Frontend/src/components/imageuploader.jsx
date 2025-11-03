@@ -63,7 +63,7 @@ export default function ImageUploader({ images = [], onImagesChange }) {
         type="button"
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
-        className="flex items-center gap-2 bg-[#5A74F8] hover:bg-[#6F86F9] text-white border-none"
+        className="flex items-center gap-2 bg-[#23C491] hover:bg-white  hover:border-black hover:text-black hover:border-1  text-white "
       >
         <Upload className="w-4 h-4" />
         Upload Images
@@ -77,7 +77,7 @@ export default function ImageUploader({ images = [], onImagesChange }) {
               key={idx}
               className={`relative border-2 rounded-lg overflow-hidden cursor-pointer transition group ${
                 thumbnailIndex === idx
-                  ? "border-[#5A74F8] ring-2 ring-[#8598FA]"
+                  ? "border-[#23C491] border-3"
                   : "border-gray-300 hover:border-gray-400"
               }`}
               style={{ width: 85, height: 85 }}

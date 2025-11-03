@@ -298,7 +298,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                                         <p className="font-semibold">{markerLabel.split(",")[0]}</p>
                                         <button
                                             onClick={handleAddToTour}
-                                            className="px-4 py-2 bg-[#5A74F8] text-white rounded-lg hover:bg-[#6F86F9] hover:text-black"
+                                            className="px-4 py-2 bg-[#23C491] text-white rounded-lg hover:bg-emerald-300 hover:border-black hover:text-black"
                                         >
                                             Add to Tour
                                         </button>
