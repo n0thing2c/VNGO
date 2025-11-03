@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'; // <-- Rất quan trọng!
+import { Link, useLocation } from 'react-router-dom'; // <-- Rất quan trọng!
 import { Menu, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
@@ -8,8 +8,12 @@ import {
 } from '../ui/dropdown-menu'; // <-- Điều chỉnh đường dẫn nếu cần
 
 import logo from '../../assets/LogoVNGO.png'
+import GlobalSearchBar from '../GlobalSearchBar';
 
 export default function Header() {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   return (
     <header className="bg-black sticky top-0 z-50 border-b border-black/10">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
@@ -19,9 +23,17 @@ export default function Header() {
             <img
               src={logo}
               alt="VNGO"
-              className="h-20 w-auto" // điều chỉnh kích thước tại đây
+              className="h-15 w-auto" // điều chỉnh kích thước tại đây
             />
           </Link>
+
+          {/* Hiển thị search bar ở giữa NẾU KHÔNG PHẢI trang chủ */}
+          {!isHomePage && (
+            <div className="hidden md:flex justify-center flex-1 min-w-0 px-4">
+              {/* DÙNG COMPONENT TOÀN CỤC */}
+              <GlobalSearchBar />
+            </div>
+          )}
 
           {/* User Menu with Dropdown */}
           <div className="flex items-center gap-2 md:gap-3">
