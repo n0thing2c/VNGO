@@ -11,8 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import SignUpImg from "@/assets/sign_up_img.png";
-import { authService } from "@/services/authService";
-import { useState } from "react";
+import { useAuthStore } from "../../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 
 // Helper function to extract error message from API response
@@ -41,7 +40,7 @@ const getErrorMessage = (error) => {
 };
 
 export function SignupForm({ className, ...props }) {
-  const [isLoading, setIsLoading] = useState(false);
+  const { signUp, loading } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -67,8 +66,7 @@ export function SignupForm({ className, ...props }) {
     role = role.toLowerCase();
 
     try {
-      setIsLoading(true);
-      await authService.signUp(username, email, password, role);
+      await signUp(username, email, password, role);
       // Store email in localStorage for resend functionality
       localStorage.setItem("pendingVerificationEmail", email);
       toast.success(
@@ -80,8 +78,6 @@ export function SignupForm({ className, ...props }) {
       }, 1500);
     } catch (error) {
       toast.error(getErrorMessage(error));
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -187,9 +183,9 @@ export function SignupForm({ className, ...props }) {
                 <Button
                   className="w-full md:w-auto h-9 px-4 text-sm"
                   type="submit"
-                  disabled={isLoading}
+                  disabled={loading}
                 >
-                  {isLoading ? "Processing..." : "Sign up"}
+                  {loading ? "Processing..." : "Sign up"}
                 </Button>
               </Field>
 
