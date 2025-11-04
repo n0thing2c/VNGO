@@ -1,12 +1,23 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react"; // 1. Import useEffect
 import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 
-export default function ImageUploader({ images = [], onImagesChange }) {
-  const [thumbnailIndex, setThumbnailIndex] = useState(null);
+// 2. Accept 'thumbnailIdx' as a prop (renamed to 'initialThumbnailIdx' to avoid confusion)
+export default function ImageUploader({
+  images = [],
+  onImagesChange,
+  thumbnailIdx: initialThumbnailIdx = 0, // <-- ADD THIS PROP
+}) {
+  // 3. Use the prop to set the initial state
+  const [thumbnailIndex, setThumbnailIndex] = useState(initialThumbnailIdx); // <-- CHANGE THIS LINE
   const fileInputRef = useRef(null);
+
+  // 4. [OPTIONAL, BUT RECOMMENDED] Sync state if the prop changes
+  useEffect(() => {
+    setThumbnailIndex(initialThumbnailIdx);
+  }, [initialThumbnailIdx]);
 
   // Handle upload
   const handleFilesChange = (e) => {
@@ -19,6 +30,8 @@ export default function ImageUploader({ images = [], onImagesChange }) {
     }));
 
     const updatedImages = [...images, ...newImages];
+
+    // This logic is now correct, as thumbnailIndex will be pre-filled
     const newThumbIdx =
       thumbnailIndex === null && updatedImages.length > 0 ? 0 : thumbnailIndex;
 
@@ -48,6 +61,7 @@ export default function ImageUploader({ images = [], onImagesChange }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* ... rest of your component (no changes needed below) ... */}
       {/* Hidden Input */}
       <input
         ref={fileInputRef}
@@ -91,7 +105,7 @@ export default function ImageUploader({ images = [], onImagesChange }) {
 
               {/* Thumbnail Label */}
               {thumbnailIndex === idx && (
-                <div className="absolute top-0 left-0 bg-[#5A74F8] text-white text-xs px-1 rounded-br-md">
+                <div className="absolute top-0 left-0 bg-[#23C491] text-white text-xs px-1 rounded-br-md">
                   Thumbnail
                 </div>
               )}

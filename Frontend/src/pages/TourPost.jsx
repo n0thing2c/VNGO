@@ -67,9 +67,8 @@ import Header from "@/components/Header.jsx";
 import Footer from "@/components/Footer.jsx";
 import {Badge} from "@/components/ui/badge.jsx";
 
-export default function TourPost({tourId: propTourId}) {
-    const {id} = useParams();
-    const tourId = id || propTourId;
+export default function TourPost() {
+    const {tour_id} = useParams();
     const [tourData, setTourData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currency, setCurrency] = useState("VND");
@@ -82,7 +81,7 @@ export default function TourPost({tourId: propTourId}) {
     useEffect(() => {
         async function fetchTour() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/tourpost/${tourId}/`);
+                const res = await fetch(`http://127.0.0.1:8000/api/tour/get/${tour_id}/`);
                 const data = await res.json();
                 setTourData(data);
             } catch (err) {
@@ -92,8 +91,8 @@ export default function TourPost({tourId: propTourId}) {
             }
         }
 
-        if (tourId) fetchTour();
-    }, [tourId]);
+        if (tour_id) fetchTour();
+    }, [tour_id]);
 
     if (loading) return <p className="text-center p-4">Loading tour...</p>;
     if (!tourData) return <p className="text-center p-4">Tour not found.</p>;
@@ -151,7 +150,7 @@ export default function TourPost({tourId: propTourId}) {
 
                     {/*row 3*/}
                     <div className="flex justify-start">
-                        <TourCarousel images={tourData.images}/>
+                        <TourCarousel images={tour.tour_images} />
                     </div>
 
                     {/*row 4*/}

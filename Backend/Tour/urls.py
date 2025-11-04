@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("create_tour/", views.create_tour, name="create_tour"),
-    path("tourpost/<int:tour_id>/", views.load_tour, name="load_tour"),
+    path("post/", views.tour_post, name="make_new_tour"),
+    path("get/<int:tour_id>/", views.tour_get, name="get_tour_info"),
+    path("put/<int:tour_id>/", views.tour_put, name="put_tour_info"),
 ]
