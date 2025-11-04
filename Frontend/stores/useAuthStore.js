@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { toast } from "sonner";
 import { authService } from "../src/services/authService";
 
 export const useAuthStore = create((set, get) => ({
@@ -7,19 +6,14 @@ export const useAuthStore = create((set, get) => ({
   user: null,
   loading: false,
 
-  signUp: async (username, password, email) => {
+  // Align params and order with authService: (username, email, password, role)
+  signUp: async (username, email, password, role) => {
     try {
       set({ loading: true });
-
-      // Call api
-      await authService.signUp(username, password, email);
-
-      toast.success(
-        "Sign up successfully. You will be redirected to the personal information page."
-      );
+      await authService.signUp(username, email, password, role);
     } catch (error) {
-      console.error(error);
-      toast.error("Sign up unsuccesfully");
+      // Re-throw so UI can handle toast/navigation consistently
+      throw error;
     } finally {
       set({ loading: false });
     }
