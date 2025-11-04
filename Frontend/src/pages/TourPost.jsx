@@ -1,4 +1,4 @@
-import {TourRoute} from "@/components/Map.jsx";
+import {TourRoute} from "@/components/APIs/Map.jsx";
 import React, {use, useState} from "react";
 import {useEffect} from "react";
 import {
@@ -63,8 +63,8 @@ import TourCarousel from "@/components/tourcarousel.jsx";
 import {Calendar22} from "@/components/ui/datepicker.jsx";
 import TourStopsTimeline from "@/components/stoptimeline.jsx";
 import {useParams} from "react-router-dom";
-import Header from "@/components/Header.jsx";
-import Footer from "@/components/Footer.jsx";
+import Header from "@/components/layout/Header.jsx";
+import Footer from "@/components/layout/Footer.jsx";
 import {Badge} from "@/components/ui/badge.jsx";
 
 export default function TourPost() {
@@ -117,13 +117,13 @@ export default function TourPost() {
                             {tour.name}
                         </FieldLabel>
 
-                        {tour.tags.map((tag,index)=>
+                        {tour.tags.map((tag, index) =>
                             (
                                 <span key={index} className="mr-2">
                                     <Badge
                                         variant="brightgreen"
                                         className="cursor-pointer"
-                                      >
+                                    >
                                         {tag}
                                       </Badge>
                                 </span>
@@ -150,7 +150,7 @@ export default function TourPost() {
 
                     {/*row 3*/}
                     <div className="flex justify-start">
-                        <TourCarousel images={tour.tour_images} />
+                        <TourCarousel images={tour.tour_images}/>
                     </div>
 
                     {/*row 4*/}
@@ -163,9 +163,8 @@ export default function TourPost() {
                         <FieldLabel className="text-xl sm:text-2xl lg:text-3xl">
                             Tour Schedule
                         </FieldLabel>
-                        <TourStopsTimeline
-                            stops={tour.places}
-                        />
+                        <TourStopsTimeline stops={tour.tour_places?.map(tp => tp.place) || []} />
+
                         <Dialog>
                             <DialogTrigger asChild>
                                 <Button variant="outline"
@@ -173,8 +172,7 @@ export default function TourPost() {
                                     Route</Button>
                             </DialogTrigger>
                             <DialogContent className="w-full sm:max-w-4xl">
-                                <TourRoute
-                                    Stops={tour.places}/>
+                                <TourRoute Stops={tour.tour_places?.map(tp => tp.place) || []} />
                             </DialogContent>
                         </Dialog>
                     </div>

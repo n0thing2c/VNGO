@@ -11,11 +11,11 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import {Input} from "@/components/ui/input";
+import {Input} from "@/components/ui/input.jsx";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
-import WikiPanel from "@/components/wiki_panel.jsx";
-import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert";
+import WikiPanel from "@/components/APIs/wiki_panel.jsx";
+import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert.jsx";
 
 // Fix Leaflet default icons
 delete L.Icon.Default.prototype._getIconUrl;

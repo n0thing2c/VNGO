@@ -6,7 +6,13 @@ from .models import Tour, Place, TourImage
 from .serializers import TourSerializer
 from django.conf import settings
 import json
-
+from rest_framework import status
+from .models import Tour, Place, TourImage, Transportation, TourPlace
+from .serializers import TourSerializer, PlaceSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view, parser_classes, permission_classes
+from django.db.models import Count, Q # for get get_popular_tours()
+from collections import Counter
 # --- CREATE TOUR ---
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -98,12 +104,16 @@ def tour_put(request, tour_id):
         tour.tags = []
     tour.save()
 
-    # --- Places ---
+    # --- Places with order ---
     places_data = data.get('places', '[]')
     if isinstance(places_data, str):
         places_data = json.loads(places_data)
-    place_instances = []
-    for p in places_data:
+
+    # Clear old TourPlace entries for this tour
+    tour.tour_places.all().delete()
+
+    # Re-create TourPlace entries with order
+    for idx, p in enumerate(places_data):
         lat = p.get('lat')
         lon = p.get('lon')
         name = p.get('name', '')
@@ -117,8 +127,9 @@ def tour_put(request, tour_id):
             if name_en and not place_obj.name_en:
                 place_obj.name_en = name_en
                 place_obj.save()
-        place_instances.append(place_obj)
-    tour.places.set(place_instances)
+
+        # Create TourPlace entry with order
+        TourPlace.objects.create(tour=tour, place=place_obj, order=idx)
 
     # --- Remove images ---
     removed_images_json = data.get('removed_images')
@@ -173,6 +184,18 @@ def tour_put(request, tour_id):
     # --- Return updated tour ---
     data = TourSerializer(tour, context={'request': request}).data
     data['images'] = data['tour_images']  # flatten for frontend
+
+    # Optional: flatten places with order for frontend
+    data['places'] = [
+        {
+            'lat': tp.place.lat,
+            'lon': tp.place.lon,
+            'name': tp.place.name,
+            'name_en': tp.place.name_en,
+            'order': tp.order
+        } for tp in tour.tour_places.all()
+    ]
+
     return Response({'tour': data}, status=200)
 
 
@@ -190,3 +213,188 @@ def tour_get(request, tour_id):
         return Response({'success': False, 'error': 'Tour not found'}, status=404)
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=400)
+
+
+# ------------------------
+# All Places
+# ------------------------
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_all_places(request):
+    try:
+        places = Place.objects.all()
+        serializer = PlaceSerializer(places, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ------------------------
+# Filter Options
+# ------------------------
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_filter_options(request):
+    try:
+        all_tags = set()
+        tours_tags = Tour.objects.values_list('tags', flat=True)
+        for tags_list in tours_tags:
+            if isinstance(tags_list, list):
+                all_tags.update(tags_list)
+
+        transport_options = [
+            {"value": choice[0], "label": choice[1]}
+            for choice in Transportation.choices
+        ]
+
+        response_data = {
+            'tags': sorted(list(all_tags)),
+            'transportation': transport_options
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ------------------------
+# Get All Tours with filters
+# ------------------------
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_all_tours(request):
+    try:
+        tours_queryset = Tour.objects.all().order_by('-id')
+
+
+        # Query params
+        search_term = request.GET.get('search')
+        location_name = request.GET.get('location')
+        price_min = request.GET.get('price_min')
+        price_max = request.GET.get('price_max')
+        duration_min = request.GET.get('duration_min')
+        duration_max = request.GET.get('duration_max')
+        group_size = request.GET.get('group_size')
+        rating_min = request.GET.get('rating_min')
+        transport = request.GET.get('transportation')
+        tags = request.GET.get('tags')
+
+        # Filters
+        if search_term:
+            tours_queryset = tours_queryset.filter(
+                Q(name__icontains=search_term) |
+                Q(description__icontains=search_term) |
+                Q(places__name__icontains=search_term) |
+                Q(places__name_en__icontains=search_term)
+            ).distinct()
+
+        if location_name:
+            tours_queryset = tours_queryset.filter(
+                Q(places__name__icontains=location_name) |
+                Q(places__name_en__icontains=location_name)
+            ).distinct()
+
+        if price_min:
+            tours_queryset = tours_queryset.filter(price__gte=price_min)
+        if price_max:
+            tours_queryset = tours_queryset.filter(price__lte=price_max)
+
+        if duration_min:
+            tours_queryset = tours_queryset.filter(duration__gte=duration_min)
+        if duration_max:
+            tours_queryset = tours_queryset.filter(duration__lte=duration_max)
+
+        if group_size:
+            tours_queryset = tours_queryset.filter(min_people__lte=group_size, max_people__gte=group_size)
+
+        if rating_min:
+            tours_queryset = tours_queryset.filter(rating__gte=rating_min)
+
+        if transport:
+            transport_list = transport.split(',')
+            tours_queryset = tours_queryset.filter(transportation__in=transport_list)
+
+        if tags:
+            # Split, strip, and lowercase query tags
+            tags_list = [t.strip().lower() for t in tags.split(',') if t.strip()]
+            q_filter = Q()
+            for tag in tags_list:
+                # Use icontains for case-insensitive match in JSON array
+                q_filter |= Q(tags__icontains=tag)
+            tours_queryset = tours_queryset.filter(q_filter).distinct()
+
+        # Build response
+        response_data = []
+        for tour in tours_queryset:
+            images = TourImage.objects.filter(tour=tour)
+            thumbnail = images.filter(isthumbnail=True).first()
+            image_obj = thumbnail or images.first()
+            image_url = request.build_absolute_uri(image_obj.image.url) if image_obj else \
+                "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop"
+
+            places = tour.places.all()  # get all related places
+            if places:
+                # Extract English names
+                names = [p.name_en.split(',')[0] for p in places]
+                # Take at most 4 names
+                names = names[:4]
+                # Join with '-'
+                location_str = " - ".join(names)
+            else:
+                location_str = "Many Places"
+
+            response_data.append({
+                'id': tour.id,
+                'title': tour.name,
+                'price': tour.price,
+                'rating': tour.rating,
+                'reviews': tour.rates,
+                'duration': tour.duration,
+                'groupSize': f"{tour.min_people}-{tour.max_people} people",
+                'transportation': tour.transportation,
+                'tags': tour.tags,
+                'image': image_url,
+                'location': location_str,
+                'description': tour.description,
+            })
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print("Error in get_all_tours:", e)  # debug
+        return Response([], status=status.HTTP_200_OK)  # luôn trả về list
+
+
+# ------------------------
+# Popular Destinations
+# ------------------------
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_popular_destinations(request):
+    try:
+        # Count number of tours per place
+        popular_places = Place.objects.annotate(
+            tour_count=Count('tours')  # <-- use the related_name of ManyToManyField
+        ).filter(tour_count__gt=0).order_by('-tour_count')[:6]
+
+        response_data = []
+        for place in popular_places:
+            image_url = "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop"
+            first_tour = place.tours.first()
+            if first_tour:
+                image_obj = TourImage.objects.filter(tour=first_tour).first()
+                if image_obj:
+                    image_url = request.build_absolute_uri(image_obj.image.url)
+
+            response_data.append({
+                'id': place.id,
+                'name': place.name,
+                'name_en': place.name_en,
+                'tour_count': place.tour_count,
+                'image': image_url
+            })
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

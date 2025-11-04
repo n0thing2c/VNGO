@@ -1,4 +1,4 @@
-import Map from "../components/Map.jsx";
+import Map from "../components/APIs/Map.jsx";
 import {use, useState} from "react";
 import {
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
@@ -40,8 +40,9 @@ import {Textarea} from "@/components/ui/textarea.jsx";
 import ImageUploader from "@/components/imageuploader.jsx";
 import DragList from "@/components/drag_list.jsx";
 import {toast} from "sonner";
-import Header from "@/components/Header.jsx";
-import Footer from "@/components/Footer.jsx";
+import Header from "@/components/layout/Header.jsx";
+import Footer from "@/components/layout/Footer.jsx";
+import HeroSection from "@/components/HomePage/HeroSection.jsx";
 
 export default function TourCreate() {
     //Tour name
@@ -199,7 +200,7 @@ export default function TourCreate() {
 
     return (
         <div className="items-center">
-  <Header />
+    <Header/>
   <div
     className="
       flex flex-col-reverse gap-6 md:flex-row justify-center items-start
@@ -471,7 +472,7 @@ export default function TourCreate() {
       </CardFooter>
     </Card>
   </div>
-  <Footer />
+  <Footer/>
 </div>
 
 

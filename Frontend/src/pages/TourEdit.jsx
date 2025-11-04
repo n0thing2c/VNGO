@@ -36,9 +36,9 @@ import {Textarea} from "@/components/ui/textarea.jsx";
 import ImageUploader from "@/components/imageuploader.jsx";
 import DragList from "@/components/drag_list.jsx";
 import {toast} from "sonner";
-import Header from "@/components/Header.jsx";
-import Footer from "@/components/Footer.jsx";
-import Map from "../components/Map.jsx";
+import Header from "@/components/layout/Header.jsx";
+import Footer from "@/components/layout/Footer.jsx";
+import Map from "../components/APIs/Map.jsx";
 import {Links, Link} from "react-router-dom";
 
 export default function TourEdit() {
@@ -202,7 +202,11 @@ export default function TourEdit() {
                 setprice(tour.price || 0);
                 setSelectedTags(Array.isArray(tour.tags) ? tour.tags : []);
                 setdescription(tour.description || "");
-                setAddedStops(Array.isArray(tour.places) ? tour.places : []);
+                setAddedStops(
+                    Array.isArray(tour.tour_places)
+                        ? tour.tour_places.map(tp => tp.place)
+                        : []
+                );
                 setImageData({
                     images:
                         tour.tour_images?.map((img) => ({
