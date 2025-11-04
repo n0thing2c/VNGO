@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import SignUpImg from "@/assets/sign_up_img.png";
-import { useAuthStore } from "../../../stores/useAuthStore";
+import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 
 // Helper function to extract error message from API response
