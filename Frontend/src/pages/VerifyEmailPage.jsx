@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { VerifyEmailForm } from "@/components/ui/verify-email-form";
+import { VerifyEmailForm } from "@/components/verify-email-form";
 
 const VerifyEmailPage = () => {
   return (
