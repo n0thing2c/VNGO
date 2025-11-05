@@ -8,7 +8,7 @@ export default function Layout() {
       <Header />
       <main>
         {/* Tất cả các trang của bạn (Home, Tours...) sẽ được render ở đây */}
-        <Outlet /> 
+        <Outlet />
       </main>
       <Footer />
     </>

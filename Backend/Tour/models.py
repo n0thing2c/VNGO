@@ -21,6 +21,16 @@ class Place(models.Model):
     def __str__(self):
         return self.name  # or name_en if you want
 
+class TourPlace(models.Model):
+    tour = models.ForeignKey('Tour', on_delete=models.CASCADE, related_name='tour_places')
+    place = models.ForeignKey('Place', on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        unique_together = ('tour', 'place')
+
+
 class Tour(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
@@ -30,9 +40,15 @@ class Tour(models.Model):
     transportation = models.CharField(choices=Transportation.choices,max_length=20)
     meeting_location = models.CharField(choices=MeetingLocation.choices,max_length=20)
     price = models.IntegerField()
-    places = models.ManyToManyField(Place,related_name='tours',blank=True)
+    places = models.ManyToManyField(
+        Place,
+        related_name='tours',
+        blank=True,
+        through='TourPlace',
+        through_fields=('tour', 'place'),
+    )
     tags = JSONField(default=list, blank=True)
-    description = models.TextField(max_length=150, blank=True)
+    description = models.TextField(max_length=500, blank=True)
     rating = models.IntegerField(default=0)
     rates = models.IntegerField(default=0)
 

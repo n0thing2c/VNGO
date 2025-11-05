@@ -12,13 +12,13 @@ export default function TravelStatsSection() {
       <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-gray-100/40" />
 
       <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto"> 
-        {/* CHÚ Ý: 
-          Bạn có thể dùng max-w-6xl (như các section khác) hoặc 
+        <div className="max-w-6xl mx-auto">
+        {/* CHÚ Ý:
+          Bạn có thể dùng max-w-6xl (như các section khác) hoặc
           max-w-4xl (như code cũ) tùy xem bạn muốn nó rộng bao nhiêu.
           Ở đây để max-w-6xl cho nhất quán.
         */}
-          <div className="max-w-4xl mx-auto text-center"> 
+          <div className="max-w-4xl mx-auto text-center">
             <p className="font-medium text-black text-lg md:text-xl mb-3">
               Travel with us
             </p>
@@ -46,7 +46,7 @@ export default function TravelStatsSection() {
               </div>
             </div>
           </div>
-        </div> 
+        </div>
       </div>
     </section>
   );

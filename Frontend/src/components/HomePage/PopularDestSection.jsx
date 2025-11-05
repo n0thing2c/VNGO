@@ -22,24 +22,24 @@ export default function PopularDestSection( {popularDestinations} ){
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     {/* Lấy 3 hoặc 6 điểm đến đầu tiên (API trả về 6 */}
-                    {popularDestinations.slice(0, 3).map((dest) => ( 
-                        
+                    {popularDestinations.slice(0, 3).map((dest) => (
+
                         // Bọc Card bằng Link, trỏ đến trang /tours
-                        <Link 
-                        to={`/tours?location=${encodeURIComponent(dest.name)}`} 
+                        <Link
+                        to={`/tours?location=${encodeURIComponent(dest.name_en.split(',')[0])}`}
                         key={dest.id}
                         >
                         <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full">
                             <div className="relative">
                             <img
                                 src={dest.image} // Dùng ảnh đại diện từ API
-                                alt={dest.name}
+                                alt={dest.name_en.split(',')[0]}
                                 className="w-full h-64 object-cover" // Tăng chiều cao ảnh
                             />
                             {/* Hiển thị tên điểm đến trên ảnh */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                             <h3 className="absolute bottom-4 left-4 text-2xl font-semibold text-white">
-                                {dest.name}
+                                {dest.name_en.split(',')[0]}
                             </h3>
                             </div>
                             <CardContent className="p-4">

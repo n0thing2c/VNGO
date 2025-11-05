@@ -19,6 +19,8 @@ const badgeVariants = cva(
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         bluelavender:
           "border-transparent bg-[#5A74F8] text-primary-foreground [a&]:hover:bg-primary/90",
+        brightgreen:
+          "border-transparent bg-[#23C491] text-primary-foreground [a&]:hover:bg-primary/90"
 
       },
     },

@@ -65,7 +65,7 @@ export default function HomePage() {
     //   .catch(err => console.error("Error fetching locations:", err));
 
     // 2. Fetch destinations cho mục "Popular dests"
-    fetch(`${API_URL}/popular-destinations/`)
+    fetch(`${API_URL}/places/popular/`)
       .then(res => res.json())
       .then(data => {
         // API get_all_tours đã format data (image, location, title...)

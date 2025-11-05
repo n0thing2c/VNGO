@@ -27,4 +27,8 @@ function Checkbox({
   );
 }
 
+<<<<<<< HEAD
 export { Checkbox }
+=======
+export { Checkbox }
+>>>>>>> origin/Khang-Thu-Merge
