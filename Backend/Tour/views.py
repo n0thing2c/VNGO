@@ -19,7 +19,7 @@ from collections import Counter
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def tour_post(request):
     try:
-        data = request.data.copy()
+        data = request.data
         images = request.FILES.getlist('images')
 
         # Remove images from serializer data
