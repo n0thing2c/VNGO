@@ -11,12 +11,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import SignUpImg from "@/assets/sign_up_img.png";
-import { authService } from "@/services/authService";
-import { useState } from "react";
+import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
+  if (error.response?.status === 401) {
+    return "Username or password is incorrect";
+  }
   if (error.response?.data) {
     const data = error.response.data;
     // Check field-specific errors first (email, username, password, role)
@@ -37,11 +39,11 @@ const getErrorMessage = (error) => {
   if (error.request)
     return "No response from server. Please check your connection.";
   if (error.message) return error.message;
-  return "Failed to create account. Please try again.";
+  return "Failed to sign in. Please try again.";
 };
 
 export function LoginForm({ className, ...props }) {
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, loading } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -49,6 +51,14 @@ export function LoginForm({ className, ...props }) {
     const formData = new FormData(event.currentTarget);
     const username = formData.get("username");
     const password = formData.get("password");
+    try {
+      await login(username, password);
+      toast.success("Logged in successfully");
+      navigate("/");
+    } catch (error) {
+      const message = getErrorMessage(error);
+      toast.error(message);
+    }
   };
 
   return (
@@ -78,29 +88,25 @@ export function LoginForm({ className, ...props }) {
               </Field>
 
               <Field>
-                <Field className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Field>
-                    <FieldLabel className="text-sm" htmlFor="password">
-                      Password
-                    </FieldLabel>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      className="h-9 text-sm"
-                    />
-                  </Field>
-                </Field>
+                <FieldLabel className="text-sm" htmlFor="password">
+                  Password
+                </FieldLabel>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="h-9 text-sm"
+                />
               </Field>
 
               <Field>
                 <Button
                   className="w-full md:w-auto h-9 px-4 text-sm"
                   type="submit"
-                  disabled={isLoading}
+                  disabled={loading}
                 >
-                  {isLoading ? "Processing..." : "Log in"}
+                  {loading ? "Processing..." : "Log in"}
                 </Button>
               </Field>
 

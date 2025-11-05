@@ -45,7 +45,7 @@ export function VerifyEmailForm({ className, ...props }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  
+
   // Get email from localStorage (set after signup)
   const pendingEmail = localStorage.getItem("pendingVerificationEmail");
 
@@ -59,7 +59,7 @@ export function VerifyEmailForm({ className, ...props }) {
         setStatus("success");
         toast.success("Email verified successfully!");
         setTimeout(() => {
-          navigate("/signin");
+          navigate("/login");
         }, 2000);
       } catch (error) {
         setStatus("error");
@@ -142,7 +142,8 @@ export function VerifyEmailForm({ className, ...props }) {
                 <Field>
                   <div className="flex flex-col gap-3">
                     <FieldDescription className="text-xs mb-2">
-                      Didn't receive the email? Check your spam folder or resend the verification email.
+                      Didn't receive the email? Check your spam folder or resend
+                      the verification email.
                     </FieldDescription>
                     {pendingEmail && (
                       <Button
@@ -151,7 +152,9 @@ export function VerifyEmailForm({ className, ...props }) {
                         variant="outline"
                         className="w-full"
                       >
-                        {isResending ? "Sending..." : "Resend Verification Email"}
+                        {isResending
+                          ? "Sending..."
+                          : "Resend Verification Email"}
                       </Button>
                     )}
                     <FieldDescription className="text-xs mt-2">
@@ -218,7 +221,9 @@ export function VerifyEmailForm({ className, ...props }) {
                         variant="outline"
                         className="w-full"
                       >
-                        {isResending ? "Sending..." : "Resend Verification Email"}
+                        {isResending
+                          ? "Sending..."
+                          : "Resend Verification Email"}
                       </Button>
                     )}
                     <Button

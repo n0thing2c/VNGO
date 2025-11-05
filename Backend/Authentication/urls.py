@@ -6,11 +6,13 @@ from .views import (
     ConfirmEmailView,
     MeView,
     ResendEmailVerificationView,
+    LoginWithCookieView,
+    RefreshWithCookieView,
 )
 
 urlpatterns = [
-    path("token/", TokenObtainPairView.as_view(), name="get_token"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="refresh"),
+    path("login/", LoginWithCookieView.as_view(), name="login"),
+    path("token/refresh/", RefreshWithCookieView.as_view(), name="refresh"),
     path("signup/", SignUpView.as_view(), name="signup"),
     path("email/confirm/", ConfirmEmailView.as_view(), name="confirm_email"),
     path("email/resend/", ResendEmailVerificationView.as_view(), name="resend_email"),

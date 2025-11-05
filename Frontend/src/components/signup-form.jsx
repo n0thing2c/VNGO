@@ -69,9 +69,7 @@ export function SignupForm({ className, ...props }) {
       await signUp(username, email, password, role);
       // Store email in localStorage for resend functionality
       localStorage.setItem("pendingVerificationEmail", email);
-      toast.success(
-        "Account created successfully! Please check your email to verify your account."
-      );
+      toast.success("Please check your email to verify your account.");
       // Redirect to verify email page
       setTimeout(() => {
         navigate("/verify-email");
@@ -190,7 +188,7 @@ export function SignupForm({ className, ...props }) {
               </Field>
 
               <FieldDescription className="text-center text-sm">
-                Already have an account? <a href="/signin">Sign in</a>
+                Already have an account? <a href="/login">Sign in</a>
               </FieldDescription>
             </FieldGroup>
           </form>
