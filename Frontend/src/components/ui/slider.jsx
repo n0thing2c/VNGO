@@ -53,8 +53,4 @@ function Slider({
   );
 }
 
-<<<<<<< HEAD
 export { Slider }
-=======
-export { Slider }
->>>>>>> origin/Khang-Thu-Merge

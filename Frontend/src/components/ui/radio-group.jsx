@@ -38,8 +38,4 @@ function RadioGroupItem({
   );
 }
 
-<<<<<<< HEAD
 export { RadioGroup, RadioGroupItem }
-=======
-export { RadioGroup, RadioGroupItem }
->>>>>>> origin/Khang-Thu-Merge
