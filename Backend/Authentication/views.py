@@ -9,6 +9,12 @@ from .serializers import (
     ResendEmailVerificationSerializer,
 )
 from .models import EmailVerificationToken, PendingSignup
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+    TokenRefreshSerializer,
+)
 
 User = get_user_model()
 
@@ -146,3 +152,61 @@ class ResendEmailVerificationView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+def _set_refresh_cookie(response, refresh_token: str):
+    """Attach refresh token as HttpOnly cookie."""
+    secure = not settings.DEBUG
+    # Lax is sufficient for same-site frontend; adjust if needed
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=secure,
+        samesite="None",
+        path="/auth/token/refresh/",
+        max_age=int(
+            getattr(settings, "SIMPLE_JWT", {})
+            .get("REFRESH_TOKEN_LIFETIME")
+            .total_seconds()
+            if getattr(settings, "SIMPLE_JWT", {}).get("REFRESH_TOKEN_LIFETIME")
+            else 24 * 60 * 60
+        ),
+    )
+
+
+class LoginWithCookieView(TokenObtainPairView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        refresh = response.data.get("refresh")
+        access = response.data.get("access")
+        if refresh:
+            _set_refresh_cookie(response, refresh)
+            # Optionally hide refresh from response body
+            response.data = {"access": access}
+        return response
+
+
+class RefreshWithCookieView(TokenRefreshView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        # If refresh not provided in body, read from cookie
+        data = request.data.copy()
+        if not data.get("refresh"):
+            cookie_refresh = request.COOKIES.get("refresh_token")
+            if cookie_refresh:
+                data["refresh"] = cookie_refresh
+        serializer = TokenRefreshSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        response = Response(serializer.validated_data, status=status.HTTP_200_OK)
+        # Re-set (or rotate) refresh cookie if present in response data
+        new_refresh = serializer.validated_data.get("refresh")
+        if new_refresh:
+            _set_refresh_cookie(response, new_refresh)
+            # Hide refresh from body as we store it in cookie
+            if "access" in serializer.validated_data:
+                response.data = {"access": serializer.validated_data["access"]}
+        return response

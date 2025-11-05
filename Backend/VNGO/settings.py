@@ -63,8 +63,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -164,18 +164,13 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Cho phép các domain (origin) được gọi tới API (gửi request CORS).
-CORS_ALLOW_ORIGINS = [
+CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
 ]
 
-# For development - allow all origins (remove in production)
-# Note: Cannot use CORS_ALLOW_CREDENTIALS with CORS_ALLOW_ALL_ORIGINS
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-    CORS_ALLOW_CREDENTIALS = False
-else:
-    CORS_ALLOW_CREDENTIALS = True
+# We need credentials for cookie-based refresh
+CORS_ALLOW_CREDENTIALS = True
 
 # Expose headers
 CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
