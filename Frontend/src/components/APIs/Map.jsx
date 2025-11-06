@@ -164,21 +164,40 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     }, [searchQuery, hasSelected]);
 
 
-    const handleSelect = (place) => {
+    const handleSelect = async (place) => {
         const pos = [parseFloat(place.lat), parseFloat(place.lon)];
         setMarkerPosition(pos);
         setMarkerLabel(place.display_name);
         setSearchQuery(place.display_name);
         setSuggestions([]);
         setHasSelected(true);
-        setSelectedLocation(place);
+
+        // Fetch detailed address info using reverse geocoding
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${place.lat}&lon=${place.lon}&format=json&addressdetails=1&accept-language=vi`
+            );
+            const detailed = await res.json();
+            setSelectedLocation(detailed); // ✅ full data with address field
+        } catch (err) {
+            console.error("Reverse geocode failed:", err);
+            setSelectedLocation(place); // fallback
+        }
+
         setWikiVisible(true);
     };
 
+
     const handleAddToTour = async () => {
-        if (!onLocationAdd || !markerPosition || !markerLabel) return;
+        if (!onLocationAdd || !markerPosition || !markerLabel || !selectedLocation)
+            return;
 
         const [lat, lon] = markerPosition;
+        const address = selectedLocation.address || {};
+
+        const city_vi =
+            address.city || address.town || address.village || "Không rõ";
+        const province_vi = address.state || address.province || "Không rõ";
 
         // Reset UI instantly
         setMarkerPosition(null);
@@ -187,25 +206,38 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
         setHasSelected(false);
         setWikiVisible(false);
 
-        // Translate Vietnamese → English using Google Translate endpoint
-        let englishName = markerLabel;
-        try {
-            const res = await fetch(
-                `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=en&dt=t&q=${encodeURIComponent(markerLabel)}`
-            );
-            const data = await res.json();
-            // The translated text is in data[0][0][0]
-            englishName = data[0][0][0] || markerLabel;
-        } catch (err) {
-            console.error("Translation failed, using original name:", err);
-        }
+        // Translate Vietnamese → English using Google Translate API
+        const translate = async (text) => {
+            if (!text) return "";
+            try {
+                const res = await fetch(
+                    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=en&dt=t&q=${encodeURIComponent(
+                        text
+                    )}`
+                );
+                const data = await res.json();
+                return data?.[0]?.[0]?.[0] || text;
+            } catch {
+                return text;
+            }
+        };
 
-        // Add stop after translation
+        const [name_en, city_en, province_en] = await Promise.all([
+            translate(markerLabel.split(",")[0]),
+            translate(city_vi),
+            translate(province_vi),
+        ]);
+
+        // Send full place data back to parent (Tour Create)
         onLocationAdd({
-            name: markerLabel,    // Vietnamese
-            name_en: englishName, // English
+            name: markerLabel.split(",")[0],
+            name_en,
             lat,
             lon,
+            city: city_vi,
+            city_en,
+            province: province_vi,
+            province_en,
         });
     };
 
@@ -322,7 +354,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     );
 }
 
-export function TourRoute({ Stops = [] }) {
+export function TourRoute({Stops = []}) {
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [flyTo, setFlyTo] = useState(null);
 
@@ -341,7 +373,7 @@ export function TourRoute({ Stops = [] }) {
                 // B. Fixes the focus by running fitBounds *after* the map is visible
                 if (Stops.length > 0) {
                     const bounds = L.latLngBounds(Stops.map((s) => [s.lat, s.lon]));
-                    map.fitBounds(bounds, { padding: [30, 30] });
+                    map.fitBounds(bounds, {padding: [30, 30]});
                 }
             }, 100); // 100ms is usually enough
 
@@ -378,7 +410,7 @@ export function TourRoute({ Stops = [] }) {
                 <MapContainer
                     center={[Stops[0].lat, Stops[0].lon]}
                     zoom={13}
-                    style={{ width: "100%", height: "100%" }}
+                    style={{width: "100%", height: "100%"}}
                     className="rounded-lg"
 
                     // --- 5. Add whenCreated to get the map instance ---
@@ -393,10 +425,10 @@ export function TourRoute({ Stops = [] }) {
                     {/* <FitToStops Stops={Stops}/> */}
 
                     {/* Routing line */}
-                    <RoutingMachine waypoints={Stops} />
+                    <RoutingMachine waypoints={Stops}/>
 
                     {/* Fly to marker */}
-                    {flyTo && <FlyToLocation position={flyTo} />}
+                    {flyTo && <FlyToLocation position={flyTo}/>}
 
                     {/* ... (rest of your markers) ... */}
                     {Stops.map((stop, idx) => (
@@ -416,7 +448,7 @@ export function TourRoute({ Stops = [] }) {
 
             {/* Wiki Info Panel */}
             <div className="w-full max-h-64 overflow-auto border rounded-lg p-4 bg-white shadow-sm">
-                <WikiPanel location={selectedLocation} />
+                <WikiPanel location={selectedLocation}/>
             </div>
         </div>
     );
