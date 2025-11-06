@@ -164,28 +164,55 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     }, [searchQuery, hasSelected]);
 
 
-    const handleSelect = async (place) => {
+    const handleSelect = (place) => {
         const pos = [parseFloat(place.lat), parseFloat(place.lon)];
         setMarkerPosition(pos);
         setMarkerLabel(place.display_name);
         setSearchQuery(place.display_name);
         setSuggestions([]);
         setHasSelected(true);
-
-        // Fetch detailed address info using reverse geocoding
-        try {
-            const res = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?lat=${place.lat}&lon=${place.lon}&format=json&addressdetails=1&accept-language=vi`
-            );
-            const detailed = await res.json();
-            setSelectedLocation(detailed); // ✅ full data with address field
-        } catch (err) {
-            console.error("Reverse geocode failed:", err);
-            setSelectedLocation(place); // fallback
-        }
-
+        setSelectedLocation(place);
         setWikiVisible(true);
     };
+
+    function parseCityProvinceFromLabel(label) {
+        if (!label) return {city_vi: "Không rõ", province_vi: "Không rõ"};
+
+        const parts = label.split(",").map(p => p.trim());
+
+        let province_vi = "Không rõ";
+        let city_vi = "Không rõ";
+
+        // Scan from right to left for a postal code (3-6 digits)
+        let postalIndex = -1;
+        for (let i = parts.length - 1; i >= 0; i--) {
+            if (/^\d{3,6}$/.test(parts[i])) {
+                postalIndex = i;
+                break;
+            }
+        }
+
+        if (postalIndex >= 0) {
+            province_vi = parts[postalIndex - 1] || "Không rõ";
+            city_vi = parts[postalIndex - 2] || province_vi;
+
+            // Duplicate province to city if it contains "Thành phố"
+            if (province_vi.includes("Thành phố") && !city_vi.includes("Thành phố")) {
+                city_vi = province_vi;
+            }
+        } else {
+            // Fallback if no postal code
+            province_vi = parts[parts.length - 2] || "Không rõ";
+            city_vi = parts[parts.length - 3] || province_vi;
+
+            if (province_vi.includes("Thành phố")) {
+                city_vi = province_vi;
+            }
+        }
+
+        return {city_vi, province_vi};
+    }
+
 
 
     const handleAddToTour = async () => {
@@ -193,11 +220,9 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
             return;
 
         const [lat, lon] = markerPosition;
-        const address = selectedLocation.address || {};
 
-        const city_vi =
-            address.city || address.town || address.village || "Không rõ";
-        const province_vi = address.state || address.province || "Không rõ";
+        // Parse city/province/postal from markerLabel
+        const {city_vi, province_vi} = parseCityProvinceFromLabel(markerLabel);
 
         // Reset UI instantly
         setMarkerPosition(null);
@@ -206,7 +231,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
         setHasSelected(false);
         setWikiVisible(false);
 
-        // Translate Vietnamese → English using Google Translate API
+        // Translate Vietnamese → English
         const translate = async (text) => {
             if (!text) return "";
             try {
@@ -228,7 +253,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
             translate(province_vi),
         ]);
 
-        // Send full place data back to parent (Tour Create)
+        // Send parsed & translated data to parent
         onLocationAdd({
             name: markerLabel.split(",")[0],
             name_en,
