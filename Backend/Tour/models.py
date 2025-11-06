@@ -18,6 +18,10 @@ class Place(models.Model):
     lon = models.FloatField()
     name = models.CharField(max_length=100)
     name_en = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    city_en = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
+    province_en = models.CharField(max_length=100)
     def __str__(self):
         return self.name  # or name_en if you want
 

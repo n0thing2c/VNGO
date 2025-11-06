@@ -52,11 +52,24 @@ def tour_post(request):
             lon = p.get('lon')
             name = p.get('name', '')
             name_en = p.get('name_en', '')
+            city = p.get('city', '')
+            city_en = p.get('city_en', '')
+            province = p.get('province', '')
+            province_en = p.get('province_en', '')
 
             place_obj = Place.objects.filter(lat=lat, lon=lon, name=name).first()
             if not place_obj:
-                place_obj = Place.objects.create(name=name, lat=lat, lon=lon, name_en=name_en)
-            place_instances.append(place_obj)
+                place_obj = Place.objects.create(
+                    name=name,
+                    lat=lat,
+                    lon=lon,
+                    name_en=name_en,
+                    city=city,
+                    city_en=city_en,
+                    province=province,
+                    province_en=province_en
+                )
+                place_instances.append(place_obj)
         tour.places.set(place_instances)
 
         # --- Images ---
@@ -118,14 +131,44 @@ def tour_put(request, tour_id):
         lon = p.get('lon')
         name = p.get('name', '')
         name_en = p.get('name_en', '')
+        city = p.get('city', '')
+        city_en = p.get('city_en', '')
+        province = p.get('province', '')
+        province_en = p.get('province_en', '')
 
         place_obj = Place.objects.filter(lat=lat, lon=lon, name=name).first()
+
         if not place_obj:
-            place_obj = Place.objects.create(name=name, lat=lat, lon=lon, name_en=name_en)
+            # Create new place if not exist
+            place_obj = Place.objects.create(
+                name=name,
+                lat=lat,
+                lon=lon,
+                name_en=name_en,
+                city=city,
+                city_en=city_en,
+                province=province,
+                province_en=province_en,
+            )
         else:
-            # Update name_en if provided
+            # Update missing fields if provided
+            updated = False
             if name_en and not place_obj.name_en:
                 place_obj.name_en = name_en
+                updated = True
+            if city and not place_obj.city:
+                place_obj.city = city
+                updated = True
+            if city_en and not place_obj.city_en:
+                place_obj.city_en = city_en
+                updated = True
+            if province and not place_obj.province:
+                place_obj.province = province
+                updated = True
+            if province_en and not place_obj.province_en:
+                place_obj.province_en = province_en
+                updated = True
+            if updated:
                 place_obj.save()
 
         # Create TourPlace entry with order
@@ -192,10 +235,13 @@ def tour_put(request, tour_id):
             'lon': tp.place.lon,
             'name': tp.place.name,
             'name_en': tp.place.name_en,
+            'city': tp.place.city,
+            'city_en': tp.place.city_en,
+            'province': tp.place.province,
+            'province_en': tp.place.province_en,
             'order': tp.order
         } for tp in tour.tour_places.all()
     ]
-
     return Response({'tour': data}, status=200)
 
 

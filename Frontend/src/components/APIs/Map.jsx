@@ -175,10 +175,54 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
         setWikiVisible(true);
     };
 
+    function parseCityProvinceFromLabel(label) {
+        if (!label) return {city_vi: "Không rõ", province_vi: "Không rõ"};
+
+        const parts = label.split(",").map(p => p.trim());
+
+        let province_vi = "Không rõ";
+        let city_vi = "Không rõ";
+
+        // Scan from right to left for a postal code (3-6 digits)
+        let postalIndex = -1;
+        for (let i = parts.length - 1; i >= 0; i--) {
+            if (/^\d{3,6}$/.test(parts[i])) {
+                postalIndex = i;
+                break;
+            }
+        }
+
+        if (postalIndex >= 0) {
+            province_vi = parts[postalIndex - 1] || "Không rõ";
+            city_vi = parts[postalIndex - 2] || province_vi;
+
+            // Duplicate province to city if it contains "Thành phố"
+            if (province_vi.includes("Thành phố") && !city_vi.includes("Thành phố")) {
+                city_vi = province_vi;
+            }
+        } else {
+            // Fallback if no postal code
+            province_vi = parts[parts.length - 2] || "Không rõ";
+            city_vi = parts[parts.length - 3] || province_vi;
+
+            if (province_vi.includes("Thành phố")) {
+                city_vi = province_vi;
+            }
+        }
+
+        return {city_vi, province_vi};
+    }
+
+
+
     const handleAddToTour = async () => {
-        if (!onLocationAdd || !markerPosition || !markerLabel) return;
+        if (!onLocationAdd || !markerPosition || !markerLabel || !selectedLocation)
+            return;
 
         const [lat, lon] = markerPosition;
+
+        // Parse city/province/postal from markerLabel
+        const {city_vi, province_vi} = parseCityProvinceFromLabel(markerLabel);
 
         // Reset UI instantly
         setMarkerPosition(null);
@@ -187,25 +231,38 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
         setHasSelected(false);
         setWikiVisible(false);
 
-        // Translate Vietnamese → English using Google Translate endpoint
-        let englishName = markerLabel;
-        try {
-            const res = await fetch(
-                `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=en&dt=t&q=${encodeURIComponent(markerLabel)}`
-            );
-            const data = await res.json();
-            // The translated text is in data[0][0][0]
-            englishName = data[0][0][0] || markerLabel;
-        } catch (err) {
-            console.error("Translation failed, using original name:", err);
-        }
+        // Translate Vietnamese → English
+        const translate = async (text) => {
+            if (!text) return "";
+            try {
+                const res = await fetch(
+                    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=en&dt=t&q=${encodeURIComponent(
+                        text
+                    )}`
+                );
+                const data = await res.json();
+                return data?.[0]?.[0]?.[0] || text;
+            } catch {
+                return text;
+            }
+        };
 
-        // Add stop after translation
+        const [name_en, city_en, province_en] = await Promise.all([
+            translate(markerLabel.split(",")[0]),
+            translate(city_vi),
+            translate(province_vi),
+        ]);
+
+        // Send parsed & translated data to parent
         onLocationAdd({
-            name: markerLabel,    // Vietnamese
-            name_en: englishName, // English
+            name: markerLabel.split(",")[0],
+            name_en,
             lat,
             lon,
+            city: city_vi,
+            city_en,
+            province: province_vi,
+            province_en,
         });
     };
 
@@ -322,7 +379,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     );
 }
 
-export function TourRoute({ Stops = [] }) {
+export function TourRoute({Stops = []}) {
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [flyTo, setFlyTo] = useState(null);
 
@@ -341,7 +398,7 @@ export function TourRoute({ Stops = [] }) {
                 // B. Fixes the focus by running fitBounds *after* the map is visible
                 if (Stops.length > 0) {
                     const bounds = L.latLngBounds(Stops.map((s) => [s.lat, s.lon]));
-                    map.fitBounds(bounds, { padding: [30, 30] });
+                    map.fitBounds(bounds, {padding: [30, 30]});
                 }
             }, 100); // 100ms is usually enough
 
@@ -378,7 +435,7 @@ export function TourRoute({ Stops = [] }) {
                 <MapContainer
                     center={[Stops[0].lat, Stops[0].lon]}
                     zoom={13}
-                    style={{ width: "100%", height: "100%" }}
+                    style={{width: "100%", height: "100%"}}
                     className="rounded-lg"
 
                     // --- 5. Add whenCreated to get the map instance ---
@@ -393,10 +450,10 @@ export function TourRoute({ Stops = [] }) {
                     {/* <FitToStops Stops={Stops}/> */}
 
                     {/* Routing line */}
-                    <RoutingMachine waypoints={Stops} />
+                    <RoutingMachine waypoints={Stops}/>
 
                     {/* Fly to marker */}
-                    {flyTo && <FlyToLocation position={flyTo} />}
+                    {flyTo && <FlyToLocation position={flyTo}/>}
 
                     {/* ... (rest of your markers) ... */}
                     {Stops.map((stop, idx) => (
@@ -416,7 +473,7 @@ export function TourRoute({ Stops = [] }) {
 
             {/* Wiki Info Panel */}
             <div className="w-full max-h-64 overflow-auto border rounded-lg p-4 bg-white shadow-sm">
-                <WikiPanel location={selectedLocation} />
+                <WikiPanel location={selectedLocation}/>
             </div>
         </div>
     );
