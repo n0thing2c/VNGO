@@ -41,6 +41,9 @@ import Footer from "@/components/layout/Footer.jsx";
 import Map from "../components/APIs/Map.jsx";
 import {Links, Link} from "react-router-dom";
 
+// API
+import { API_ENDPOINTS } from "@/constant";
+
 export default function TourEdit() {
     const {tour_id} = useParams();
     const [loading, setLoading] = useState(true);
@@ -184,7 +187,7 @@ export default function TourEdit() {
         async function fetchTour() {
             try {
                 const res = await fetch(
-                    `http://127.0.0.1:8000/api/tour/get/${tour_id}/`
+                    API_ENDPOINTS.GET_TOUR(tour_id)
                 );
                 const data = await res.json();
                 if (!res.ok) throw new Error("Tour not found");
@@ -305,7 +308,7 @@ export default function TourEdit() {
 
             // Send PUT request
             const res = await fetch(
-                `http://127.0.0.1:8000/api/tour/put/${tour_id}/`,
+                API_ENDPOINTS.UPDATE_TOUR(tour_id),
                 {
                     method: "PUT",
                     body: formData,

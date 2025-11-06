@@ -67,6 +67,9 @@ import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import {Badge} from "@/components/ui/badge.jsx";
 
+// API
+import { API_ENDPOINTS } from "@/constant";
+
 export default function TourPost() {
     const {tour_id} = useParams();
     const [tourData, setTourData] = useState(null);
@@ -81,7 +84,7 @@ export default function TourPost() {
     useEffect(() => {
         async function fetchTour() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/tour/get/${tour_id}/`);
+                const res = await fetch(API_ENDPOINTS.GET_TOUR(tour_id));
                 const data = await res.json();
                 setTourData(data);
             } catch (err) {

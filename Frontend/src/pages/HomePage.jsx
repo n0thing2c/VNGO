@@ -8,8 +8,8 @@ import InfoSection from "@/components/HomePage/InfoSection";
 import ReviewsSection from "@/components/HomePage/ReviewsSection";
 import BecomeGuideSection from "@/components/HomePage/BecomeGuideSection"
 
-// Base URL của API
-const API_URL = 'http://127.0.0.1:8000/api';
+// API
+import { API_ENDPOINTS } from "@/constant";
 
 // Mock data for demo
 const destinations = [
@@ -65,7 +65,7 @@ export default function HomePage() {
     //   .catch(err => console.error("Error fetching locations:", err));
 
     // 2. Fetch destinations cho mục "Popular dests"
-    fetch(`${API_URL}/places/popular/`)
+    fetch(API_ENDPOINTS.GET_POPULAR_DESTINATIONS)
       .then(res => res.json())
       .then(data => {
         // API get_all_tours đã format data (image, location, title...)

@@ -18,8 +18,20 @@ from django.contrib import admin
 from django.urls import path
 from django.urls import include
 from django.conf import settings
+from django.http import JsonResponse
+
+def api_root(request):
+    return JsonResponse({
+        'message': 'Welcome to VNGO API',
+        'version': '1.0',
+        'endpoints': {
+            'admin': '/admin/',
+            'api': '/api/'
+        }
+    })
 from django.conf.urls.static import static
 urlpatterns = [
+    path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
     path('api/', include('Tour.urls')),
 ]

@@ -44,6 +44,9 @@ import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import HeroSection from "@/components/HomePage/HeroSection.jsx";
 
+// API
+import { API_ENDPOINTS } from "@/constant";
+
 export default function TourCreate() {
     //Tour name
     const [tourname, settourname] = useState("");
@@ -170,7 +173,7 @@ export default function TourCreate() {
             // Get JWT token from localStorage
             //const token = localStorage.getItem("access");
 
-            const res = await fetch("http://127.0.0.1:8000/api/tour/post/", {
+            const res = await fetch(API_ENDPOINTS.CREATE_TOUR, {
                 method: "POST",
                 // headers: {
                 //     Authorization: `Bearer ${token}`, // ✅ add auth header

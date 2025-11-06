@@ -20,8 +20,8 @@ import {Label} from "../components/ui/label";
 import {Link} from "react-router-dom";
 import {useSearchParams} from 'react-router-dom'; // read params
 
-// Base URL của API
-const API_URL = 'http://127.0.0.1:8000/api'; // <-- THAY BẰNG URL CỦA BẠN
+// API
+import { API_ENDPOINTS } from "@/constant";
 
 // Bỏ mockTours đi
 
@@ -82,13 +82,13 @@ const ToursShowPage = () => {
     // --- Fetch Data ban đầu (Locations & Filter Options) ---
     useEffect(() => {
         // 1. Fetch locations
-        fetch(`${API_URL}/places/all/`)
+        fetch(API_ENDPOINTS.GET_ALL_PLACES)
             .then(res => res.json())
             .then(data => setLocations(data.map(p => ({id: p.id, name: p.name, name_en: p.name_en}))))
             .catch(err => console.error("Error fetching locations:", err));
 
         // 2. Fetch filter options
-        fetch(`${API_URL}/filter-options/`)
+        fetch(API_ENDPOINTS.GET_FILTER_OPTIONS)
             .then(res => res.json())
             .then(data => setFilterOptions(data))
             .catch(err => console.error("Error fetching filter options:", err));
@@ -105,10 +105,10 @@ const ToursShowPage = () => {
 
         // Filter nâng cao từ state 'filters'
         if (filters.price[0] > 0) params.append('price_min', filters.price[0]);
-        if (filters.price[1] < 50000000) params.append('price_max', filters.price[1]);
+        if (filters.price[1] < 10000000) params.append('price_max', filters.price[1]); // Sửa 50tr thành 10tr cho khớp defaultFilters
 
-        if (filters.duration[0] > 0) params.append('duration_min', filters.duration[0]);
-        if (filters.duration[1] < 14) params.append('duration_max', filters.duration[1]);
+        if (filters.duration[0] > 1) params.append('duration_min', filters.duration[0]);
+        if (filters.duration[1] < 24) params.append('duration_max', filters.duration[1]);
 
         if (filters.groupSize > 1) params.append('group_size', filters.groupSize);
         if (filters.rating > 0) params.append('rating_min', filters.rating);
@@ -118,7 +118,7 @@ const ToursShowPage = () => {
 
         // Gọi API
         console.log("Fetching with params:", params.toString());
-        fetch(`${API_URL}/tour/get/all/?${params.toString()}`)
+        fetch(`${API_ENDPOINTS.GET_ALL_TOURS}?${params.toString()}`)
             .then(res => res.json())
             .then(data => {
                 setTours(data);
@@ -356,7 +356,7 @@ const ToursShowPage = () => {
                     <p className="text-gray-600">
                         {isLoading
                             ? "Searching..."
-                            : `${tours.length} tous found`
+                            : `${tours.length} tours found`
                         }
                     </p>
                 </div>

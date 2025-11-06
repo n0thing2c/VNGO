@@ -2,7 +2,8 @@ import {useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {MapPin} from 'lucide-react';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+// API
+import { API_ENDPOINTS } from "@/constant";
 
 export default function GlobalSearchBar() {
     const [location, setLocation] = useState("");
@@ -14,7 +15,7 @@ export default function GlobalSearchBar() {
 
     // Fetch destinations
     useEffect(() => {
-        fetch(`${API_URL}/places/all/`)
+        fetch(API_ENDPOINTS.GET_ALL_PLACES)
             .then(res => res.json())
             .then(data => {
                 setDestinations(data.map(p => ({name_en: p.name_en, name: p.name})));
@@ -26,8 +27,10 @@ export default function GlobalSearchBar() {
         const value = e.target.value;
         setLocation(value);
 
-        // Only suggest if at least one word is typed
-        if (value.trim().split(' ').filter(Boolean).length >= 2) {
+        // // Only suggest if at least one word is typed
+        // if (value.trim().split(' ').filter(Boolean).length >= 2) {
+        // Chỉ cần gõ 1 ký tự là bắt đầu tìm
+        if (value.trim().length > 0) {
             const filtered = [];
             const lowerValue = value.toLowerCase();
             const seen = new Set();
