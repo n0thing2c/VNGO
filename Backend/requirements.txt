@@ -8,3 +8,8 @@ pytz
 sqlparse
 psycopg2-binary
 python-dotenv
+channels
+daphne
+redis
+channels-redis
+django-jazzmin

@@ -3,6 +3,7 @@ import SignUpPage from "./pages/SignUpPage";
 import LogInPage from "./pages/LogInPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import InfoPage from "./pages/PersonalInfoPage";
+import ChatPage from "./pages/ChatPage";
 import { Toaster } from "sonner";
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/personal-info" element={<InfoPage />} />
 
           {/* protected routes*/}
+          <Route path="/chat" element={<ChatPage />} />
         </Routes>
       </BrowserRouter>
     </>
