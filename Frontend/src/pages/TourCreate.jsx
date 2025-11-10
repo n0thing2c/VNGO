@@ -49,7 +49,7 @@ export default function TourCreate() {
     const [tourname, settourname] = useState("");
     //People
     const min_people = 1;
-    const max_people = 15;
+    const max_people = 10;
     const [minpeople, setminpeople] = useState("");
     const [maxpeople, setmaxpeople] = useState("");
     //Transportation
@@ -77,7 +77,44 @@ export default function TourCreate() {
     const [imageData, setImageData] = useState({images: [], thumbnailIdx: 0});
     //Tags
     const [selectedTags, setSelectedTags] = useState([]);
-    const TagList = ["Nature", "History", "Festivals", "Nightlife", "Shopping", "Sightseeing", "Adventure", "Trekking", "Beach", "Food Tour", "Motorbike Trip"];
+    const TagList = [
+        "Nature",
+        "Culture",
+        "History",
+        "Adventure",
+        "Relaxation",
+        "Food & Drink",
+        "Nightlife",
+        "Beach",
+        "City Life",
+        "Trekking",
+        "Local Experience",
+        "Sightseeing",
+        "Shopping",
+        "Photography",
+        "Water Sports",
+        "Countryside",
+        "Recreational",
+    ];
+    const TOUR_TAG_VARIANTS = {
+        "Nature": "brightgreen",
+        "Beach": "sand",
+        "Trekking": "aqua",
+        "Culture": "bluelavender",
+        "History": "mustard",
+        "Local Experience": "mint",
+        "Sightseeing": "teal",
+        "Adventure": "destructive",
+        "Food & Drink": "coral",
+        "Nightlife": "violet",
+        "City Life": "orange",
+        "Shopping": "pink",
+        "Photography": "default",
+        "Relaxation": "lime",
+        "Water Sports": "sky",
+        "Countryside": "olive",
+        "Recreational": "peach",
+    };
 
     //Price
     const [price, setprice] = useState("");
@@ -200,9 +237,9 @@ export default function TourCreate() {
 
     return (
         <div className="items-center">
-    <Header/>
-  <div
-    className="
+            <Header/>
+            <div
+                className="
       flex flex-col-reverse gap-6 md:flex-row justify-center items-start
       mt-40 mb-40
       scale-100
@@ -211,269 +248,271 @@ export default function TourCreate() {
       3xl:scale-[1.4]
       transition-transform duration-300 origin-top
     "
-  >
-    {/* LEFT CARD (MAP + TOUR SCHEDULE) */}
-    <Card className="w-full max-w-xl xl:max-w-2xl 2xl:max-w-3xl">
-      <CardHeader>
-        <CardTitle>
-          <h1 className="text-center text-xl xl:text-2xl 2xl:text-3xl font-bold p-5">
-            ADD TOUR PLACES HERE
-          </h1>
-        </CardTitle>
-      </CardHeader>
-      <FieldSeparator />
-      <CardContent className="flex flex-col gap-6 xl:gap-8">
-        <div>
-          <Map
-            onLocationAdd={handleAddStop}
-            className="w-full h-60 md:h-90 xl:h-110"
-            addedStops={addedStops}
-          />
-        </div>
-        <FieldSeparator />
-        <div className="space-y-4 w-full">
-          <div className="rounded-2xl border-[#23C491] border-2 p-4">
-            <FieldLabel className="text-base xl:text-lg text-[#23C491] font-bold">
-              Tour Schedule
-            </FieldLabel>
-          </div>
+            >
+                {/* LEFT CARD (MAP + TOUR SCHEDULE) */}
+                <Card className="w-full max-w-xl xl:max-w-2xl 2xl:max-w-3xl">
+                    <CardHeader>
+                        <CardTitle>
+                            <h1 className="text-center text-xl xl:text-2xl 2xl:text-3xl font-bold p-5">
+                                ADD TOUR PLACES HERE
+                            </h1>
+                        </CardTitle>
+                    </CardHeader>
+                    <FieldSeparator/>
+                    <CardContent className="flex flex-col gap-6 xl:gap-8">
+                        <div>
+                            <Map
+                                onLocationAdd={handleAddStop}
+                                className="w-full h-60 md:h-90 xl:h-110"
+                                addedStops={addedStops}
+                            />
+                        </div>
+                        <FieldSeparator/>
+                        <div className="space-y-4 w-full">
+                            <div className="rounded-2xl border-[#23C491] border-2 p-4">
+                                <FieldLabel className="text-base xl:text-lg text-[#23C491] font-bold">
+                                    Tour Schedule
+                                </FieldLabel>
+                            </div>
 
-          <DragList
-            items={addedStops}
-            onRemoveItem={handleRemoveStop}
-            onReorder={setAddedStops}
-            onRenameItem={handleRenameStop}
-          />
-        </div>
-      </CardContent>
-    </Card>
+                            <DragList
+                                items={addedStops}
+                                onRemoveItem={handleRemoveStop}
+                                onReorder={setAddedStops}
+                                onRenameItem={handleRenameStop}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
 
-    {/* RIGHT CARD (TOUR CREATION) */}
-    <Card className="w-full max-w-md xl:max-w-lg 2xl:max-w-xl">
-      <CardHeader>
-        <CardTitle>
-          <h1 className="text-center text-xl xl:text-2xl 2xl:text-3xl font-bold p-5">
-            CREATE YOUR TOUR POST
-          </h1>
-        </CardTitle>
-      </CardHeader>
-      <FieldSeparator />
-      <CardContent className="flex flex-col gap-6 xl:gap-8 text-base xl:text-lg">
-        {/* ROW 1: TOUR NAME */}
-        <div className="flex justify-between gap-5">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <IdCard /> Tour name:
-          </FieldLabel>
-          <Input
-            className="flex-1 py-2 xl:py-3 text-base xl:text-lg"
-            placeholder="My tour"
-            value={tourname}
-            onChange={(e) => settourname(e.target.value)}
-          />
-        </div>
+                {/* RIGHT CARD (TOUR CREATION) */}
+                <Card className="w-full max-w-md xl:max-w-lg 2xl:max-w-xl">
+                    <CardHeader>
+                        <CardTitle>
+                            <h1 className="text-center text-xl xl:text-2xl 2xl:text-3xl font-bold p-5">
+                                CREATE YOUR TOUR POST
+                            </h1>
+                        </CardTitle>
+                    </CardHeader>
+                    <FieldSeparator/>
+                    <CardContent className="flex flex-col gap-6 xl:gap-8 text-base xl:text-lg">
+                        {/* ROW 1: TOUR NAME */}
+                        <div className="flex justify-between gap-5">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <IdCard/> Tour name:
+                            </FieldLabel>
+                            <Input
+                                className="flex-1 py-2 xl:py-3 text-base xl:text-lg"
+                                placeholder="My tour"
+                                value={tourname}
+                                onChange={(e) => settourname(e.target.value)}
+                            />
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* ROW 2: DURATION */}
-        <div className="flex justify-between gap-5">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <Clock /> Duration:
-          </FieldLabel>
-          <div className="flex justify-end gap-3 items-center">
-            <FieldLabel className="hidden md:inline">Up to</FieldLabel>
-            <Input
-              className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
-              type="number"
-              value={hour}
-              min={min_hour}
-              max={max_hour}
-              onChange={(e) => sethour(e.target.value)}
-              onBlur={(e) => {
-                let value = parseInt(e.target.value, 10);
-                if (isNaN(value)) value = min_hour;
-                if (value > max_hour) value = max_hour;
-                if (value < min_hour) value = min_hour;
-                sethour(value);
-              }}
-            />
-            <FieldLabel>hour(s)</FieldLabel>
-          </div>
-        </div>
+                        {/* ROW 2: DURATION */}
+                        <div className="flex justify-between gap-5">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <Clock/> Duration:
+                            </FieldLabel>
+                            <div className="flex justify-end gap-3 items-center">
+                                <FieldLabel className="hidden md:inline">Up to</FieldLabel>
+                                <Input
+                                    className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
+                                    type="number"
+                                    value={hour}
+                                    min={min_hour}
+                                    max={max_hour}
+                                    onChange={(e) => sethour(e.target.value)}
+                                    onBlur={(e) => {
+                                        let value = parseInt(e.target.value, 10);
+                                        if (isNaN(value)) value = min_hour;
+                                        if (value > max_hour) value = max_hour;
+                                        if (value < min_hour) value = min_hour;
+                                        sethour(value);
+                                    }}
+                                />
+                                <FieldLabel>hour(s)</FieldLabel>
+                            </div>
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* ROW 3: GROUP SIZE */}
-        <div className="flex justify-between gap-5">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <UserPlus /> Group size:
-          </FieldLabel>
-          <div className="flex justify-end gap-3 items-center">
-            <Input
-              className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
-              type="number"
-              value={minpeople}
-              min={min_people}
-              max={max_people}
-              onChange={(e) => setminpeople(e.target.value)}
-              onBlur={(e) => {
-                let minVal = parseInt(minpeople, 10);
-                let maxVal = parseInt(maxpeople, 10);
-                if (isNaN(minVal) || minVal < min_people) minVal = min_people;
-                if (minVal > max_people) minVal = max_people;
-                if (isNaN(maxVal) || maxVal < minVal) maxVal = minVal;
-                setminpeople(minVal);
-                setmaxpeople(maxVal);
-              }}
-            />
-            <FieldLabel> - </FieldLabel>
-            <Input
-              className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
-              type="number"
-              value={maxpeople}
-              min={min_people}
-              max={max_people}
-              onChange={(e) => setmaxpeople(e.target.value)}
-              onBlur={(e) => {
-                let minVal = parseInt(minpeople, 10);
-                let maxVal = parseInt(maxpeople, 10);
-                if (isNaN(maxVal) || maxVal > max_people) maxVal = max_people;
-                if (maxVal < min_people) maxVal = min_people;
-                if (isNaN(minVal) || minVal > maxVal) minVal = maxVal;
-                setminpeople(minVal);
-                setmaxpeople(maxVal);
-              }}
-            />
-            <FieldLabel>people</FieldLabel>
-          </div>
-        </div>
+                        {/* ROW 3: GROUP SIZE */}
+                        <div className="flex justify-between gap-5">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <UserPlus/> Group size:
+                            </FieldLabel>
+                            <div className="flex justify-end gap-3 items-center">
+                                <Input
+                                    className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
+                                    type="number"
+                                    value={minpeople}
+                                    min={min_people}
+                                    max={max_people}
+                                    onChange={(e) => setminpeople(e.target.value)}
+                                    onBlur={(e) => {
+                                        let minVal = parseInt(minpeople, 10);
+                                        let maxVal = parseInt(maxpeople, 10);
+                                        if (isNaN(minVal) || minVal < min_people) minVal = min_people;
+                                        if (minVal > max_people) minVal = max_people;
+                                        if (isNaN(maxVal) || maxVal < minVal) maxVal = minVal;
+                                        setminpeople(minVal);
+                                        setmaxpeople(maxVal);
+                                    }}
+                                />
+                                <FieldLabel> - </FieldLabel>
+                                <Input
+                                    className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
+                                    type="number"
+                                    value={maxpeople}
+                                    min={min_people}
+                                    max={max_people}
+                                    onChange={(e) => setmaxpeople(e.target.value)}
+                                    onBlur={(e) => {
+                                        let minVal = parseInt(minpeople, 10);
+                                        let maxVal = parseInt(maxpeople, 10);
+                                        if (isNaN(maxVal) || maxVal > max_people) maxVal = max_people;
+                                        if (maxVal < min_people) maxVal = min_people;
+                                        if (isNaN(minVal) || minVal > maxVal) minVal = maxVal;
+                                        setminpeople(minVal);
+                                        setmaxpeople(maxVal);
+                                    }}
+                                />
+                                <FieldLabel>people</FieldLabel>
+                            </div>
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* TRANSPORTATION */}
-        <div className="flex justify-between gap-5">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            {getTransportationIcon(transportation)} Transportation:
-          </FieldLabel>
-          <Select value={transportation} onValueChange={setTransportation}>
-            <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
-              <SelectValue placeholder="Select transportation" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="private">Private Transportation</SelectItem>
-              <SelectItem value="public">Public Transportation</SelectItem>
-              <SelectItem value="walk">Walking</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+                        {/* TRANSPORTATION */}
+                        <div className="flex justify-between gap-5">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                {getTransportationIcon(transportation)} Transportation:
+                            </FieldLabel>
+                            <Select value={transportation} onValueChange={setTransportation}>
+                                <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
+                                    <SelectValue placeholder="Select transportation"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="private">Private Transportation</SelectItem>
+                                    <SelectItem value="public">Public Transportation</SelectItem>
+                                    <SelectItem value="walk">Walking</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* MEETING PLACE */}
-        <div className="flex justify-between gap-5">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <Pin /> Meeting place:
-          </FieldLabel>
-          <Select value={meeting} onValueChange={setMeeting}>
-            <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
-              <SelectValue placeholder="Select meeting location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mine">My Place</SelectItem>
-              <SelectItem value="yours">Your Place</SelectItem>
-              <SelectItem value="first">First Stop</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+                        {/* MEETING PLACE */}
+                        <div className="flex justify-between gap-5">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <Pin/> Meeting place:
+                            </FieldLabel>
+                            <Select value={meeting} onValueChange={setMeeting}>
+                                <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
+                                    <SelectValue placeholder="Select meeting location"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="mine">My Place</SelectItem>
+                                    <SelectItem value="yours">Your Place</SelectItem>
+                                    <SelectItem value="first">First Stop</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* PRICE */}
-        <div className="flex justify-between gap-3 items-center">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <CircleDollarSignIcon /> Price:
-          </FieldLabel>
-          <VNDInput
-            className="flex-1 text-[#23C491] text-xl xl:text-2xl font-semibold"
-            value={price}
-            max={1e7}
-            onChange={setprice}
-          />
-          <FieldLabel className="text-sm xl:text-base">(per person)</FieldLabel>
-        </div>
+                        {/* PRICE */}
+                        <div className="flex justify-between gap-3 items-center">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <CircleDollarSignIcon/> Price:
+                            </FieldLabel>
+                            <VNDInput
+                                className="flex-1 text-[#23C491] text-xl xl:text-2xl font-semibold"
+                                value={price}
+                                max={1e7}
+                                onChange={setprice}
+                            />
+                            <FieldLabel className="text-sm xl:text-base">(per person)</FieldLabel>
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* PHOTOS */}
-        <div className="flex justify-between gap-5">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <PictureInPicture2Icon /> Photos:
-          </FieldLabel>
-          <ImageUploader
-            images={imageData.images}
-            onImagesChange={(imgs, thumbIdx) =>
-              setImageData({ images: imgs, thumbnailIdx: thumbIdx })
-            }
-          />
-        </div>
+                        {/* PHOTOS */}
+                        <div className="flex justify-between gap-5">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <PictureInPicture2Icon/> Photos:
+                            </FieldLabel>
+                            <ImageUploader
+                                images={imageData.images}
+                                allowThumbnail={true}
+                                onImagesChange={(imgs, thumbIdx) =>
+                                    setImageData({images: imgs, thumbnailIdx: thumbIdx})
+                                }
+                            />
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* DESCRIPTION */}
-        <div className="flex flex-col w-full gap-2 relative">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <Edit2 /> Description:
-          </FieldLabel>
-          <Textarea
-            placeholder="Enter a short description of your tour"
-            value={
-              description.length > 500
-                ? description
-                : description
-            }
-            onChange={(e) =>
-              setdescription(e.target.value.length > 500 ? description : e.target.value)
-            }
-            rows={5}
-            className="resize-none py-2 xl:py-3 text-base xl:text-lg"
-          />
-          <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
+                        {/* DESCRIPTION */}
+                        <div className="flex flex-col w-full gap-2 relative">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <Edit2/> Description:
+                            </FieldLabel>
+                            <Textarea
+                                placeholder="Enter a short description of your tour"
+                                value={
+                                    description.length > 500
+                                        ? description
+                                        : description
+                                }
+                                onChange={(e) =>
+                                    setdescription(e.target.value.length > 500 ? description : e.target.value)
+                                }
+                                rows={5}
+                                className="resize-none py-2 xl:py-3 text-base xl:text-lg"
+                            />
+                            <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
             {description.length}/500
           </span>
-        </div>
+                        </div>
 
-        <FieldSeparator />
+                        <FieldSeparator/>
 
-        {/* TAGS */}
-        <div className="flex justify-between gap-5">
-          <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-            <Tag /> Tags:
-          </FieldLabel>
-          <TagSelector
-            tags={TagList}
-            selectedTags={selectedTags}
-            setSelectedTags={setSelectedTags}
-          />
-        </div>
-      </CardContent>
+                        {/* TAGS */}
+                        <div className="flex justify-between gap-5">
+                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                                <Tag/> Tags:
+                            </FieldLabel>
+                            <TagSelector
+                                tags={TagList}
+                                selectedTags={selectedTags}
+                                setSelectedTags={setSelectedTags}
+                                tagVariants={TOUR_TAG_VARIANTS}
+                            />
+                        </div>
+                    </CardContent>
 
-      <FieldSeparator />
+                    <FieldSeparator/>
 
-      <CardFooter className="flex justify-end">
-        <button
-          className="
+                    <CardFooter className="flex justify-end">
+                        <button
+                            className="
             bg-[#23C491] text-white px-4 py-2
             rounded-2xl font-semibold text-base xl:text-lg
             hover:bg-white hover:border-1 hover:border-black hover:text-black
           "
-          onClick={handleSubmit}
-        >
-          Create Tour
-        </button>
-      </CardFooter>
-    </Card>
-  </div>
-  <Footer/>
-</div>
+                            onClick={handleSubmit}
+                        >
+                            Create Tour
+                        </button>
+                    </CardFooter>
+                </Card>
+            </div>
+            <Footer/>
+        </div>
 
 
     )

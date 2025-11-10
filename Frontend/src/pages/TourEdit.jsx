@@ -70,17 +70,42 @@ export default function TourEdit() {
 
     const TagList = [
         "Nature",
+        "Culture",
         "History",
-        "Festivals",
-        "Nightlife",
-        "Shopping",
-        "Sightseeing",
         "Adventure",
-        "Trekking",
+        "Relaxation",
+        "Food & Drink",
+        "Nightlife",
         "Beach",
-        "Food Tour",
-        "Motorbike Trip",
+        "City Life",
+        "Trekking",
+        "Local Experience",
+        "Sightseeing",
+        "Shopping",
+        "Photography",
+        "Water Sports",
+        "Countryside",
+        "Recreational",
     ];
+    const TOUR_TAG_VARIANTS = {
+        "Nature": "brightgreen",
+        "Beach": "sand",
+        "Trekking": "aqua",
+        "Culture": "bluelavender",
+        "History": "mustard",
+        "Local Experience": "mint",
+        "Sightseeing": "teal",
+        "Adventure": "destructive",
+        "Food & Drink": "coral",
+        "Nightlife": "violet",
+        "City Life": "orange",
+        "Shopping": "pink",
+        "Photography": "default",
+        "Relaxation": "lime",
+        "Water Sports": "sky",
+        "Countryside": "olive",
+        "Recreational": "peach",
+    };
 
     const getTransportationIcon = (value) => {
         switch (value) {
@@ -549,6 +574,7 @@ export default function TourEdit() {
                             {/* ✅ STEP 4: Point to the new handler */}
                             <ImageUploader
                                 images={imageData.images}
+                                allowThumbnail={true}
                                 thumbnailIdx={imageData.thumbnailIdx}
                                 onImagesChange={handleImageChange}
                             />
@@ -574,8 +600,8 @@ export default function TourEdit() {
                                 className="resize-none py-2 xl:py-3 text-base xl:text-lg"
                             />
                             <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
-                {description.length}/500
-              </span>
+                                {description.length}/500
+                              </span>
                         </div>
 
                         <FieldSeparator/>
@@ -589,6 +615,7 @@ export default function TourEdit() {
                                 tags={TagList}
                                 selectedTags={selectedTags}
                                 setSelectedTags={setSelectedTags}
+                                tagVariants={TOUR_TAG_VARIANTS}
                             />
                         </div>
                     </CardContent>

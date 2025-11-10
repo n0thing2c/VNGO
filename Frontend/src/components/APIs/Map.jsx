@@ -465,7 +465,7 @@ export function TourRoute({Stops = []}) {
                                 click: () => handleMarkerClick(stop),
                             }}
                         >
-                            <Popup>{stop.name}</Popup>
+                            <Popup>{stop.name_en}</Popup>
                         </Marker>
                     ))}
                 </MapContainer>

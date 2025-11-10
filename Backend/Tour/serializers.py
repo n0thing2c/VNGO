@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tour, Place, TourPlace ,TourImage
+from .models import Tour, Place, TourPlace ,TourImage, TourRating, TourRatingImage
 from django.conf import settings
 class PlaceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,11 +30,32 @@ class TourPlaceSerializer(serializers.ModelSerializer):
         model = TourPlace
         fields = ['place', 'order']
 
+class TourRatingSerializer(serializers.ModelSerializer):
+    images = TourImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = TourRating
+        fields = ['user', 'rating', 'review', 'review_tags', 'images', 'created_at']
+
+
 class TourSerializer(serializers.ModelSerializer):
     tour_places = TourPlaceSerializer(many=True, read_only=True)
     tour_images = TourImageSerializer(many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+    recent_reviews = serializers.SerializerMethodField()
 
     class Meta:
         model = Tour
         fields = '__all__'
+
+    def get_average_rating(self, obj):
+        return obj.average_rating()
+
+    def get_rating_count(self, obj):
+        return obj.rating_count  # <- this is needed
+
+    def get_recent_reviews(self, obj):
+        reviews = obj.ratings.all()[:5]
+        return TourRatingSerializer(reviews, many=True, context=self.context).data
 

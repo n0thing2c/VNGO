@@ -32,6 +32,9 @@ import {
     CircleDollarSignIcon,
     Edit2,
     RefreshCw,
+    Trophy,
+    Award, UserStar, Star, Clover,
+    Plus, MessageSquarePlus, Flame, ArrowRightLeft
 } from "lucide-react"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -66,6 +69,10 @@ import {useParams} from "react-router-dom";
 import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import {Badge} from "@/components/ui/badge.jsx";
+import {AchievementBadge} from "@/components/tour_achievements.jsx";
+import TourRate from "@/components/tour_rate.jsx";
+import {cn} from "@/lib/utils";
+import TourRating from "@/components/tour_rating.jsx";
 
 export default function TourPost() {
     const {tour_id} = useParams();
@@ -75,8 +82,37 @@ export default function TourPost() {
     const [groupsize, setgroupsize] = useState(null);
     const [date, setdate] = useState(null);
     const [time, settime] = useState(null);
-    const [myRating, setMyRating] = useState(0);
+    const [ratings, setRatings] = useState([]);
     const [hasRated, setHasRated] = useState(false);
+    const [achievements, setAchievements] = useState([]);
+    const TOUR_TAG_VARIANTS = {
+        "Nature": "brightgreen",
+        "Beach": "sand",
+        "Trekking": "aqua",
+        "Culture": "bluelavender",
+        "History": "mustard",
+        "Local Experience": "mint",
+        "Sightseeing": "teal",
+        "Adventure": "destructive",
+        "Food & Drink": "coral",
+        "Nightlife": "violet",
+        "City Life": "orange",
+        "Shopping": "pink",
+        "Photography": "default",
+        "Relaxation": "lime",
+        "Water Sports": "sky",
+        "Countryside": "olive",
+        "Recreational": "peach",
+    };
+    const ACHIEVEMENT_VARIANTS = {
+        "Popular": "popular",
+        "Highly Rated": "highlyrated",
+        "Multilingual": "multilingual",
+        "Budget": "budget",
+        "Luxury": "luxury",
+        "Most Reviewed": "reviews",
+        // Add more if needed
+    };
     // Fetch from backend (unchanged)
     useEffect(() => {
         async function fetchTour() {
@@ -94,11 +130,48 @@ export default function TourPost() {
         if (tour_id) fetchTour();
     }, [tour_id]);
 
+    useEffect(() => {
+        async function fetchAchievements() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/tour/achievements/${tour_id}/`);
+                const data = await res.json();
+                setAchievements([
+                    "Popular",
+                    "Highly Rated",
+                    "Multilingual",
+                    //"Budget",
+                    //"Luxury",
+                    "Most Reviewed",
+                ]);
+            } catch (err) {
+                console.error("Failed to fetch achievements:", err);
+            }
+        }
+
+        if (tour_id) fetchAchievements();
+    }, [tour_id]);
+
+    useEffect(() => {
+        async function fetchRatings() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/tour/ratings/${tour_id}/`);
+                const data = await res.json();
+                if (data.success) {
+                    setRatings(data.ratings);
+                }
+            } catch (err) {
+                console.error("Failed to fetch ratings:", err);
+            }
+        }
+
+        if (tour_id) fetchRatings();
+    }, [tour_id]);
+
     if (loading) return <p className="text-center p-4">Loading tour...</p>;
     if (!tourData) return <p className="text-center p-4">Tour not found.</p>;
 
     const {tour} = tourData;
-    const averageRating = tour.rates > 0 ? tour.rating / tour.rates : 0;
+    const averageRating = tour.rating_count > 0 ? (tour.rating_total / tour.rating_count).toFixed(1) : 0;
 
     return (
         <div className="items-center">
@@ -113,39 +186,72 @@ export default function TourPost() {
 
                     {/*row 1*/}
                     <div>
-                        <FieldLabel className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-5">
-                            {tour.name}
-                        </FieldLabel>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4 sm:gap-2">
+                            {/* Tour Name */}
+                            <FieldLabel className="text-4xl sm:text-5xl lg:text-6xl font-bold break-words text-[#020765]">
+                                {tour.name}
+                            </FieldLabel>
 
+                            {/* Achievements */}
+                            <div className="flex flex-wrap gap-2 items-center -mb-4">
+                                {achievements.map((ach) => (
+                                    <AchievementBadge
+                                        key={ach}
+                                        variant={ACHIEVEMENT_VARIANTS[ach]}
+                                        label={ach}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                         {tour.tags.map((tag, index) =>
                             (
                                 <span key={index} className="mr-2">
                                     <Badge
-                                        variant="brightgreen"
+                                        variant={TOUR_TAG_VARIANTS[tag] || "default"}
                                         className="cursor-pointer"
                                     >
-                                        {tag}
-                                      </Badge>
+                                      {tag}
+                                    </Badge>
                                 </span>
                             ))}
                     </div>
 
 
                     {/*row 2*/}
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        {/* Star Rating */}
-                        <Rating value={averageRating} readOnly>
+                    <div className="flex items-center gap-2 sm:gap-3 mb-5">
+                        {/* Star / Custom Icon Rating */}
+                        <div className="flex gap-1">
                             {Array.from({length: 5}).map((_, index) => (
-                                <RatingButton
-                                    key={index}
-                                    className={`text-yellow-500 text-3xl sm:text-4xl`}
-                                />
+                                // If tour is highly rated, show emerald UserStar, otherwise yellow stars
+                                achievements.includes("Highly Rated") ? (
+                                    <Star
+                                        key={index}
+                                        size={25}
+                                        fill={index < Math.round(averageRating) ? "#FFD700" : "#DDD"} // gold filled vs empty
+                                        stroke={index < Math.round(averageRating) ? "#FFD700" : "#DDD"} // outline color
+                                        style={{
+                                            filter:
+                                                index < Math.round(averageRating)
+                                                    ? "drop-shadow(0 0 4px rgba(255,215,0,0.5)) drop-shadow(0 0 6px rgba(255,215,0,0.3))"
+                                                    : "none",
+                                        }}
+                                    />
+
+                                ) : (
+                                    <Star
+                                        key={index}
+                                        size={25}
+                                        fill={index < Math.round(averageRating) ? "#FFD700" : "#DDD"} // gold filled vs gray empty
+                                        stroke={index < Math.round(averageRating) ? "#FFD700" : "#DDD"} // optional: gold outline
+                                    />
+                                )
                             ))}
-                        </Rating>
+                        </div>
+
                         {/* Number of votes */}
                         <span className="text-gray-600 text-base sm:text-lg">
-                     {averageRating} ({tour.rates} votes)
-                    </span>
+                            {averageRating} ({tour.rating_count} votes)
+                          </span>
                     </div>
 
                     {/*row 3*/}
@@ -160,26 +266,29 @@ export default function TourPost() {
 
                     {/*row 5*/}
                     <div className="flex flex-col gap-4 mt-4">
-                        <FieldLabel className="text-xl sm:text-2xl lg:text-3xl">
+                        <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">
                             Tour Schedule
                         </FieldLabel>
-                        <TourStopsTimeline stops={tour.tour_places?.map(tp => tp.place) || []} />
+                        <TourStopsTimeline stops={tour.tour_places?.map(tp => tp.place) || []}/>
 
                         <Dialog>
+                            <DialogTitle/>
                             <DialogTrigger asChild>
                                 <Button variant="outline"
                                         className="w-full sm:w-auto rounded-2xl text-white bg-black text-xl">View Tour
                                     Route</Button>
                             </DialogTrigger>
                             <DialogContent className="w-full sm:max-w-4xl">
-                                <TourRoute Stops={tour.tour_places?.map(tp => tp.place) || []} />
+                                <DialogDescription/>
+                                <TourRoute Stops={tour.tour_places?.map(tp => tp.place) || []}/>
+
                             </DialogContent>
                         </Dialog>
                     </div>
 
                     {/*row 6*/}
                     <div className="flex flex-col gap-2">
-                        <FieldLabel className="text-xl sm:text-2xl lg:text-3xl">
+                        <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">
                             Description
                         </FieldLabel>
                         <FieldLabel className="text-base text-neutral-700 whitespace-pre-line">
@@ -193,23 +302,43 @@ export default function TourPost() {
                 {/* Booking Form Card */}
                 {/* CHANGED: Spans 2 cols and 2 rows on desktop. Sticky. */}
                 <Card
-                    className="flex flex-col w-full max-w-lg mx-auto lg:w-lg md:max-w-none md:col-span-2 md:row-span-2 md:sticky top-23 rounded-4xl h-fit">
+                    className="flex flex-col bg-neutral-50 w-full max-w-lg mx-auto lg:w-lg md:max-w-none md:col-span-2 md:row-span-2 md:sticky top-23 rounded-4xl h-fit">
                     <CardHeader>
                         <CardTitle className="flex flex-col items-center justify-center gap-2 p-3">
-                            <div className="flex items-center">
-                                <FieldLabel className="text-3xl sm:text-4xl">
+                            <div className="flex items-center justify-between">
+
+                                {/* 2. THE STATUS BADGE: Added as a new, separate element. */}
+                                {/* This uses the same soft, clean style as your tour tags. */}
+                                {achievements.includes("Budget") && (
+                                    <span
+                                        className="rounded-full bg-rose-100 px-1 py-0.5 text-[10px] font-medium text-rose-700 -mt-6 -mr-1">
+                                        Budget
+                                    </span>
+                                )}
+                                {achievements.includes("Luxury") && (
+                                    <span
+                                        className="ml-3 rounded-full bg-sky-100 px-1 py-0.5 text-[10px] font-medium text-[#60a5fa] -mt-6 -mr-1">
+                                        Luxury
+                                    </span>
+                                )}
+                                {/* 1. THE PRICE: No longer has conditional colors. */}
+                                <FieldLabel
+                                    className={cn(
+                                        // Kept your font-normal preference
+                                        "text-3xl sm:text-4xl font-medium",
+                                    )}
+                                >
                                     {currency === "VND"
                                         ? `${(tour.price * (groupsize || tour.min_people)).toLocaleString()} VND`
                                         : `$${((tour.price * (groupsize || tour.min_people)) / 25000).toFixed(2)} USD`}
                                 </FieldLabel>
-
+                                {/* 3. THE BUTTON: Unchanged, but now spaced correctly. */}
                                 <Button
                                     size="icon"
-                                    variant="ghost"
                                     onClick={() => setCurrency(currency === "VND" ? "USD" : "VND")}
-                                    className="transition-transform hover:rotate-12 hover:scale-110"
+                                    className="-mb-1 scale-80 transition-transform border-0 bg-white rounded-full hover:scale-85 hover:bg-neutral-200"
                                 >
-                                    <RefreshCw/>
+                                    <ArrowRightLeft color="black" className="w-full h-full"/>
                                 </Button>
                             </div>
                             <FieldLabel className="text-neutral-500 font-light text-base">includes all fees</FieldLabel>
@@ -268,7 +397,7 @@ export default function TourPost() {
 
                         <div className="flex flex-col gap-3 p-3">
                             <div
-                                className="flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
+                                className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
                                 <FieldLabel className="text-lg sm:text-xl text-black">
                                     Group Size:
                                 </FieldLabel>
@@ -295,12 +424,10 @@ export default function TourPost() {
                                     }}
                                     className="w-30 sm:w-45 text-center rounded-3xl text-lg sm:text-xl font-bold text-[#23C491]"
                                 />
-
-
                             </div>
 
                             <div
-                                className="flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
+                                className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
                                 <FieldLabel className="text-lg sm:text-xl text-black">
                                     Tour Date:
                                 </FieldLabel>
@@ -312,7 +439,7 @@ export default function TourPost() {
                             </div>
 
                             <div
-                                className="flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
+                                className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
                                 <FieldLabel className="text-lg sm:text-xl text-black">
                                     Start Time:
                                 </FieldLabel>
@@ -325,9 +452,33 @@ export default function TourPost() {
                             </div>
                         </div>
                         <br/>
-                        <div className="p-3">
+                        <div className="relative w-full">
+
+                            {/* 2. Conditionally render the "Popular" badge */}
+                            {achievements.includes("Popular") && (
+                                <span
+                                    className="absolute -top-2.5 left-4 z-10 rounded-full bg-yellow-400 px-3 py-0.5 text-xs font-semibold text-black shadow">
+                                    <div className="flex justify-center gap-1 items-center">
+                                        <Flame fill="black" stroke="black" className="w-3 h-3"/>
+                                        Popular
+                                    </div>
+
+                                </span>
+                            )}
+
+                            {/* 3. The Button is NOW ALWAYS GREEN.
+                                   We removed the conditional styles from the button itself. */}
                             <Button
-                                className="bg-[#068F64] text-white text-xl sm:text-2xl rounded-4xl w-full h-fit hover:bg-[#23C491] hover:text-yellow-50 py-3">
+                                className={cn(
+                                    "text-xl sm:text-2xl rounded-4xl w-full h-fit py-3 transition-all duration-300",
+
+                                    // This is now the *only* style, based on your DEFAULT state
+                                    "bg-[#068F64] text-white hover:bg-[#23C491] hover:text-yellow-50 active:scale-[0.98] active:brightness-95",
+
+                                    // Add a little top padding if it's popular, to make room for the badge
+                                    achievements.includes("Popular") && "pt-4"
+                                )}
+                            >
                                 REQUEST BOOKING
                             </Button>
                         </div>
@@ -335,65 +486,50 @@ export default function TourPost() {
                 </Card>
 
                 {/* Reviews Section */}
+                {/* Reviews Section */}
                 <div className="flex flex-col gap-4 md:col-span-3">
                     <FieldSeparator className="p-10"/>
+                    <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">Reviews</FieldLabel>
 
-                    <FieldLabel className="text-xl sm:text-2xl lg:text-3xl">
-                        Reviews
-                    </FieldLabel>
                     {/* Section 2: Your Rating (Interactive) */}
-                    <div className="flex justify-start gap-10">
-                        <div>
-                            <FieldLabel className="text-base text-neutral-600">
-                                Leave Your Rating
-                            </FieldLabel>
+                    <div className="mt-6">
+                        {!hasRated ? (
+                            <Dialog>
+                                <DialogTitle/>
+                                <DialogTrigger asChild>
+                                    <Button
+                                        className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
+                                        Write your review here
+                                    </Button>
+                                </DialogTrigger>
 
-                            {/* CHANGED: Added readOnly={hasRated} */}
-                            <Rating value={myRating} onValueChange={setMyRating} readOnly={hasRated}>
-                                {Array.from({length: 5}).map((_, index) => (
-                                    <RatingButton
-                                        key={index}
-                                        className={`text-yellow-500 text-3xl sm:text-4xl ${hasRated ? 'cursor-default' : 'cursor-pointer hover:scale-110 transition-transform'}`}
-                                    />
-                                ))}
-                            </Rating>
-                        </div>
-                        {!hasRated && (
-                            <Button
-                                onClick={() => {
-                                    // --- This is the new logic ---
-
-                                    // 1. Calculate the new totals
-                                    const newTotalRating = tourData.tour.rating + myRating;
-                                    const newTotalRates = tourData.tour.rates + 1;
-
-                                    // 2. Update the local tourData state
-                                    // This causes the component to re-render and recalculate averageRating
-                                    setTourData(prevTourData => ({
-                                        ...prevTourData, // Copy all existing data (like images)
-                                        tour: {
-                                            ...prevTourData.tour, // Copy all existing tour data
-                                            rating: newTotalRating, // Overwrite with new total rating
-                                            rates: newTotalRates     // Overwrite with new total rates
-                                        }
-                                    }));
-
-                                    // 3. (Optional but recommended) Send this 'myRating' to your backend API
-                                    // fetch(`http://127.0.0.1:8000/api/tourpost/${tourId}/rate/`, { ... })
-
-                                    // 4. Lock the rating section
-                                    setHasRated(true);
-
-                                    // 5. Show toast
-                                    toast.success(`You submitted a ${myRating} star rating!`);
-                                }}
-                                className="sm:w-auto mt-2 bg-[#068F64] hover:bg-white hover:text-black hover:border-black hover:border-1 text-white rounded-2xl"
-                            >
-                                Submit Rating
-                            </Button>
+                                <DialogContent className="w-full sm:max-w-2xl shadow-xl rounded-xl">
+                                    <DialogDescription/>
+                                    <TourRate tourId={tourData.tour.id} onRatingSubmit={(newRating) => {
+                                        // Refresh ratings after a new one is submitted
+                                        setRatings((prev) => [newRating, ...prev]);
+                                        setHasRated(true);
+                                    }}/>
+                                </DialogContent>
+                            </Dialog>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <span className="text-yellow-500 text-2xl sm:text-3xl">{/* stars */}</span>
+                                <span className="text-sm sm:text-base text-neutral-600">
+                                  You have already rated this tour.
+                                </span>
+                            </div>
                         )}
                     </div>
+
+                    {/* Display fetched ratings */}
+                    {ratings.length > 0 ? (
+                        <TourRating ratings={ratings}/>
+                    ) : (
+                        <p className="text-gray-500 mt-4">No reviews yet. Be the first to review!</p>
+                    )}
                 </div>
+
             </div>
             <Footer/>
         </div>

@@ -7,8 +7,8 @@ from .serializers import TourSerializer
 from django.conf import settings
 import json
 from rest_framework import status
-from .models import Tour, Place, TourImage, Transportation, TourPlace
-from .serializers import TourSerializer, PlaceSerializer
+from .models import Tour, Place, TourImage, Transportation, TourPlace, TourRating, TourRatingImage
+from .serializers import TourSerializer, PlaceSerializer, TourRatingSerializer, TourImageSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from django.db.models import Count, Q # for get get_popular_tours()
@@ -260,7 +260,126 @@ def tour_get(request, tour_id):
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=400)
 
+# --- GET ACHIEVEMENT ---
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def tour_achievements(request, tour_id):
+    try:
+        tour = Tour.objects.get(pk=tour_id)
+    except Tour.DoesNotExist:
+        return Response({"error": "Tour not found"}, status=404)
 
+    achievements = []
+
+    # Popular: 50+ bookings
+    # booking_count = Booking.objects.filter(tour=tour).count()
+    # if booking_count >= 50:
+    #     achievements.append("Popular")
+
+    # Highly Rated: 4+ stars
+    # avg_rating = tour.ratings / max(tour.rates, 1)  # Avoid division by zero
+    # if avg_rating >= 4:
+    #     achievements.append("Highly Rated")
+
+    # Multilingual: Tour guide knows 3+ languages
+    # guide = TourGuide.objects.filter(tour=tour).first()
+    # if guide and len(guide.languages) >= 3:
+    #     achievements.append("Multilingual")
+
+    # Budget: price < 300k
+    if tour.price < 300_000:
+        achievements.append("Budget")
+
+    # Luxury: price > 1,000,000
+    if tour.price > 1_000_000:
+        achievements.append("Luxury")
+
+    # Reliable: 80%+ confirmed bookings
+    # confirmed_count = ConfirmedBooking.objects.filter(tour=tour).count()
+    # if booking_count and confirmed_count / booking_count >= 0.8:
+    #     achievements.append("Reliable")
+
+    return Response({"achievements": achievements})
+# --- POST RATING ---
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@parser_classes([MultiPartParser, FormParser])
+def tour_rate(request, tour_id):
+    """
+    Create a rating for a tour, with optional images.
+    Expected form-data:
+      - user: string
+      - rating: integer (1-5)
+      - review: string (optional)
+      - review_tags: JSON array string (optional)
+      - images: one or multiple image files
+    """
+    try:
+        tour = Tour.objects.get(id=tour_id)
+    except Tour.DoesNotExist:
+        return Response({"success": False, "error": "Tour not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    user = request.data.get('user', 'anonymous')
+
+    if TourRating.objects.filter(user=user, tour=tour).exists():
+        return Response({"success": False, "error": "User has already rated this tour"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Parse review_tags if it's a string
+    review_tags = request.data.get('review_tags', '[]')
+    import json
+    try:
+        review_tags = json.loads(review_tags) if isinstance(review_tags, str) else review_tags
+    except json.JSONDecodeError:
+        review_tags = []
+
+    serializer = TourRatingSerializer(data={
+        'rating': request.data.get('rating'),
+        'review': request.data.get('review', ''),
+        'review_tags': review_tags,
+    })
+
+    if serializer.is_valid():
+        rating_instance = serializer.save(tour=tour, user=user)
+
+        # Save images if provided
+        images = request.FILES.getlist('images')
+        for img in images:
+            TourRatingImage.objects.create(rating=rating_instance, image=img)
+
+        # Update tour aggregate rating
+        tour.add_rating(serializer.validated_data['rating'])
+
+        return Response({"success": True, "rating": serializer.data}, status=status.HTTP_201_CREATED)
+
+    return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+#--- Get All Tour's Ratings ---
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def tour_get_ratings(request, tour_id):
+    """
+    Retrieve all ratings for a given tour.
+    Returns rating info and associated images.
+    """
+    try:
+        tour = Tour.objects.get(id=tour_id)
+    except Tour.DoesNotExist:
+        return Response({"success": False, "error": "Tour not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    ratings = TourRating.objects.filter(tour=tour).order_by('-created_at')  # newest first
+    serialized_ratings = []
+
+    for rating in ratings:
+        serializer = TourRatingSerializer(rating)
+        rating_data = serializer.data
+
+        # Include images for this rating
+        images = TourRatingImage.objects.filter(rating=rating)
+        rating_data['images'] = [
+            request.build_absolute_uri(img.image.url) for img in images
+        ]
+        serialized_ratings.append(rating_data)
+
+    return Response({"success": True, "ratings": serialized_ratings}, status=status.HTTP_200_OK)
 # ------------------------
 # All Places
 # ------------------------
@@ -393,8 +512,8 @@ def get_all_tours(request):
                 'id': tour.id,
                 'title': tour.name,
                 'price': tour.price,
-                'rating': tour.rating,
-                'reviews': tour.rates,
+                'rating': tour.average_rating(),
+                'reviews': tour.rating_count,
                 'duration': tour.duration,
                 'groupSize': f"{tour.min_people}-{tour.max_people} people",
                 'transportation': tour.transportation,

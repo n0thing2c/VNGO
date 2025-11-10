@@ -53,8 +53,23 @@ class Tour(models.Model):
     )
     tags = JSONField(default=list, blank=True)
     description = models.TextField(max_length=500, blank=True)
-    rating = models.IntegerField(default=0)
-    rates = models.IntegerField(default=0)
+    rating_total = models.PositiveIntegerField(default=0, help_text="Sum of all ratings")
+    rating_count = models.PositiveIntegerField(default=0, help_text="Number of ratings received")
+
+    def average_rating(self):
+        """Return average rating, or 0 if no ratings"""
+        if self.rating_count > 0:
+            return self.rating_total / self.rating_count
+        return 0
+
+    def add_rating(self, value: int):
+        """Add a new rating to the tour"""
+        self.rating_total += value
+        self.rating_count += 1
+        self.save()
+
+    def __str__(self):
+        return self.name
 
 class TourImage(models.Model):
     id = models.AutoField(primary_key=True)
@@ -62,3 +77,36 @@ class TourImage(models.Model):
     image = models.ImageField(upload_to='tour_images/', null=True, blank=True)
     isthumbnail = models.BooleanField(default=False)
 
+class TourRating(models.Model):
+    # user = models.ForeignKey(
+    #     settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tour_ratings'
+    # )
+    user = models.CharField(max_length=100, default="test_user")
+    tour = models.ForeignKey(
+        Tour, on_delete=models.CASCADE, related_name='ratings'
+    )
+    rating = models.PositiveSmallIntegerField()  # 1 to 5 stars
+    review = models.TextField(max_length=1000, blank=True, null=True)
+    review_tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="JSON array of tags describing this review, e.g., ['Family-friendly', 'Adventure']"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'tour')  # user can only review a tour once
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.tour} ({self.rating}⭐)"
+
+# Optional: TourRatingImage model to store multiple images per review
+class TourRatingImage(models.Model):
+    rating = models.ForeignKey(
+        TourRating, on_delete=models.CASCADE, related_name='images'
+    )
+    image = models.ImageField(upload_to='tour_rating_images/')
+    def __str__(self):
+        return f"Image for {self.rating}"
