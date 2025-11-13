@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-cefi=#blfv5ztftncdl1b8smfm6#!!tw^aqth_)&b+ccszvve5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Cấu hình Rest framework và Simple JWT
 REST_FRAMEWORK = {
@@ -57,8 +57,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
     "VNGO",
+    "Authentication",
     "Tour",
+    "Profiles",
 ]
 
 MIDDLEWARE = [
@@ -70,8 +74,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
 ]
+
+# Disable CSRF for API endpoints in development
+if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_HTTPONLY = False
 
 ROOT_URLCONF = "VNGO.urls"
 
@@ -103,6 +111,19 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = "Authentication.User"
+
+FRONTEND_BASE_URL = "http://localhost:5173"
+
+# SMTP config
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "noreply@vngo.com"
+EMAIL_HOST_PASSWORD = "yourpassword"
+DEFAULT_FROM_EMAIL = "noreply@vngo.com"
+EMAIL_VERIFICATION_EXPIRY = 10
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -146,18 +167,88 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Cho phép các domain (origin) được gọi tới API (gửi request CORS).
-# CORS_ALLOW_ORIGINS = [
-#     "http://localhost:8000",
-#     "http://localhost:5173",
-# ]
+ CORS_ALLOWED_ORIGINS = [
+     "http://localhost:5173",
+     "http://localhost:3000",
+ ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://localhost:5173$",
     r"^http://127.0.0.1:5173$",
     r"^http://127.0.0.1:5174$",
 ]
 
-# Cho phép gửi kèm thông tin xác thực trong request cross-origin
+# We need credentials for cookie-based refresh
 CORS_ALLOW_CREDENTIALS = True
+
+# Expose headers
+CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
+
+# Preflight cache duration
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Cho phép tất cả các headers
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Cho phép các methods
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Disable CSRF for API endpoints (since we're using JWT)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
+
+# Expose headers
+CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
+
+# Preflight cache duration
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Cho phép tất cả các headers
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Cho phép các methods
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Disable CSRF for API endpoints (since we're using JWT)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
