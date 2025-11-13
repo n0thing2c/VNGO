@@ -40,8 +40,10 @@ import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import Map from "../components/APIs/Map.jsx";
 import {Links, Link} from "react-router-dom";
+import {useAuthStore} from "@/stores/useAuthStore.js";
 
 export default function TourEdit() {
+    const accessToken = useAuthStore((state) => state.accessToken);
     const {tour_id} = useParams();
     const [loading, setLoading] = useState(true);
     const [tourData, setTourData] = useState(null);
@@ -327,15 +329,18 @@ export default function TourEdit() {
             formData.append("thumbnail_data", JSON.stringify(thumbnailData));
 
             // --- END OF NEW LOGIC ---
-
+            if (!accessToken) {
+                toast.error("You must be logged in to create a tour!");
+                return;
+            }
             // Send PUT request
-            const res = await fetch(
-                `http://127.0.0.1:8000/api/tour/put/${tour_id}/`,
-                {
-                    method: "PUT",
-                    body: formData,
-                }
-            );
+            const res = await fetch(`http://127.0.0.1:8000/api/tour/put/${tour_id}/`, {
+                method: "PUT",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${accessToken}`, // <-- send token
+                },
+            });
 
             const data = await res.json();
 
@@ -360,7 +365,6 @@ export default function TourEdit() {
 
     return (
         <div className="items-center">
-            <Header/>
             <div
                 className="
           flex flex-col-reverse gap-6 md:flex-row justify-center items-start
@@ -646,7 +650,6 @@ export default function TourEdit() {
                     </CardFooter>
                 </Card>
             </div>
-            <Footer/>
         </div>
     );
 }

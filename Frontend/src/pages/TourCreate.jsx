@@ -43,8 +43,10 @@ import {toast} from "sonner";
 import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import HeroSection from "@/components/HomePage/HeroSection.jsx";
+import {useAuthStore} from "@/stores/useAuthStore.js";
 
 export default function TourCreate() {
+    const accessToken = useAuthStore((state) => state.accessToken);
     //Tour name
     const [tourname, settourname] = useState("");
     //People
@@ -204,14 +206,17 @@ export default function TourCreate() {
             });
             formData.append("thumbnail_idx", imageData.thumbnailIdx ?? 0);
 
-            // Get JWT token from localStorage
-            //const token = localStorage.getItem("access");
+            // ✅ Get JWT token from localStorage
+            if (!accessToken) {
+                toast.error("You must be logged in to create a tour!");
+                return;
+            }
 
             const res = await fetch("http://127.0.0.1:8000/api/tour/post/", {
                 method: "POST",
-                // headers: {
-                //     Authorization: `Bearer ${token}`, // ✅ add auth header
-                // },
+                headers: {
+                    Authorization: `Bearer ${accessToken}`, // use Zustand token
+                },
                 body: formData,
             });
 
@@ -237,7 +242,6 @@ export default function TourCreate() {
 
     return (
         <div className="items-center">
-            <Header/>
             <div
                 className="
       flex flex-col-reverse gap-6 md:flex-row justify-center items-start
@@ -511,7 +515,6 @@ export default function TourCreate() {
                     </CardFooter>
                 </Card>
             </div>
-            <Footer/>
         </div>
 
 

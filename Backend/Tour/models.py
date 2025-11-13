@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import JSONField
-
+from Profiles.models import Guide, Tourist
 class Transportation(models.TextChoices):
     PUBLIC = 'public', 'Public Transportation'
     PRIVATE = 'private', 'Private Transportation'
@@ -51,6 +51,12 @@ class Tour(models.Model):
         through='TourPlace',
         through_fields=('tour', 'place'),
     )
+    guide = models.ForeignKey(
+        Guide,
+        on_delete=models.CASCADE,
+        related_name='tours',
+        null=True,
+    )
     tags = JSONField(default=list, blank=True)
     description = models.TextField(max_length=500, blank=True)
     rating_total = models.PositiveIntegerField(default=0, help_text="Sum of all ratings")
@@ -78,10 +84,12 @@ class TourImage(models.Model):
     isthumbnail = models.BooleanField(default=False)
 
 class TourRating(models.Model):
-    # user = models.ForeignKey(
-    #     settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tour_ratings'
-    # )
-    user = models.CharField(max_length=100, default="test_user")
+    tourist = models.ForeignKey(
+        Tourist,
+        on_delete=models.CASCADE,
+        related_name='tour_ratings',
+        null = True,
+    )
     tour = models.ForeignKey(
         Tour, on_delete=models.CASCADE, related_name='ratings'
     )
@@ -96,11 +104,11 @@ class TourRating(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('user', 'tour')  # user can only review a tour once
+        unique_together = ('tourist', 'tour')  # user can only review a tour once
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user} - {self.tour} ({self.rating}⭐)"
+        return f"{self.tourist} - {self.tour} ({self.rating}⭐)"
 
 # Optional: TourRatingImage model to store multiple images per review
 class TourRatingImage(models.Model):

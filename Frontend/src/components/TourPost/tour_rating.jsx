@@ -1,9 +1,9 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Card, CardContent } from "@/components/ui/card.jsx";
+import { Field, FieldLabel } from "@/components/ui/field.jsx";
 import { Star } from "lucide-react";
 import AlbumPhotoFrame from "@/components/albumframes.jsx";
-import { Badge } from "@/components/ui/badge"; // import your Badge component
+import { Badge } from "@/components/ui/badge.jsx"; // import your Badge component
 
 const TOUR_RATING_TAG_VARIANTS = {
   // Positive Tags

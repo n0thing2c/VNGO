@@ -2,9 +2,9 @@
 
 import React, {useState} from "react";
 import axios from "axios";
-import ImageUploader from "./ImageUploader";
+import ImageUploader from "../imageuploader.jsx";
 import {Rating, RatingButton} from "@/components/ui/shadcn-io/rating/index.jsx";
-import {Button} from "@/components/ui/button";
+import {Button} from "@/components/ui/button.jsx";
 import {Textarea} from "@/components/ui/textarea.jsx";
 import TagSelector from "@/components/tagsselector.jsx";
 

@@ -32,10 +32,21 @@ class TourPlaceSerializer(serializers.ModelSerializer):
 
 class TourRatingSerializer(serializers.ModelSerializer):
     images = TourImageSerializer(many=True, read_only=True)
+    tourist = serializers.SerializerMethodField()
 
     class Meta:
         model = TourRating
-        fields = ['user', 'rating', 'review', 'review_tags', 'images', 'created_at']
+        fields = ['tourist', 'rating', 'review', 'review_tags', 'images', 'created_at']
+
+    def get_tourist(self, obj):
+        if obj.tourist:
+            return {
+                "id": obj.tourist.pk,
+                "username": obj.tourist.user.username,
+                "email": obj.tourist.user.email,
+            }
+        return None
+
 
 
 class TourSerializer(serializers.ModelSerializer):
@@ -44,6 +55,7 @@ class TourSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
     recent_reviews = serializers.SerializerMethodField()
+    guide = serializers.SerializerMethodField()  # nested guide
 
     class Meta:
         model = Tour
@@ -53,9 +65,22 @@ class TourSerializer(serializers.ModelSerializer):
         return obj.average_rating()
 
     def get_rating_count(self, obj):
-        return obj.rating_count  # <- this is needed
+        return obj.rating_count
 
     def get_recent_reviews(self, obj):
         reviews = obj.ratings.all()[:5]
         return TourRatingSerializer(reviews, many=True, context=self.context).data
+
+    def get_guide(self, obj):
+        guide = obj.guide
+        if guide:
+            return {
+                "id": guide.pk,
+                "username": guide.user.username,
+                "email": guide.user.email,
+                "rating": guide.rating,
+                "languages": guide.languages,
+            }
+        return None
+
 

@@ -1,14 +1,14 @@
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils.js";
+import { Button } from "@/components/ui/button.jsx";
+import { Card, CardContent } from "@/components/ui/card.jsx";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
+} from "@/components/ui/field.jsx";
 import { toast } from "sonner";
-import { authService } from "@/services/authService";
+import { authService } from "@/services/authService.js";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 

@@ -22,7 +22,7 @@ class TourRatingImageInline(admin.TabularInline):
 class TourRatingInline(admin.TabularInline):
     model = TourRating
     extra = 1
-    readonly_fields = ("user", "rating", "review", "review_tags", "created_at")
+    readonly_fields = ("tourist", "rating", "review", "review_tags", "created_at")
     inlines = [TourRatingImageInline]  # optional if you want images nested (Django doesn't support nested inlines by default)
 
 @admin.register(Tour)
@@ -43,7 +43,7 @@ class PlaceAdmin(admin.ModelAdmin):
 
 @admin.register(TourRating)
 class TourRatingAdmin(admin.ModelAdmin):
-    list_display = ("user", "tour", "rating", "created_at")
+    list_display = ("tourist", "tour", "rating", "created_at")
     list_filter = ("rating",)
-    search_fields = ("user", "tour__name")
+    search_fields = ("tourist__user__username", "tour__name")
     inlines = [TourRatingImageInline]

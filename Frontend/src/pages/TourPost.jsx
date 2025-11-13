@@ -62,17 +62,17 @@ import {
 } from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button.jsx";
 import {Rating, RatingButton} from "@/components/ui/shadcn-io/rating/index.jsx";
-import TourCarousel from "@/components/tourcarousel.jsx";
+import TourCarousel from "@/components/TourPost/tourcarousel.jsx";
 import {Calendar22} from "@/components/ui/datepicker.jsx";
-import TourStopsTimeline from "@/components/stoptimeline.jsx";
+import TourStopsTimeline from "@/components/TourPost/stoptimeline.jsx";
 import {useParams} from "react-router-dom";
 import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import {Badge} from "@/components/ui/badge.jsx";
-import {AchievementBadge} from "@/components/tour_achievements.jsx";
-import TourRate from "@/components/tour_rate.jsx";
+import {AchievementBadge} from "@/components/TourPost/tour_achievements.jsx";
+import TourRate from "@/components/TourPost/tour_rate.jsx";
 import {cn} from "@/lib/utils";
-import TourRating from "@/components/tour_rating.jsx";
+import TourRating from "@/components/TourPost/tour_rating.jsx";
 
 export default function TourPost() {
     const {tour_id} = useParams();
@@ -175,7 +175,6 @@ export default function TourPost() {
 
     return (
         <div className="items-center">
-            <Header/>
             {/* CHANGED: Switched to CSS Grid for layout control */}
             <div
                 className="grid grid-cols-1 md:grid-cols-5 gap-y-6 md:gap-x-8 lg:gap-x-25 max-w-7xl mx-auto py-6 px-4 mt-40 mb-40">
@@ -529,9 +528,7 @@ export default function TourPost() {
                         <p className="text-gray-500 mt-4">No reviews yet. Be the first to review!</p>
                     )}
                 </div>
-
             </div>
-            <Footer/>
         </div>
     );
 }

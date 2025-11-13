@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "VNGO",
     "Authentication",
+    "Tour",
+    "Profiles",
 ]
 
 MIDDLEWARE = [
@@ -206,3 +208,12 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
 ]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:5173$",
+    r"^http://127.0.0.1:5173$",
+    r"^http://127.0.0.1:5174$",
+]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

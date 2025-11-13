@@ -1,6 +1,6 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { LoginForm } from "@/components/login-form";
+import Header from "@/components/Login&SignUp/Header.jsx";
+import Footer from "@/components/Login&SignUp/Footer.jsx";
+import { LoginForm } from "@/components/Login&SignUp/login-form.jsx";
 
 const LogInPage = () => {
   return (

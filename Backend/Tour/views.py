@@ -26,12 +26,14 @@ def tour_post(request):
         if 'images' in data:
             data.pop('images')
 
+        # Assign the guide automatically
+        guide_profile = getattr(request.user, 'guide_profile', None)
+
         # Save simple fields
         serializer = TourSerializer(data=data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
-        tour = serializer.save()
-
+        tour = serializer.save(guide=guide_profile)
         # --- Tags ---
         tags = data.get('tags')
         if tags:
@@ -69,7 +71,7 @@ def tour_post(request):
                     province=province,
                     province_en=province_en
                 )
-                place_instances.append(place_obj)
+            place_instances.append(place_obj)
         tour.places.set(place_instances)
 
         # --- Images ---
@@ -96,6 +98,9 @@ def tour_put(request, tour_id):
         tour = Tour.objects.get(pk=tour_id)
     except Tour.DoesNotExist:
         return Response({'success': False, 'error': 'Tour not found'}, status=404)
+
+    if not hasattr(request.user, 'guide_profile'):
+        return Response({'success': False, 'error': 'Permission denied'}, status=403)
 
     data = request.data.copy()
     images = request.FILES.getlist('images')
