@@ -1,9 +1,7 @@
 import {useState, useEffect} from 'react';
-import {Search, MapPin, Calendar, Users, Star, Filter, Heart, X, Sparkles, RefreshCw} from 'lucide-react';
-import {Card, CardContent} from '../components/ui/card';
+import {Search, Filter, X, RefreshCw} from 'lucide-react';
 import {Button} from '../components/ui/button';
 import {Input} from '../components/ui/input';
-import {Badge} from '../components/ui/badge';
 import {
     Dialog,
     DialogContent,
@@ -11,23 +9,24 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogFooter,
-    DialogClose,
 } from "../components/ui/dialog";
 import {Slider} from "../components/ui/slider";
 import {RadioGroup, RadioGroupItem} from "../components/ui/radio-group";
 import {Checkbox} from "../components/ui/checkbox";
 import {Label} from "../components/ui/label";
-import {Link} from "react-router-dom";
 import {useSearchParams} from 'react-router-dom'; // read params
+import TourCard from '@/components/TourCard';
+import { getProvinceImage } from '@/utils/provinceImages';
 
 // API
 import { API_ENDPOINTS } from "@/constant";
 
-// Bỏ mockTours đi
-
 const ToursShowPage = () => {
     // LẤY searchParams TỪ URL
     const [searchParams] = useSearchParams();
+    // Đọc các param từ URL khi component mount
+    const searchTermFromUrl = searchParams.get('search') || '';
+    const locationFromUrl = searchParams.get('location') || '';
 
     // --- State cho Data từ API ---
     const [tours, setTours] = useState([]);
@@ -35,18 +34,14 @@ const ToursShowPage = () => {
     const [filterOptions, setFilterOptions] = useState({tags: [], transportation: []});
     const [isLoading, setIsLoading] = useState(false);
 
-    // --- State cho Filter cơ bản ---
-    const [searchTerm, setSearchTerm] = useState('');
-    // const [selectedLocation, setSelectedLocation] = useState('');
-    // Khởi tạo 'selectedLocation' với giá trị từ URL (nếu có), nếu không thì là string rỗng
-    const [selectedLocation, setSelectedLocation] = useState(
-        searchParams.get('location') || ''
-    );
+    // State cho search/location (đồng bộ với URL)
+    const [searchTerm, setSearchTerm] = useState(searchTermFromUrl);
+    const [selectedLocation, setSelectedLocation] = useState(locationFromUrl);
 
     // --- State cho Filter nâng cao ---
     const defaultFilters = {
-        price: [0, 10000000], // 0 - 50 triệu
-        duration: [1, 24],     // 0 - 14 ngày
+        price: [0, 10000000], // 0 - 10 triệu
+        duration: [1, 24],     // 0 - 24 giờ
         groupSize: 1,
         rating: 0,           // 0 = All
         transportation: [],  // array rỗng
@@ -66,6 +61,12 @@ const ToursShowPage = () => {
     const [currency, setCurrency] = useState("USD"); // VND or USD
     const exchangeRate = 25000; // 1 VND ≈ 0.000043 USD (update as needed)
 
+    // // Thêm tiêu đề cho Hero
+    // const heroTitle = searchTerm || selectedLocation || "Discover All Tours";
+
+    // State cho ảnh hero
+    const [heroImage, setHeroImage] = useState(getProvinceImage('')) // Lấy ảnh default ban đầu
+
     // --- Hàm Format ---
     const formatPrice = (price) => {
         if (currency === "VND") {
@@ -74,7 +75,7 @@ const ToursShowPage = () => {
                 currency: 'VND'
             }).format(price);
         } else {
-            return `$${(price / exchangeRate).toFixed(2)}`;
+            return `$${(price / exchangeRate).toFixed(0)}`; // Show whole dollars
         }
     };
 
@@ -82,9 +83,9 @@ const ToursShowPage = () => {
     // --- Fetch Data ban đầu (Locations & Filter Options) ---
     useEffect(() => {
         // 1. Fetch locations
-        fetch(API_ENDPOINTS.GET_ALL_PLACES)
+        fetch(API_ENDPOINTS.GET_ALL_PROVINCES)
             .then(res => res.json())
-            .then(data => setLocations(data.map(p => ({id: p.id, name: p.name, name_en: p.name_en}))))
+            .then(data => setLocations(data))
             .catch(err => console.error("Error fetching locations:", err));
 
         // 2. Fetch filter options
@@ -93,6 +94,18 @@ const ToursShowPage = () => {
             .then(data => setFilterOptions(data))
             .catch(err => console.error("Error fetching filter options:", err));
     }, []); // [] = chạy 1 lần
+
+    // Đồng bộ state với URL params khi URL thay đổi VÀ set ảnh hero
+    useEffect(() => {
+        const currentSearch = searchParams.get('search') || '';
+        const currentLocation = searchParams.get('location') || '';
+
+        setSearchTerm(currentSearch);
+        setSelectedLocation(currentLocation);
+
+        const query = currentSearch || currentLocation;
+        setHeroImage(getProvinceImage(query));
+    }, [searchParams]); // Hook chạy mỗi khi URL param thay đổi
 
     // --- Fetch Tours (khi filter thay đổi) ---
     useEffect(() => {
@@ -141,9 +154,6 @@ const ToursShowPage = () => {
     const handleClearFilters = () => {
         setFilters(defaultFilters);
         setTempFilters(defaultFilters);
-        // Bạn có thể chọn clear cả searchTerm và selectedLocation ở đây nếu muốn
-        // setSearchTerm('');
-        // setSelectedLocation('');
     };
 
     // Hàm xử lý khi check/uncheck 1 checkbox (tags, transportation)
@@ -160,39 +170,21 @@ const ToursShowPage = () => {
     // --- Render ---
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* --- Search Bar --- */}
-                <div className="bg-white rounded-lg shadow-sm border p-6 mb-4">
-                    <div className="flex flex-col lg:flex-row gap-4">
-                        {/* Search Input */}
-                        <div className="flex-1 relative">
-                            <Search
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"/>
-                            <Input
-                                type="text"
-                                placeholder="Search for tours, locations,..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 h-12"
-                            />
-                        </div>
-
-                        {/* Location Filter */}
-                        <div className="lg:w-64">
-                            <select
-                                value={selectedLocation}
-                                onChange={(e) => setSelectedLocation(e.target.value)}
-                                className="w-full h-12 px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option value="">All Places</option>
-                                {locations.map((loc) => (
-                                    <option key={loc.id} value={loc.name_en}>{loc.name_en.split(',')[0]}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
+            {/* --- Hero Section --- */}
+            <div className="relative w-full h-48 md:h-64 bg-gray-800">
+                <img
+                // src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"
+                src={heroImage}
+                alt="Scenic view"
+                className="w-full h-full object-cover opacity-50"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    {/* <h1 className="text-3xl md:text-5xl font-bold text-white text-center px-4 capitalize">
+                        {heroTitle}
+                    </h1> */}
                 </div>
-
+            </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* --- Quick Filters & Dialog Trigger --- */}
                 <div className="flex flex-wrap items-center gap-4 mb-8">
                     {/* Nút mở Dialog Filter */}
@@ -287,7 +279,7 @@ const ToursShowPage = () => {
                                             groupSize: Number(e.target.value) || 1
                                         }))}
                                         className="text-center"
-                                        placeholder="Bạn đi bao nhiêu người?"
+                                        placeholder="How many people?"
                                     />
                                 </div>
 
@@ -364,77 +356,7 @@ const ToursShowPage = () => {
                 {/* --- Tours Grid --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {tours.map((tour) => (
-                        <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                            <div className="relative">
-                                <img
-                                    src={tour.image}
-                                    alt={tour.title}
-                                    className="w-full h-48 object-cover"
-                                />
-                                {/*<button*/}
-                                {/*  onClick={() => toggleFavorite(tour.id)}*/}
-                                {/*  className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"*/}
-                                {/*>*/}
-                                {/*  <Heart*/}
-                                {/*    className={`w-5 h-5 ${*/}
-                                {/*      favorites.has(tour.id) ? 'text-red-500 fill-current' : 'text-gray-400'*/}
-                                {/*    }`}*/}
-                                {/*  />*/}
-                                {/*</button>*/}
-                                {/* Hiển thị duration từ model (integer) */}
-                                <Badge className="absolute top-3 left-3 bg-white text-gray-800">
-                                    {tour.duration} hours
-                                </Badge>
-                            </div>
-
-                            <CardContent className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 mb-3">
-                                    {tour.title}
-                                </h3>
-
-                                <div className="flex items-center text-gray-600 mb-3">
-                                      <span className="flex-shrink-0">
-                                        <MapPin className="w-4 h-4 mr-1"/>
-                                      </span>
-                                    <span className="text-sm">{tour.location}</span>
-                                </div>
-
-
-                                <div className="flex items-center text-gray-600 mb-4">
-                                    <Users className="w-4 h-4 mr-1"/>
-                                    <span className="text-sm">{tour.groupSize}</span>
-                                </div>
-
-                                {/* --- HIỂN THỊ RATING THẬT --- */}
-                                <div className="flex items-center mb-4">
-                                    <div className="flex items-center">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-4 h-4 ${
-                                                    i < Math.round(tour.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
-                                    <span className="text-sm text-gray-600 ml-2">
-                                        {tour.rating.toFixed(1)} ({tour.reviews} ratings)
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <span className="text-2xl font-bold text-blue-600">
-                                          {formatPrice(tour.price)}
-                                        </span>
-                                        <span className="text-sm text-gray-600 ml-1">/people</span>
-                                    </div>
-                                    <Button className="bg-blue-600 hover:bg-blue-700">
-                                        <Link to={`/tour/post/${tour.id}`}>View details</Link>
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <TourCard key={tour.id} tour={tour} />
                     ))}
                 </div>
 

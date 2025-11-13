@@ -11,7 +11,7 @@ from .models import Tour, Place, TourImage, Transportation, TourPlace
 from .serializers import TourSerializer, PlaceSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, parser_classes, permission_classes
-from django.db.models import Count, Q # for get get_popular_tours()
+from django.db.models import Count, Q, F # for get get_popular_tours()
 from collections import Counter
 # --- CREATE TOUR ---
 @api_view(['POST'])
@@ -69,7 +69,7 @@ def tour_post(request):
                     province=province,
                     province_en=province_en
                 )
-                place_instances.append(place_obj)
+            place_instances.append(place_obj)
         tour.places.set(place_instances)
 
         # --- Images ---
@@ -314,7 +314,7 @@ def get_all_tours(request):
 
 
         # Query params
-        search_term = request.GET.get('search')
+        # search_term = request.GET.get('search')
         location_name = request.GET.get('location')
         price_min = request.GET.get('price_min')
         price_max = request.GET.get('price_max')
@@ -326,18 +326,24 @@ def get_all_tours(request):
         tags = request.GET.get('tags')
 
         # Filters
-        if search_term:
-            tours_queryset = tours_queryset.filter(
-                Q(name__icontains=search_term) |
-                Q(description__icontains=search_term) |
-                Q(places__name__icontains=search_term) |
-                Q(places__name_en__icontains=search_term)
-            ).distinct()
+        # if search_term:
+        #     tours_queryset = tours_queryset.filter(
+        #         Q(name__icontains=search_term) |
+        #         Q(description__icontains=search_term) |
+        #         Q(places__name__icontains=search_term) |
+        #         Q(places__name_en__icontains=search_term) |
+        #         Q(places__city__icontains=search_term) |
+        #         Q(places__city_en__icontains=search_term) |
+        #         Q(places__province__icontains=search_term) |
+        #         Q(places__province_en__icontains=search_term)
+        #     ).distinct()
 
-        if location_name:
+        if location_name: # Location filter
             tours_queryset = tours_queryset.filter(
-                Q(places__name__icontains=location_name) |
-                Q(places__name_en__icontains=location_name)
+                Q(places__city__icontains=location_name) |
+                Q(places__city_en__icontains=location_name) |
+                Q(places__province__icontains=location_name) |
+                Q(places__province_en__icontains=location_name)
             ).distinct()
 
         if price_min:
@@ -354,7 +360,9 @@ def get_all_tours(request):
             tours_queryset = tours_queryset.filter(min_people__lte=group_size, max_people__gte=group_size)
 
         if rating_min:
-            tours_queryset = tours_queryset.filter(rating__gte=rating_min)
+            # Lọc dựa trên rating trung bình
+            # (Giả định rating > 0, rates > 0)
+            tours_queryset = tours_queryset.filter(rates__gt=0, rating__gte=(int(rating_min) * F('rates')))
 
         if transport:
             transport_list = transport.split(',')
@@ -389,12 +397,13 @@ def get_all_tours(request):
             else:
                 location_str = "Many Places"
 
+            average_rating = round(tour.rating / tour.rates, 1) if tour.rates > 0 else 0
             response_data.append({
                 'id': tour.id,
                 'title': tour.name,
                 'price': tour.price,
-                'rating': tour.rating,
-                'reviews': tour.rates,
+                'rating': average_rating,
+                'reviews': tour.rates, # number of reviews
                 'duration': tour.duration,
                 'groupSize': f"{tour.min_people}-{tour.max_people} people",
                 'transportation': tour.transportation,
@@ -418,29 +427,59 @@ def get_all_tours(request):
 @permission_classes([AllowAny])
 def get_popular_destinations(request):
     try:
-        # Count number of tours per place
-        popular_places = Place.objects.annotate(
-            tour_count=Count('tours')  # <-- use the related_name of ManyToManyField
+        # 1. Nhóm các Place theo 'province_en' (vì DL đã sạch)
+        #    và đếm số lượng tour 'distinct' (duy nhất) liên quan đến mỗi tỉnh.
+        popular_provinces = Place.objects.values('province', 'province_en').annotate(
+            tour_count=Count('tours', distinct=True)
         ).filter(tour_count__gt=0).order_by('-tour_count')[:6]
 
         response_data = []
-        for place in popular_places:
+
+        # 2. Lấy ảnh đại diện cho mỗi tỉnh
+        for province in popular_provinces:
             image_url = "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop"
-            first_tour = place.tours.first()
-            if first_tour:
-                image_obj = TourImage.objects.filter(tour=first_tour).first()
-                if image_obj:
-                    image_url = request.build_absolute_uri(image_obj.image.url)
+            
+            # 3. Tìm một tour bất kỳ thuộc tỉnh này để lấy ảnh
+            #    Tìm Place đầu tiên trong 'province' này MÀ CÓ tour
+            first_place_in_province = Place.objects.filter(
+                province_en=province['province_en'], 
+                tours__isnull=False
+            ).first()
+
+            if first_place_in_province:
+                # Lấy tour đầu tiên của place đó
+                first_tour = first_place_in_province.tours.first()
+                if first_tour:
+                    # Lấy ảnh đầu tiên của tour đó
+                    image_obj = TourImage.objects.filter(tour=first_tour).first()
+                    if image_obj:
+                        image_url = request.build_absolute_uri(image_obj.image.url)
 
             response_data.append({
-                'id': place.id,
-                'name': place.name,
-                'name_en': place.name_en,
-                'tour_count': place.tour_count,
+                # Dùng province_en làm 'id' hoặc key cho React
+                'id': province['province_en'], 
+                'name': province['province'], # Tên tiếng Việt
+                'name_en': province['province_en'], # Tên tiếng Anh
+                'tour_count': province['tour_count'],
                 'image': image_url
             })
 
         return Response(response_data, status=status.HTTP_200_OK)
 
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_all_provinces(request):
+    try:
+        # Lấy các giá trị province và province_en, và loại bỏ trùng lặp
+        provinces = Place.objects.values('province', 'province_en').distinct().order_by('province_en')
+        # Format lại data cho dễ dùng ở frontend
+        response_data = [
+            {'province_vi': p['province'], 'province_en': p['province_en']}
+            for p in provinces if p['province_en'] # Đảm bảo không lấy giá trị null
+        ]
+        return Response(response_data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

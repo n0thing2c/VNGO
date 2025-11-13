@@ -9,4 +9,5 @@ export const API_ENDPOINTS = {
     GET_ALL_TOURS: `${API_BASE_URL}/tour/get/all/`,
     GET_FILTER_OPTIONS: `${API_BASE_URL}/filter-options/`,
     GET_POPULAR_DESTINATIONS: `${API_BASE_URL}/places/popular/`,
+    GET_ALL_PROVINCES: `${API_BASE_URL}/provinces/all/`,
 };

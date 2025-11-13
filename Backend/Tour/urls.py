@@ -9,4 +9,5 @@ urlpatterns = [
     path('tour/get/all/', views.get_all_tours, name='api-get-all-tours'),
     path('filter-options/', views.get_filter_options, name='api-get-filter-options'),
     path('places/popular/', views.get_popular_destinations, name='api-get-popular-destinations'),
+    path('provinces/all/', views.get_all_provinces, name='api-get-all-provinces')
 ]

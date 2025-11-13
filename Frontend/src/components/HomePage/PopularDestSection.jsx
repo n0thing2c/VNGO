@@ -26,7 +26,7 @@ export default function PopularDestSection( {popularDestinations} ){
 
                         // Bọc Card bằng Link, trỏ đến trang /tours
                         <Link
-                        to={`/tours?location=${encodeURIComponent(dest.name_en.split(',')[0])}`}
+                        to={`/tours?location=${encodeURIComponent(dest.name_en)}`}
                         key={dest.id}
                         >
                         <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full">
