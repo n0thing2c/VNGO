@@ -12,7 +12,16 @@ class WebSocketService {
 
   connect(roomName) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN && this.roomName === roomName) {
-      return; 
+      return; // Already connected to this room
+    }
+
+    if (this.ws) {
+      try {
+        this.ws.close(1000, "Switch room");
+      } catch (e) {
+        console.error("Error closing existing WebSocket:", e);
+      }
+      this.ws = null;
     }
 
     this.roomName = roomName;

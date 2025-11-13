@@ -1,78 +1,115 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Send, Star } from "lucide-react";
 import { websocketService } from "@/services/websocketService";
 import { chatService } from "@/services/chatService";
 import { useAuthStore } from "../../../stores/useAuthStore";
 
-export default function ChatWindow({ roomName, contactName, contactId, responseTime, rating, reviewCount }) {
+const normalizeMessages = (items = []) => {
+  const map = new Map();
+
+  items.forEach((item) => {
+    if (!item) {
+      return;
+    }
+
+    const createdAt = item.created_at || new Date().toISOString();
+    const key = item.id != null ? `id_${item.id}` : `sender_${item.sender?.id || "unknown"}_${createdAt}_${item.content}`;
+
+    if (!map.has(key)) {
+      map.set(key, {
+        ...item,
+        created_at: createdAt,
+      });
+    } else {
+      const existing = map.get(key);
+      const existingTime = existing.created_at ? new Date(existing.created_at).getTime() : 0;
+      const currentTime = new Date(createdAt).getTime();
+      if (currentTime >= existingTime) {
+        map.set(key, {
+          ...existing,
+          ...item,
+          created_at: createdAt,
+        });
+      }
+    }
+  });
+
+  return Array.from(map.values()).sort((a, b) => {
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return timeA - timeB;
+  });
+};
+
+export default function ChatWindow({ roomName, contactName, contactId, responseTime, rating, reviewCount, onMessageUpdate }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
-  const processedMessagesRef = useRef(new Set()); // Track messages đã xử lý
+  const messagesContainerRef = useRef(null);
+  const justSwitchedRoomRef = useRef(false);
+  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const { user } = useAuthStore();
 
-  // Scroll to bottom when messages change
+  const handleNotifyParent = (message) => {
+    if (typeof onMessageUpdate === "function" && message) {
+      onMessageUpdate(roomName, message);
+    }
+  };
+
+  // Scroll ONLY the messages container
+  const scrollMessagesToBottom = (smooth = true) => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    try {
+      el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+    } catch {
+      // fallback for older browsers
+      el.scrollTop = el.scrollHeight;
+    }
+  };
+
+  // Ensure we really hit the bottom after DOM updates
+  const ensureScrollBottom = (smooth = true) => {
+    scrollMessagesToBottom(smooth);
+    try {
+      requestAnimationFrame(() => scrollMessagesToBottom(smooth));
+    } catch {}
+    setTimeout(() => scrollMessagesToBottom(smooth), 80);
+  };
+
+  // (Disabled auto page scroll)
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // Disabled auto scroll to keep current scroll position on new messages/room changes
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
   // Load messages from API
   useEffect(() => {
     if (!roomName) {
       setMessages([]);
-      processedMessagesRef.current.clear(); // Clear processed messages khi đổi room
       return;
     }
-    
-    // Clear processed messages khi load room mới
-    processedMessagesRef.current.clear();
+
+    justSwitchedRoomRef.current = true;
+    setIsOverlayVisible(true);
+    setMessages([]);
 
     const loadMessages = async () => {
       try {
         const data = await chatService.getMessages(roomName);
-        console.log("Loaded messages:", data);
-        console.log("Current user:", user);
-        
-        // Set messages mới, loại bỏ duplicate dựa trên ID
-        setMessages((prev) => {
-          if (!data || data.length === 0) return [];
-          
-          // Filter messages đã được xử lý
-          const filteredData = data.filter((msg) => {
-            const uniqueKey = msg.id ? `id_${msg.id}` : `content_${msg.content}_sender_${msg.sender?.id}_time_${msg.created_at}`;
-            return !processedMessagesRef.current.has(uniqueKey);
-          });
-          
-          // Đánh dấu các messages từ API đã được xử lý
-          filteredData.forEach((msg) => {
-            const uniqueKey = msg.id ? `id_${msg.id}` : `content_${msg.content}_sender_${msg.sender?.id}_time_${msg.created_at}`;
-            processedMessagesRef.current.add(uniqueKey);
-          });
-          
-          // Nếu prev rỗng, set mới
-          if (prev.length === 0) {
-            return filteredData;
-          }
-          
-          // Merge với messages hiện có, tránh duplicate
-          const existingIds = new Set(prev.map((msg) => msg.id));
-          const newMessages = filteredData.filter((msg) => !existingIds.has(msg.id));
-          
-          if (newMessages.length === 0) return prev;
-          
-          // Merge và sort theo thời gian
-          const merged = [...prev, ...newMessages].sort(
-            (a, b) =>
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          );
-          
-          return merged;
-        });
+        const normalized = normalizeMessages(Array.isArray(data) ? data : []);
+        setMessages(normalized);
+
+        if (normalized.length > 0) {
+          handleNotifyParent(normalized[normalized.length - 1]);
+        }
+
+        // Keep without visible scroll animation; overlay will mask until jump done
       } catch (error) {
         console.error("Error loading messages:", error);
       }
@@ -81,63 +118,46 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
     loadMessages();
   }, [roomName]);
 
+  // After messages render on a room switch, jump instantly to the bottom (no animation)
+  useLayoutEffect(() => {
+    if (!justSwitchedRoomRef.current) return;
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    setTimeout(() => {
+      el.scrollTop = el.scrollHeight;
+      try {
+        requestAnimationFrame(() => {
+          el.scrollTop = el.scrollHeight;
+        });
+      } catch {}
+      justSwitchedRoomRef.current = false;
+      // Hide overlay shortly after ensuring we are at bottom
+      setTimeout(() => setIsOverlayVisible(false), 50);
+    }, 500);
+  }, [messages]);
+
   // Setup WebSocket connection
   useEffect(() => {
     if (!roomName) return;
 
     const handleMessage = (data) => {
       if (data.type === "chat.message") {
+        const incoming = {
+          id: data.message_id ?? null,
+          room: roomName,
+          content: data.message,
+          sender: data.sender,
+          created_at: data.created_at || new Date().toISOString(),
+        };
+
         setMessages((prev) => {
-          // Tạo unique key cho message
-          const messageId = data.message_id;
-          const created_at = data.created_at || new Date().toISOString();
-          const uniqueKey = messageId 
-            ? `id_${messageId}` 
-            : `content_${data.message}_sender_${data.sender?.id}_time_${created_at}`;
-          
-          // Kiểm tra xem message đã được xử lý chưa
-          if (processedMessagesRef.current.has(uniqueKey)) {
-            console.log("Duplicate message detected (already processed), skipping:", data);
-            return prev;
-          }
-          
-          // Kiểm tra xem message đã tồn tại trong state chưa
-          const exists = prev.some(
-            (msg) =>
-              (messageId && msg.id === messageId) ||
-              (!messageId && 
-                msg.content === data.message &&
-                msg.sender?.id === data.sender?.id &&
-                Math.abs(
-                  new Date(msg.created_at).getTime() -
-                  new Date(created_at).getTime()
-                ) < 2000) // Nếu cùng content, sender và thời gian gần nhau (< 2s) thì coi như duplicate
-          );
-          
-          if (exists) {
-            console.log("Duplicate message detected (exists in state), skipping:", data);
-            return prev;
-          }
-          
-          // Đánh dấu message đã được xử lý
-          processedMessagesRef.current.add(uniqueKey);
-          
-          // Giới hạn size của Set để tránh memory leak (giữ tối đa 1000 messages)
-          if (processedMessagesRef.current.size > 1000) {
-            const firstKey = processedMessagesRef.current.values().next().value;
-            processedMessagesRef.current.delete(firstKey);
-          }
-          
-          return [
-            ...prev,
-            {
-              id: messageId || Date.now(),
-              content: data.message,
-              sender: data.sender,
-              created_at: created_at,
-            },
-          ];
+          const normalized = normalizeMessages([...prev, incoming]);
+          return normalized;
         });
+
+        handleNotifyParent(incoming);
+        // Auto-scroll on new message (container only)
+        ensureScrollBottom(true);
       } else if (data.type === "typing") {
         setIsTyping(true);
         setTimeout(() => setIsTyping(false), 3000);
@@ -177,6 +197,8 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
 
     websocketService.sendMessage(newMessage.trim());
     setNewMessage("");
+    // Auto-scroll on send (container only)
+    setTimeout(() => ensureScrollBottom(true), 0);
   };
 
   const handleTyping = () => {
@@ -194,13 +216,15 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden bg-white">
+      {/* Overlay to mask initial scroll on room switch */}
+      {isOverlayVisible && (
+        <div className="absolute inset-0 bg-white z-20 pointer-events-none" />
+      )}
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
-            {contactName?.[0]?.toUpperCase() || "?"}
-          </div>
+          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">{user?.username?.[0]?.toUpperCase() || "B"}</div>
           <div>
             <h2 className="font-semibold text-gray-900">{contactName || "Unknown"}</h2>
             {responseTime && (
@@ -208,65 +232,48 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
             )}
           </div>
         </div>
-        {rating !== undefined && (
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`w-4 h-4 ${
-                    star <= Math.floor(rating)
-                      ? "fill-yellow-400 text-yellow-400"
-                      : star <= rating
-                      ? "fill-yellow-400/50 text-yellow-400"
-                      : "text-gray-300"
-                  }`}
-                />
-              ))}
-            </div>
-            {reviewCount && (
-              <span className="text-sm text-gray-600">({reviewCount.toLocaleString()})</span>
-            )}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {[1, 2, 3].map((i) => (
+              <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+            ))}
+            {[4, 5].map((i) => (
+              <Star key={i} className="w-4 h-4 text-gray-300" />
+            ))}
           </div>
-        )}
+          <span className="text-xs text-gray-600">0</span>
+        </div>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">
             No messages yet. Start the conversation!
           </div>
         ) : (
           messages.map((message) => {
-            // So sánh cả ID và username để đảm bảo chính xác
-            const senderId = message.sender?.id;
-            const senderUsername = message.sender?.username;
-            const currentUserId = user?.id;
+            const userId = user?.id;
+            const senderId = message?.sender?.id;
             const currentUsername = user?.username;
-            
-            // Kiểm tra xem message có phải của user hiện tại không
-            // So sánh ID trước, nếu không có thì so sánh username
-            const isOwnMessage = 
-              (senderId != null && currentUserId != null && String(senderId) === String(currentUserId)) ||
-              (senderUsername && currentUsername && senderUsername === currentUsername);
-            
+            const senderUsername = message?.sender?.username;
+            const isOwnMessage =
+              (userId != null && senderId != null && String(senderId) === String(userId)) ||
+              (!!currentUsername && !!senderUsername && senderUsername === currentUsername);
             const senderName = senderUsername || "Unknown";
             const senderInitial = senderName[0]?.toUpperCase() || "?";
             
             return (
               <div
-                key={message.id}
+                key={`${message.id ?? "tmp"}-${message.created_at}`}
                 className={`flex items-end gap-2 ${isOwnMessage ? "justify-end" : "justify-start"}`}
               >
-                {/* Avatar - chỉ hiển thị bên trái cho message của người khác */}
                 {!isOwnMessage && (
                   <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
                     {senderInitial}
                   </div>
                 )}
                 
-                {/* Message Bubble */}
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                     isOwnMessage
@@ -288,25 +295,14 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
                   </p>
                 </div>
                 
-                {/* Avatar - chỉ hiển thị bên phải cho message của mình */}
                 {isOwnMessage && (
                   <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                    {currentUsername?.[0]?.toUpperCase() || "U"}
+                    {user?.username?.[0]?.toUpperCase() || "U"}
                   </div>
                 )}
               </div>
             );
           })
-        )}
-        {isTyping && (
-          <div className="flex justify-start items-end gap-2">
-            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
-              ?
-            </div>
-            <div className="bg-gray-100 px-4 py-2 rounded-lg rounded-bl-none">
-              <p className="text-sm text-gray-500 italic">Typing...</p>
-            </div>
-          </div>
         )}
         <div ref={messagesEndRef} />
       </div>

@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export default function MessageList({ conversations, selectedRoom, onSelectRoom, searchQuery, onSearchChange }) {
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-6 border-b">
         <h1 className="text-3xl font-bold mb-4">Messages</h1>
