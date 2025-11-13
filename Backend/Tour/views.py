@@ -69,7 +69,7 @@ def tour_post(request):
                     province=province,
                     province_en=province_en
                 )
-                place_instances.append(place_obj)
+            place_instances.append(place_obj)
         tour.places.set(place_instances)
 
         # --- Images ---
