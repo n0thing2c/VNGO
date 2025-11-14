@@ -33,9 +33,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
+    path('auth/', include('Authentication.urls')),
     path('api/', include('Tour.urls')),
+    path('profiles/', include('Profiles.urls')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

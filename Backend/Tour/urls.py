@@ -5,9 +5,12 @@ urlpatterns = [
     path("tour/post/", views.tour_post, name="make_new_tour"),
     path("tour/get/<int:tour_id>/", views.tour_get, name="get_tour_info"),
     path("tour/put/<int:tour_id>/", views.tour_put, name="put_tour_info"),
+    path("tour/achievements/<int:tour_id>/", views.tour_achievements, name="get_tour_achievements"),
     path('places/all/', views.get_all_places, name='api-get-locations'),
     path('tour/get/all/', views.get_all_tours, name='api-get-all-tours'),
     path('filter-options/', views.get_filter_options, name='api-get-filter-options'),
     path('places/popular/', views.get_popular_destinations, name='api-get-popular-destinations'),
-    path('provinces/all/', views.get_all_provinces, name='api-get-all-provinces')
+    path('provinces/all/', views.get_all_provinces, name='api-get-all-provinces'),
+    path('tour/rate/<int:tour_id>/', views.tour_rate, name='api-post-rate'),
+    path('tour/ratings/<int:tour_id>/', views.tour_get_ratings, name='api-get-ratings'),
 ]

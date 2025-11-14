@@ -1,28 +1,28 @@
-import { Link } from "react-router-dom";
-import { Card, CardContent } from '../ui/card';
-import { MapPin } from "lucide-react";
+import {Link} from "react-router-dom";
+import {Card, CardContent} from '../ui/card';
+import {MapPin} from "lucide-react";
 
-export default function PopularDestSection( {popularDestinations} ){
-    return(
+export default function PopularDestSection({popularDestinations = []}) {
+    return (
         <section id="destinations" className="py-16 md:py-20 lg:py-24 bg-white">
             <div className="container mx-auto px-4 md:px-6 lg:px-8">
                 <div className="max-w-6xl mx-auto">
                     {/* Icon and text */}
                     <div className="text-center mb-12 md:mb-16">
-                    <div className="flex justify-center mb-4 md:mb-6">
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
-                        <span className="text-3xl md:text-5xl">🗺️</span>
+                        <div className="flex justify-center mb-4 md:mb-6">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
+                                <span className="text-3xl md:text-5xl">🗺️</span>
+                            </div>
                         </div>
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">Popular Destinations</h2>
-                    <p className="text-center text-gray-600 max-w-2xl mx-auto">
-                        Discover the most beautiful places in Vietnam
-                    </p>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">Popular Destinations</h2>
+                        <p className="text-center text-gray-600 max-w-2xl mx-auto">
+                            Discover the most beautiful places in Vietnam
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                    {/* Lấy 3 hoặc 6 điểm đến đầu tiên (API trả về 6 */}
-                    {popularDestinations.slice(0, 3).map((dest) => (
+                        {/* Lấy 3 hoặc 6 điểm đến đầu tiên (API trả về 6 */}
+                        {popularDestinations.slice(0, 3).map((dest) => (
 
                         // Bọc Card bằng Link, trỏ đến trang /tours
                         <Link
@@ -49,11 +49,11 @@ export default function PopularDestSection( {popularDestinations} ){
                                 <span className="text-sm">
                                 {dest.tour_count} {dest.tour_count > 1 ? 'tours' : 'tour'} available
                                 </span>
-                            </div>
-                            </CardContent>
-                        </Card>
-                        </Link>
-                    ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        ))}
                     </div>
                 </div>
             </div>

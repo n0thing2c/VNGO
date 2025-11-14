@@ -40,11 +40,13 @@ import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import Map from "../components/APIs/Map.jsx";
 import {Links, Link} from "react-router-dom";
+import {useAuthStore} from "@/stores/useAuthStore.js";
 
 // API
 import { API_ENDPOINTS } from "@/constant";
 
 export default function TourEdit() {
+    const accessToken = useAuthStore((state) => state.accessToken);
     const {tour_id} = useParams();
     const [loading, setLoading] = useState(true);
     const [tourData, setTourData] = useState(null);
@@ -73,17 +75,42 @@ export default function TourEdit() {
 
     const TagList = [
         "Nature",
+        "Culture",
         "History",
-        "Festivals",
-        "Nightlife",
-        "Shopping",
-        "Sightseeing",
         "Adventure",
-        "Trekking",
+        "Relaxation",
+        "Food & Drink",
+        "Nightlife",
         "Beach",
-        "Food Tour",
-        "Motorbike Trip",
+        "City Life",
+        "Trekking",
+        "Local Experience",
+        "Sightseeing",
+        "Shopping",
+        "Photography",
+        "Water Sports",
+        "Countryside",
+        "Recreational",
     ];
+    const TOUR_TAG_VARIANTS = {
+        "Nature": "brightgreen",
+        "Beach": "sand",
+        "Trekking": "aqua",
+        "Culture": "bluelavender",
+        "History": "mustard",
+        "Local Experience": "mint",
+        "Sightseeing": "teal",
+        "Adventure": "destructive",
+        "Food & Drink": "coral",
+        "Nightlife": "violet",
+        "City Life": "orange",
+        "Shopping": "pink",
+        "Photography": "default",
+        "Relaxation": "lime",
+        "Water Sports": "sky",
+        "Countryside": "olive",
+        "Recreational": "peach",
+    };
 
     const getTransportationIcon = (value) => {
         switch (value) {
@@ -305,15 +332,18 @@ export default function TourEdit() {
             formData.append("thumbnail_data", JSON.stringify(thumbnailData));
 
             // --- END OF NEW LOGIC ---
-
+            if (!accessToken) {
+                toast.error("You must be logged in to create a tour!");
+                return;
+            }
             // Send PUT request
-            const res = await fetch(
-                API_ENDPOINTS.UPDATE_TOUR(tour_id),
-                {
-                    method: "PUT",
-                    body: formData,
-                }
-            );
+            const res = await fetch(`http://127.0.0.1:8000/api/tour/put/${tour_id}/`, {
+                method: "PUT",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${accessToken}`, // <-- send token
+                },
+            });
 
             const data = await res.json();
 
@@ -338,7 +368,6 @@ export default function TourEdit() {
 
     return (
         <div className="items-center">
-            <Header/>
             <div
                 className="
           flex flex-col-reverse gap-6 md:flex-row justify-center items-start
@@ -552,6 +581,7 @@ export default function TourEdit() {
                             {/* ✅ STEP 4: Point to the new handler */}
                             <ImageUploader
                                 images={imageData.images}
+                                allowThumbnail={true}
                                 thumbnailIdx={imageData.thumbnailIdx}
                                 onImagesChange={handleImageChange}
                             />
@@ -577,8 +607,8 @@ export default function TourEdit() {
                                 className="resize-none py-2 xl:py-3 text-base xl:text-lg"
                             />
                             <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
-                {description.length}/500
-              </span>
+                                {description.length}/500
+                              </span>
                         </div>
 
                         <FieldSeparator/>
@@ -592,6 +622,7 @@ export default function TourEdit() {
                                 tags={TagList}
                                 selectedTags={selectedTags}
                                 setSelectedTags={setSelectedTags}
+                                tagVariants={TOUR_TAG_VARIANTS}
                             />
                         </div>
                     </CardContent>
@@ -622,7 +653,6 @@ export default function TourEdit() {
                     </CardFooter>
                 </Card>
             </div>
-            <Footer/>
         </div>
     );
 }

@@ -1,0 +1,26 @@
+import React from "react";
+
+const AlbumPhotoFrame = ({ images = [] }) => {
+  if (!images.length) return null;
+
+  return (
+    <div className="w-full max-w-6xl mx-auto rounded-2xl">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
+        {images.map((img, idx) => (
+          <div
+            key={idx}
+            className="overflow-hidden shadow-xl aspect-[4/3] bg-neutral-100  p-1"
+          >
+            <img
+              src={img}
+              alt={`Photo ${idx + 1}`}
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default AlbumPhotoFrame;

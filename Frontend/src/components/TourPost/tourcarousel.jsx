@@ -5,7 +5,7 @@ import {
     CarouselItem,
     CarouselPrevious,
     CarouselNext,
-} from "@/components/ui/carousel";
+} from "@/components/ui/carousel.jsx";
 
 export default function TourCarousel({images = [], forwardInterval = 3000, rewindInterval = 50}) {
     const nextBtnRef = useRef(null);
