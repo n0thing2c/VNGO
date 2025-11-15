@@ -28,7 +28,11 @@ def tour_post(request):
 
         # Assign the guide automatically
         guide_profile = getattr(request.user, 'guide_profile', None)
-
+        if not guide_profile:
+            return Response(
+                {"success": False, "error": "You are not authorized to post tours"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         # Save simple fields
         serializer = TourSerializer(data=data)
         if not serializer.is_valid():
@@ -101,6 +105,7 @@ def tour_put(request, tour_id):
 
     if not hasattr(request.user, 'guide_profile'):
         return Response({'success': False, 'error': 'Permission denied'}, status=403)
+
 
     data = request.data.copy()
     images = request.FILES.getlist('images')
@@ -324,10 +329,13 @@ def tour_rate(request, tour_id):
     except Tour.DoesNotExist:
         return Response({"success": False, "error": "Tour not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    user = request.data.get('user', 'anonymous')
+    tourist_profile = getattr(request.user, 'tourist_profile', None)
+    if tourist_profile is None:
+        return Response({"success": False, "error": "User is not a tourist"}, status=403)
 
-    if TourRating.objects.filter(user=user, tour=tour).exists():
-        return Response({"success": False, "error": "User has already rated this tour"}, status=status.HTTP_400_BAD_REQUEST)
+        # Không cho rate trùng
+    if TourRating.objects.filter(tour=tour, tourist=tourist_profile).exists():
+        return Response({"success": False, "error": "You already rated this tour"}, status=400)
 
     # Parse review_tags if it's a string
     review_tags = request.data.get('review_tags', '[]')
@@ -344,7 +352,7 @@ def tour_rate(request, tour_id):
     })
 
     if serializer.is_valid():
-        rating_instance = serializer.save(tour=tour, user=user)
+        rating_instance = serializer.save(tour=tour, tourist=tourist_profile)
 
         # Save images if provided
         images = request.FILES.getlist('images')

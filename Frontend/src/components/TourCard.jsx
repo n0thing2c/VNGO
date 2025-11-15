@@ -109,7 +109,7 @@ export default function TourCard({ tour }) {
 
         {/* Price */}
         <div className="flex items-baseline justify-start">
-          <span className="text-3xl font-extrabold text-blue-600">${price}</span>
+          <span className="text-3xl font-extrabold text-blue-600">${price/25000}</span>
           <span className="text-sm text-gray-600 ml-1.5">/person</span>
         </div>
       </div>

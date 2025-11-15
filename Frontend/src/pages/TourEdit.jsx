@@ -41,12 +41,14 @@ import Footer from "@/components/layout/Footer.jsx";
 import Map from "../components/APIs/Map.jsx";
 import {Links, Link} from "react-router-dom";
 import {useAuthStore} from "@/stores/useAuthStore.js";
-
+import { useNavigate } from "react-router-dom";
 // API
 import { API_ENDPOINTS } from "@/constant";
 
 export default function TourEdit() {
+    const navigate = useNavigate();
     const accessToken = useAuthStore((state) => state.accessToken);
+    const user_name = useAuthStore((state)=>state.user.username)
     const {tour_id} = useParams();
     const [loading, setLoading] = useState(true);
     const [tourData, setTourData] = useState(null);
@@ -213,13 +215,22 @@ export default function TourEdit() {
     useEffect(() => {
         async function fetchTour() {
             try {
-                const res = await fetch(
-                    API_ENDPOINTS.GET_TOUR(tour_id)
-                );
+                const res = await fetch(API_ENDPOINTS.GET_TOUR(tour_id), {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
                 const data = await res.json();
                 if (!res.ok) throw new Error("Tour not found");
 
                 const tour = data.tour || data;
+
+                if (tour.guide.username !== user_name) {
+                    toast.error("You cannot edit a tour that doesn't belong to you!");
+                    navigate("/"); // redirect to home or another page
+                    return;
+                }
+
                 setTourData(tour);
 
                 // Pre-fill form fields
@@ -333,11 +344,11 @@ export default function TourEdit() {
 
             // --- END OF NEW LOGIC ---
             if (!accessToken) {
-                toast.error("You must be logged in to create a tour!");
+                toast.error("You must be logged in to update a tour!");
                 return;
             }
             // Send PUT request
-            const res = await fetch(`http://127.0.0.1:8000/api/tour/put/${tour_id}/`, {
+            const res = await fetch(API_ENDPOINTS.UPDATE_TOUR(tour_id), {
                 method: "PUT",
                 body: formData,
                 headers: {
@@ -373,9 +384,9 @@ export default function TourEdit() {
           flex flex-col-reverse gap-6 md:flex-row justify-center items-start
           mt-40 mb-40
           scale-100
-          xl:scale-[1.1]
-          2xl:scale-[1.0]
-          3xl:scale-[1.4]
+          xl:scale-[0.7]
+          2xl:scale-[0.8]
+          3xl:scale-[0.9]
           transition-transform duration-300 origin-top
         "
             >

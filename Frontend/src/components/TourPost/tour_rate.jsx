@@ -7,8 +7,10 @@ import {Rating, RatingButton} from "@/components/ui/shadcn-io/rating/index.jsx";
 import {Button} from "@/components/ui/button.jsx";
 import {Textarea} from "@/components/ui/textarea.jsx";
 import TagSelector from "@/components/tagsselector.jsx";
+import {useAuthStore} from "@/stores/useAuthStore.js";
 
 export default function TourRate({tourId, onRated}) {
+    const accessToken = useAuthStore((state) => state.accessToken);
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState("");
     const [reviewTags, setReviewTags] = useState([]);
@@ -68,7 +70,6 @@ export default function TourRate({tourId, onRated}) {
         formData.append("rating", rating);
         formData.append("review", review);
         formData.append("review_tags", JSON.stringify(reviewTags));
-        formData.append("user", "test_user");
         images.forEach((img) => formData.append("images", img.file || img));
 
         try {
@@ -77,7 +78,12 @@ export default function TourRate({tourId, onRated}) {
             const res = await axios.post(
                 `http://127.0.0.1:8000/api/tour/rate/${tourId}/`,
                 formData,
-                {headers: {"Content-Type": "multipart/form-data"}}
+          {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${accessToken}`, // <--- MUST SEND TOKEN
+                    },
+                }
             );
 
             setSuccess("Rating submitted successfully!");

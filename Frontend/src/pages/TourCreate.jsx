@@ -250,9 +250,9 @@ export default function TourCreate() {
       flex flex-col-reverse gap-6 md:flex-row justify-center items-start
       mt-40 mb-40
       scale-100
-      xl:scale-[1.1]
-      2xl:scale-[1.0]
-      3xl:scale-[1.4]
+      xl:scale-[0.7]
+      2xl:scale-[0.8]
+      3xl:scale-[0.9]
       transition-transform duration-300 origin-top
     "
             >

@@ -75,11 +75,13 @@ class TourSerializer(serializers.ModelSerializer):
         guide = obj.guide
         if guide:
             return {
-                "id": guide.pk,
-                "username": guide.user.username,
-                "email": guide.user.email,
+                "id": guide.user.id,
+                "name": guide.name,
                 "rating": guide.rating,
                 "languages": guide.languages,
+                "location": guide.location,
+                "avatar": guide.face_image,
+                "username": guide.user.username,
             }
         return None
 

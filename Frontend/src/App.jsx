@@ -13,6 +13,8 @@ import InfoPage from "./pages/PersonalInfoPage";
 import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
 import GuideProfilePage from "@/pages/GuideProfilePage.jsx";
 import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "@/components/auth/ProtectedRoute.jsx";
+
 function App() {
     return (
         <>
@@ -20,22 +22,28 @@ function App() {
             <BrowserRouter>
                 <ScrollToTop />
                 <Routes>
-                    {/* public routes*/}
+
                     {/* protected routes*/}
                     <Route path="/" element={<Layout/>}>
-                        <Route path="/" element={<HomePage/>}/>
-                        <Route path="/tours" element={<ToursShowPage/>}/>
-                        <Route path="/profile" element={<GuideProfilePage />} />
-                        <Route path="/public-profile" element={<GuidePublicProfilePage />} />
-
-                        <Route path="/tour/create" element={<TourCreate/>}/>
+                        {/*public routes*/}
                         <Route path="/tour/post/:tour_id" element={<TourPost/>}/>
-                        <Route path="/tour/edit/:tour_id" element={<TourEdit/>}/>
-
+                        <Route index element={<HomePage />} />
+                        <Route path="/tours" element={<ToursShowPage/>}/>
                         <Route path="/signup" element={<SignUpPage />} />
                         <Route path="/verify-email" element={<VerifyEmailPage />} />
                         <Route path="/login" element={<LogInPage />} />
                         <Route path="/personal-info" element={<InfoPage />} />
+                        {/* login routes*/}
+                        <Route element={<ProtectedRoute />}>
+                            <Route path="/profile" element={<GuideProfilePage />} />
+                        </Route>
+                           <Route path="/public-profile" element={<GuidePublicProfilePage />} />
+
+                        {/*guide routes*/}
+                        <Route element={<ProtectedRoute requiredRole="guide"/>}>
+                            <Route path="/tour/create" element={<TourCreate />} />
+                            <Route path="/tour/edit/:tour_id" element={<TourEdit />} />
+                        </Route>
                     </Route>
                 </Routes>
             </BrowserRouter>

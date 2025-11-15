@@ -73,11 +73,15 @@ import {AchievementBadge} from "@/components/TourPost/tour_achievements.jsx";
 import TourRate from "@/components/TourPost/tour_rate.jsx";
 import {cn} from "@/lib/utils";
 import TourRating from "@/components/TourPost/tour_rating.jsx";
-
+import {useAuthStore} from "@/stores/useAuthStore.js";
+import GuideSection from "@/components/TourPost/guidesection.jsx";
+import { Link } from "react-router-dom";
 // API
 import { API_ENDPOINTS } from "@/constant";
 
 export default function TourPost() {
+    const userRole = useAuthStore((state) => state.user?.role);
+    const isLoggedIn = useAuthStore((state) => !!state.user);
     const {tour_id} = useParams();
     const [tourData, setTourData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -136,7 +140,7 @@ export default function TourPost() {
     useEffect(() => {
         async function fetchAchievements() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/tour/achievements/${tour_id}/`);
+                const res = await fetch(API_ENDPOINTS.GET_TOUR_ACHIEVEMENTS(tour_id));
                 const data = await res.json();
                 setAchievements([
                     "Popular",
@@ -157,7 +161,7 @@ export default function TourPost() {
     useEffect(() => {
         async function fetchRatings() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/tour/ratings/${tour_id}/`);
+                const res = await fetch(API_ENDPOINTS.GET_TOUR_RATINGS(tour_id));
                 const data = await res.json();
                 if (data.success) {
                     setRatings(data.ratings);
@@ -178,19 +182,20 @@ export default function TourPost() {
 
     return (
         <div className="items-center">
-            {/* CHANGED: Switched to CSS Grid for layout control */}
+            {/* CHANGED: Tighter container and less vertical margin */}
             <div
-                className="grid grid-cols-1 md:grid-cols-5 gap-y-6 md:gap-x-8 lg:gap-x-25 max-w-7xl mx-auto py-6 px-4 mt-40 mb-40">
+                className="grid grid-cols-1 md:grid-cols-5 gap-y-6 md:gap-x-8 lg:gap-x-24 max-w-6xl mx-auto py-6 px-4 my-24">
 
                 {/* Main Content Area */}
-                {/* CHANGED: On desktop, spans 3 of 5 columns */}
+                {/* (No changes in this section) */}
                 <div className="flex w-full flex-col gap-6 md:col-span-3">
 
                     {/*row 1*/}
                     <div>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4 sm:gap-2">
                             {/* Tour Name */}
-                            <FieldLabel className="text-4xl sm:text-5xl lg:text-6xl font-bold break-words text-[#020765]">
+                            <FieldLabel
+                                className="text-4xl sm:text-5xl lg:text-6xl font-bold break-words text-[#020765]">
                                 {tour.name}
                             </FieldLabel>
 
@@ -208,13 +213,13 @@ export default function TourPost() {
                         {tour.tags.map((tag, index) =>
                             (
                                 <span key={index} className="mr-2">
-                                    <Badge
-                                        variant={TOUR_TAG_VARIANTS[tag] || "default"}
-                                        className="cursor-pointer"
-                                    >
-                                      {tag}
-                                    </Badge>
-                                </span>
+                            <Badge
+                                variant={TOUR_TAG_VARIANTS[tag] || "default"}
+                                className="cursor-pointer"
+                            >
+                              {tag}
+                            </Badge>
+                        </span>
                             ))}
                     </div>
 
@@ -252,8 +257,8 @@ export default function TourPost() {
 
                         {/* Number of votes */}
                         <span className="text-gray-600 text-base sm:text-lg">
-                            {averageRating} ({tour.rating_count} votes)
-                          </span>
+                    {averageRating} ({tour.rating_count} votes)
+                  </span>
                     </div>
 
                     {/*row 3*/}
@@ -263,7 +268,7 @@ export default function TourPost() {
 
                     {/*row 4*/}
                     <div className="mt-4">
-                        <Card className="w-full bg-neutral-200 rounded-4xl h-24"/>
+                        <GuideSection guide={tour.guide}/>
                     </div>
 
                     {/*row 5*/}
@@ -302,15 +307,16 @@ export default function TourPost() {
                 </div>
 
                 {/* Booking Form Card */}
-                {/* CHANGED: Spans 2 cols and 2 rows on desktop. Sticky. */}
+                {/* CHANGED: Removed 'lg:w-md' for correct responsive scaling */}
                 <Card
-                    className="flex flex-col bg-neutral-50 w-full max-w-lg mx-auto lg:w-lg md:max-w-none md:col-span-2 md:row-span-2 md:sticky top-23 rounded-4xl h-fit">
+                    // CHANGED: Removed md:max-h-[...] and md:overflow-y-auto to remove the scrollbar
+                    // CHANGED: Standardized top-23 to top-24
+                    className="flex flex-col bg-neutral-50 w-full max-w-lg mx-auto md:max-w-none md:col-span-2 md:row-span-2 md:sticky top-24 rounded-4xl h-fit">
                     <CardHeader>
                         <CardTitle className="flex flex-col items-center justify-center gap-2 p-3">
                             <div className="flex items-center justify-between">
 
-                                {/* 2. THE STATUS BADGE: Added as a new, separate element. */}
-                                {/* This uses the same soft, clean style as your tour tags. */}
+                                {/* 2. THE STATUS BADGE */}
                                 {achievements.includes("Budget") && (
                                     <span
                                         className="rounded-full bg-rose-100 px-1 py-0.5 text-[10px] font-medium text-rose-700 -mt-6 -mr-1">
@@ -323,10 +329,9 @@ export default function TourPost() {
                                         Luxury
                                     </span>
                                 )}
-                                {/* 1. THE PRICE: No longer has conditional colors. */}
+                                {/* 1. THE PRICE */}
                                 <FieldLabel
                                     className={cn(
-                                        // Kept your font-normal preference
                                         "text-3xl sm:text-4xl font-medium",
                                     )}
                                 >
@@ -334,7 +339,7 @@ export default function TourPost() {
                                         ? `${(tour.price * (groupsize || tour.min_people)).toLocaleString()} VND`
                                         : `$${((tour.price * (groupsize || tour.min_people)) / 25000).toFixed(2)} USD`}
                                 </FieldLabel>
-                                {/* 3. THE BUTTON: Unchanged, but now spaced correctly. */}
+                                {/* 3. THE BUTTON */}
                                 <Button
                                     size="icon"
                                     onClick={() => setCurrency(currency === "VND" ? "USD" : "VND")}
@@ -347,10 +352,10 @@ export default function TourPost() {
                         </CardTitle>
                     </CardHeader>
 
+                    {/* Using the more compact layout from the previous step */}
+                    <CardContent className="flex flex-col gap-1">
 
-                    <CardContent className="flex flex-col gap-2">
-                        {/* ... (All booking card content remains unchanged) ... */}
-                        <div className="flex justify-between items-center p-3">
+                        <div className="flex justify-between items-center p-2">
                             <div className="flex items-center gap-2 text-lg text-neutral-600 sm:text-xl">
                                 <UserPlus className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"/>
                                 <span>Max group size:</span>
@@ -359,7 +364,7 @@ export default function TourPost() {
                                 className="text-lg sm:text-xl text-[#23C491] font-medium text-right">{tour.min_people} - {tour.max_people} people</FieldLabel>
                         </div>
 
-                        <div className="flex justify-between items-center p-3">
+                        <div className="flex justify-between items-center p-2">
                             <div className="flex items-center gap-2 text-lg text-neutral-600 sm:text-xl">
                                 <Clock className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"/>
                                 <span>Duration:</span>
@@ -368,7 +373,7 @@ export default function TourPost() {
                                 to {tour.duration} hours</FieldLabel>
                         </div>
 
-                        <div className="flex justify-between items-center p-3">
+                        <div className="flex justify-between items-center p-2">
                             <div className="flex items-center gap-2 text-lg text-neutral-600 sm:text-xl">
                                 {tour.transportation === "walk" &&
                                     <Footprints className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"/>}
@@ -380,148 +385,168 @@ export default function TourPost() {
                             </div>
                             <FieldLabel className="text-lg sm:text-xl text-[#23C491] font-medium capitalize text-right">
                                 {tour.transportation === "walk" && "walking"}
-                                {tour.transportation === "private" && "private transportation"}
-                                {tour.transportation === "public" && "public transportation"}
+                                {tour.transportation === "private" && "private "}
+                                {tour.transportation === "public" && "public "}
                             </FieldLabel>
                         </div>
 
-                        <div className="flex justify-between items-center p-3">
+                        <div className="flex justify-between items-center p-2">
                             <div className="flex items-center gap-2 text-lg text-neutral-600 sm:text-xl">
                                 <Pin className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"/>
                                 <span>Meeting location:</span>
                             </div>
                             <FieldLabel className="text-lg sm:text-xl text-[#23C491] font-medium text-right">
-                                {tour.meeting_location}
+                                {tour.meeting_location === "mine" && "My Place"}
+                                {tour.meeting_location === "yours" && "Your Place"}
+                                {tour.meeting_location === "first" && "First Stop"}
                             </FieldLabel>
                         </div>
 
-                        <br/>
+                        {/* CHANGED: Made input rows more compact (p-3 to p-2) */}
+                        {userRole !== "guide" && (
+                            <div className="flex flex-col gap-3 p-1 mt-2 mb-3">
+                                <div
+                                    className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-2">
+                                    <FieldLabel className="text-lg sm:text-xl text-black">
+                                        Group Size:
+                                    </FieldLabel>
+                                    <Input
+                                        type="number"
+                                        min={tour.min_people}
+                                        max={tour.max_people}
+                                        step={1}
+                                        value={groupsize ?? tour.min_people}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setgroupsize(value === "" ? "" : Number(value));
+                                        }}
+                                        onBlur={() => {
+                                            if (groupsize === "" || isNaN(groupsize)) {
+                                                setgroupsize(tour.min_people);
+                                            }
+                                            const clamped = Math.min(
+                                                Math.max(groupsize, tour.min_people),
+                                                tour.max_people
+                                            );
+                                            setgroupsize(clamped);
+                                        }}
+                                        className="w-30 sm:w-45 text-center rounded-3xl text-lg sm:text-xl font-bold text-[#23C491]"
+                                    />
+                                </div>
 
-                        <div className="flex flex-col gap-3 p-3">
-                            <div
-                                className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
-                                <FieldLabel className="text-lg sm:text-xl text-black">
-                                    Group Size:
-                                </FieldLabel>
-                                <Input
-                                    type="number"
-                                    min={tour.min_people}
-                                    max={tour.max_people}
-                                    step={1}
-                                    value={groupsize ?? tour.min_people}
-                                    onChange={(e) => {
-                                        // allow free typing or clearing
-                                        const value = e.target.value;
-                                        setgroupsize(value === "" ? "" : Number(value));
-                                    }}
-                                    onBlur={() => {
-                                        // clamp when user leaves the input
-                                        if (groupsize === "" || isNaN(groupsize)) {
-                                            setgroupsize(tour.min_people);
-                                            return;
-                                        }
+                                <div
+                                    className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-2">
+                                    <FieldLabel className="text-lg sm:text-xl text-black">
+                                        Tour Date:
+                                    </FieldLabel>
+                                    <Calendar22
+                                        date={date ?? ""}
+                                        onSelect={(e) => setdate(e)}
+                                        buttonClassName="w-30 sm:w-45 text-center rounded-3xl text-base sm:text-md font-bold text-[#23C491]"
+                                    />
+                                </div>
 
-                                        const clamped = Math.min(Math.max(groupsize, tour.min_people), tour.max_people);
-                                        setgroupsize(clamped);
-                                    }}
-                                    className="w-30 sm:w-45 text-center rounded-3xl text-lg sm:text-xl font-bold text-[#23C491]"
-                                />
+                                <div
+                                    className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-2">
+                                    <FieldLabel className="text-lg sm:text-xl text-black">
+                                        Start Time:
+                                    </FieldLabel>
+                                    <Input
+                                        type="time"
+                                        value={time ?? ""}
+                                        onChange={(e) => settime(e.target.value)}
+                                        className="w-30 sm:w-45 text-center rounded-3xl text-lg sm:text-xl font-bold text-[#23C491]"
+                                    />
+                                </div>
                             </div>
+                        )}
 
-                            <div
-                                className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
-                                <FieldLabel className="text-lg sm:text-xl text-black">
-                                    Tour Date:
-                                </FieldLabel>
-                                <Calendar22
-                                    date={date ?? ""}
-                                    onSelect={(e) => setdate(e)}
-                                    buttonClassName="w-30 sm:w-45 text-center rounded-3xl text-base sm:text-md font-bold text-[#23C491]"
-                                />
-                            </div>
 
-                            <div
-                                className="bg-white flex justify-between items-center border-neutral-300 border-2 width rounded-4xl p-3">
-                                <FieldLabel className="text-lg sm:text-xl text-black">
-                                    Start Time:
-                                </FieldLabel>
-                                <Input
-                                    type="time"
-                                    value={time ?? ""}
-                                    onChange={(e) => settime(e.target.value)}
-                                    className="w-30 sm:w-45 text-center rounded-3xl text-lg sm:text-xl font-bold text-[#23C491]"
-                                />
-                            </div>
-                        </div>
-                        <br/>
-                        <div className="relative w-full">
+                        {/* CHANGED: Reduced margin-top (mt-4 to mt-2) */}
+                        {userRole !== "guide" && (
+                            <div className="relative w-full mt-2">
 
-                            {/* 2. Conditionally render the "Popular" badge */}
-                            {achievements.includes("Popular") && (
-                                <span
-                                    className="absolute -top-2.5 left-4 z-10 rounded-full bg-yellow-400 px-3 py-0.5 text-xs font-semibold text-black shadow">
+                                {/* 2. Conditionally render the "Popular" badge */}
+                                {achievements.includes("Popular") && (
+                                    <span
+                                        className="absolute -top-2.5 left-4 z-10 rounded-full bg-yellow-400 px-3 py-0.5 text-xs font-semibold text-black shadow">
                                     <div className="flex justify-center gap-1 items-center">
-                                        <Flame fill="black" stroke="black" className="w-3 h-3"/>
-                                        Popular
+                                      <Flame fill="black" stroke="black" className="w-3 h-3"/>
+                                      Popular
                                     </div>
-
-                                </span>
-                            )}
-
-                            {/* 3. The Button is NOW ALWAYS GREEN.
-                                   We removed the conditional styles from the button itself. */}
-                            <Button
-                                className={cn(
-                                    "text-xl sm:text-2xl rounded-4xl w-full h-fit py-3 transition-all duration-300",
-
-                                    // This is now the *only* style, based on your DEFAULT state
-                                    "bg-[#068F64] text-white hover:bg-[#23C491] hover:text-yellow-50 active:scale-[0.98] active:brightness-95",
-
-                                    // Add a little top padding if it's popular, to make room for the badge
-                                    achievements.includes("Popular") && "pt-4"
+                                  </span>
                                 )}
-                            >
-                                REQUEST BOOKING
-                            </Button>
-                        </div>
+
+                                {/* 3. The Button */}
+                                <Button
+                                    onClick={() => {
+                                        if (!isLoggedIn) {
+                                            window.location.href = "/login";
+                                            console.log("not logged");// redirect nếu chưa login
+                                        } else {
+                                            console.log("logged");// handle booking logic
+                                        }
+                                    }}
+                                    className={cn(
+                                        "text-xl sm:text-2xl rounded-4xl w-full h-fit py-3 transition-all duration-300",
+                                        "bg-[#068F64] text-white hover:bg-[#23C491] hover:text-yellow-50 active:scale-[0.98] active:brightness-95",
+                                        achievements.includes("Popular") && "pt-4"
+                                    )}
+                                >
+                                    REQUEST BOOKING
+                                </Button>
+                            </div>
+                        )}
+
                     </CardContent>
                 </Card>
 
                 {/* Reviews Section */}
-                {/* Reviews Section */}
+                {/* (No changes in this section) */}
                 <div className="flex flex-col gap-4 md:col-span-3">
                     <FieldSeparator className="p-10"/>
                     <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">Reviews</FieldLabel>
 
                     {/* Section 2: Your Rating (Interactive) */}
                     <div className="mt-6">
-                        {!hasRated ? (
-                            <Dialog>
-                                <DialogTitle/>
-                                <DialogTrigger asChild>
+                        {!hasRated && userRole !== "guide" ? (
+                            userRole ? ( // Logged in user
+                                <Dialog>
+                                    <DialogTitle/>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
+                                            Write your review here
+                                        </Button>
+                                    </DialogTrigger>
+
+                                    <DialogContent className="w-full sm:max-w-2xl shadow-xl rounded-xl">
+                                        <DialogDescription/>
+                                        <TourRate
+                                            tourId={tourData.tour.id}
+                                            onRatingSubmit={(newRating) => {
+                                                setRatings((prev) => [newRating, ...prev]);
+                                                setHasRated(true);
+                                            }}
+                                        />
+                                    </DialogContent>
+                                </Dialog>
+                            ) : ( // Guest → Link to login
+                                <Link to="/login" className="w-full">
                                     <Button
                                         className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
                                         Write your review here
                                     </Button>
-                                </DialogTrigger>
-
-                                <DialogContent className="w-full sm:max-w-2xl shadow-xl rounded-xl">
-                                    <DialogDescription/>
-                                    <TourRate tourId={tourData.tour.id} onRatingSubmit={(newRating) => {
-                                        // Refresh ratings after a new one is submitted
-                                        setRatings((prev) => [newRating, ...prev]);
-                                        setHasRated(true);
-                                    }}/>
-                                </DialogContent>
-                            </Dialog>
-                        ) : (
+                                </Link>
+                            )
+                        ) : hasRated ? (
                             <div className="flex items-center gap-2">
                                 <span className="text-yellow-500 text-2xl sm:text-3xl">{/* stars */}</span>
                                 <span className="text-sm sm:text-base text-neutral-600">
-                                  You have already rated this tour.
-                                </span>
+                                    You have already rated this tour.
+                                  </span>
                             </div>
-                        )}
+                        ) : null}
                     </div>
 
                     {/* Display fetched ratings */}

@@ -45,26 +45,33 @@ const TourRating = ({ ratings = [] }) => {
           {/* Left: User Info */}
           <div className="flex-shrink-0 w-16 sm:w-20 flex flex-col items-center">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold">
-              {rating.user ? rating.user[0].toUpperCase() : "A"}
+                {rating.tourist?.username
+                ? rating.tourist.username[0].toUpperCase()
+                : "A"}
             </div>
             <FieldLabel className="mt-2 text-sm sm:text-base font-semibold text-center">
-              {rating.user || "Anonymous"}
+                {rating.tourist?.username || "Anonymous"}
             </FieldLabel>
           </div>
+
 
           {/* Right: Content */}
           <div className="flex-1 flex flex-col gap-2">
             {/* Stars */}
             <div className="flex flex-row space-x-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-5 w-5 flex-shrink-0 ${
-                    i < rating.rating ? "text-yellow-400" : "text-gray-300"
-                  }`}
-                />
-              ))}
+              {Array.from({ length: 5 }).map((_, i) => {
+                const isFilled = i < rating.rating; // declare inside map
+                return (
+                  <Star
+                    key={i}
+                    className="w-5 h-5"
+                    fill={isFilled ? "#facc15" : "#d1d5db"} // yellow if filled, transparent if not
+                    stroke={isFilled ? "#facc15" : "#d1d5db"} // yellow or gray
+                  />
+                );
+              })}
             </div>
+
 
             {/* Review Text */}
             {rating.review && (
