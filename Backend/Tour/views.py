@@ -11,7 +11,7 @@ from .models import Tour, Place, TourImage, Transportation, TourPlace, TourRatin
 from .serializers import TourSerializer, PlaceSerializer, TourRatingSerializer, TourImageSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, parser_classes, permission_classes
-from django.db.models import Count, Q, F # for get get_popular_tours()
+from django.db.models import Count, Q, F
 from collections import Counter
 # --- CREATE TOUR ---
 @api_view(['POST'])
@@ -486,7 +486,15 @@ def get_all_tours(request):
         if rating_min:
             # Lọc dựa trên rating trung bình
             # (Giả định rating > 0, rates > 0)
-            tours_queryset = tours_queryset.filter(rates__gt=0, rating__gte=(int(rating_min) * F('rates')))
+            try:
+                min_r = int(rating_min)
+                if min_r > 0:
+                    tours_queryset = tours_queryset.filter(
+                        rating_count__gt=0, 
+                        rating_total__gte=(min_r * F('rating_count'))
+                    )
+            except (ValueError, TypeError):
+                pass # Bỏ qua nếu rating_min không hợp lệ
 
         if transport:
             transport_list = transport.split(',')
@@ -521,13 +529,13 @@ def get_all_tours(request):
             else:
                 location_str = "Many Places"
 
-            average_rating = round(tour.rating / tour.rates, 1) if tour.rates > 0 else 0
+            average_rating = round(tour.average_rating(), 1)
             response_data.append({
                 'id': tour.id,
                 'title': tour.name,
                 'price': tour.price,
                 'rating': average_rating,
-                'reviews': tour.rates, # number of reviews
+                'reviews': tour.rating_count, # number of reviews
                 'duration': tour.duration,
                 'groupSize': f"{tour.min_people}-{tour.max_people} people",
                 'transportation': tour.transportation,

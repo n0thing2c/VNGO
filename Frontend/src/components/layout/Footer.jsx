@@ -1,45 +1,125 @@
+// export default function Footer() {
+//     return(
+//       <footer className="bg-black text-white py-12">
+//         <div className="container mx-auto px-4 md:px-6 lg:px-8">
+//           <div className="max-w-6xl mx-auto">
+//             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+//               <div>
+//                 <h3 className="text-xl font-bold mb-4">VNGO</h3>
+//                 <p className="text-gray-400 text-sm">
+//                   Your gateway to authentic Vietnam experiences
+//                 </p>
+//               </div>
+//               <div>
+//                 <h4 className="font-semibold mb-4">Company</h4>
+//                 <ul className="space-y-2 text-sm text-gray-400">
+//                   <li><a href="#" className="hover:text-white">About Us</a></li>
+//                   <li><a href="#" className="hover:text-white">Contact</a></li>
+//                   <li><a href="#" className="hover:text-white">Careers</a></li>
+//                 </ul>
+//               </div>
+//               <div>
+//                 <h4 className="font-semibold mb-4">Support</h4>
+//                 <ul className="space-y-2 text-sm text-gray-400">
+//                   <li><a href="#" className="hover:text-white">Help Center</a></li>
+//                   <li><a href="#" className="hover:text-white">Safety</a></li>
+//                   <li><a href="#" className="hover:text-white">Cancellation</a></li>
+//                 </ul>
+//               </div>
+//               <div>
+//                 <h4 className="font-semibold mb-4">Follow Us</h4>
+//                 <div className="flex gap-4">
+//                   <a href="#" className="text-gray-400 hover:text-white">Facebook</a>
+//                   <a href="#" className="text-gray-400 hover:text-white">Instagram</a>
+//                   <a href="#" className="text-gray-400 hover:text-white">Twitter</a>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+//               <p>&copy; 2024 VNGO. All rights reserved.</p>
+//             </div>
+//           </div>
+//         </div>
+//       </footer>
+//     );
+// }
+import Ig from "@/assets/ig.png";
+import LinkedIn from "@/assets/linkedIn.png";
+import X from "@/assets/x.png";
+
 export default function Footer() {
-    return(
-      <footer className="bg-black text-white py-12">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="text-xl font-bold mb-4">VNGO</h3>
-                <p className="text-gray-400 text-sm">
-                  Your gateway to authentic Vietnam experiences
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Company</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li><a href="#" className="hover:text-white">About Us</a></li>
-                  <li><a href="#" className="hover:text-white">Contact</a></li>
-                  <li><a href="#" className="hover:text-white">Careers</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Support</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li><a href="#" className="hover:text-white">Help Center</a></li>
-                  <li><a href="#" className="hover:text-white">Safety</a></li>
-                  <li><a href="#" className="hover:text-white">Cancellation</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Follow Us</h4>
-                <div className="flex gap-4">
-                  <a href="#" className="text-gray-400 hover:text-white">Facebook</a>
-                  <a href="#" className="text-gray-400 hover:text-white">Instagram</a>
-                  <a href="#" className="text-gray-400 hover:text-white">Twitter</a>
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-              <p>&copy; 2024 VNGO. All rights reserved.</p>
-            </div>
+  return (
+    <div
+      style={{
+        background: "black",
+      }}
+      className="w-full p-12 text-white"
+    >
+      <div className="container mx-auto flex justify-between items-start">
+        {/* === CỘT BÊN TRÁI: Brand và Social === */}
+        <div className="flex flex-col gap-8">
+          {/* Brand */}
+          <div>
+            <h2 className="text-2xl font-bold">VNGDEV.EXE</h2>
+            <p className="text-base">A dev team from © VNGO Corporation</p>
+          </div>
+
+          {/* Social Icons */}
+          <div className="flex gap-4 items-center">
+            <img src={Ig} alt="Instagram" className="w-6 h-6" />
+            <img src={LinkedIn} alt="LinkedIn" className="w-6 h-6" />
+            <img src={X} alt="X" className="w-5 h-5" />
           </div>
         </div>
-      </footer>
-    );
+
+        {/* === CỘT BÊN PHẢI: Links (dùng flex cho 3 cột) === */}
+        <div className="flex gap-16">
+          {/* Cột 1: Features */}
+          <div className="flex flex-col gap-3">
+            <h3 className="font-bold text-base mb-2">Features</h3>
+            <a href="/" className="text-sm hover:underline">
+              Core features
+            </a>
+            <a href="/" className="text-sm hover:underline">
+              Pro experience
+            </a>
+            <a href="/" className="text-sm hover:underline">
+              Integrations
+            </a>
+          </div>
+
+          {/* Cột 2: Learn more */}
+          <div className="flex flex-col gap-3">
+            <h3 className="font-bold text-base mb-2">Learn more</h3>
+            <a href="/" className="text-sm hover:underline">
+              Blog
+            </a>
+            <a href="/" className="text-sm hover:underline">
+              Case studies
+            </a>
+            <a href="/" className="text-sm hover:underline">
+              Customer stories
+            </a>
+            <a href="/" className="text-sm hover:underline">
+              Best practices
+            </a>
+          </div>
+
+          {/* Cột 3: Support */}
+          <div className="flex flex-col gap-3">
+            <h3 className="font-bold text-base mb-2">Support</h3>
+            <a href="/" className="text-sm hover:underline">
+              Contact
+            </a>
+            <a href="/" className="text-sm hover:underline">
+              Support
+            </a>
+            <a href="/" className="text-sm hover:underline">
+              Legal
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -9,10 +9,16 @@ import {
 
 import logo from '../../assets/LogoVNGO.png'
 import GlobalSearchBar from '../GlobalSearchBar';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function Header() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  // Dùng "selector" (hàm mũi tên) để component chỉ
+  // re-render khi 'user' thay đổi, chứ không phải khi 'loading' thay đổi.
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const isLoggedIn = !!user; // Tạo một biến boolean tiện lợi
 
   return (
     <header className="bg-black sticky top-0 z-50 border-b border-black/10">
@@ -36,24 +42,49 @@ export default function Header() {
           )}
 
           {/* User Menu with Dropdown */}
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Menu Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 outline-none hover:bg-white/20 rounded-full px-3 py-2 transition-colors">
-                  <Menu className="w-10 h-10 text-white" />
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-[#5A74F8] text-sm font-semibold">TL</span>
+          {isLoggedIn && user ? (
+            <div className="flex items-center gap-2 md:gap-3">
+              {/* Menu Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 outline-none hover:bg-white/20 rounded-full px-3 py-2 transition-colors">
+                    <Menu className="w-10 h-10 text-white" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center">
+                      <span className="text-[#5A74F8] text-sm font-semibold">
+                        {user?.name?.slice(0, 2)?.toUpperCase()}
+                      </span>
+                    </div>
+                    <ChevronDown className="w-5 h-5 text-white" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  {user.role === 'guide' ? (
+                    <DropdownMenuItem>My Tours</DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem>My Bookings</DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem>Message</DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="flex items-center gap-4">
+                <Link to="/login">
+                  <div className="border border-white text-white rounded-[30px] px-7 py-2.5 text-center hover:bg-white/10 transition cursor-pointer">
+                    Login
                   </div>
-                  <ChevronDown className="w-5 h-5 text-white" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>My Bookings</DropdownMenuItem>
-                <DropdownMenuItem>Message</DropdownMenuItem>
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                </Link>
+                <Link to="/signup">
+                  <div className="border border-[#23c491] text-[#23c491] rounded-[30px] px-7 py-2.5 text-center hover:bg-[#23c491]/10 transition cursor-pointer">
+                    Sign up
+                  </div>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

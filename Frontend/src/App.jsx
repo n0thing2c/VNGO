@@ -12,11 +12,13 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import InfoPage from "./pages/PersonalInfoPage";
 import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
 import GuideProfilePage from "@/pages/GuideProfilePage.jsx";
+import ScrollToTop from "./components/ScrollToTop";
 function App() {
     return (
         <>
             <Toaster position="top-center" richColors/>
             <BrowserRouter>
+                <ScrollToTop />
                 <Routes>
                     {/* public routes*/}
                     <Route path="/signup" element={<SignUpPage />} />
