@@ -83,11 +83,6 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Disabled auto scroll to keep current scroll position on new messages/room changes
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
-
   // Load messages from API
   useEffect(() => {
     if (!roomName) {

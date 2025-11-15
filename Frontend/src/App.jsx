@@ -17,9 +17,10 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/login" element={<LogInPage />} />
           <Route path="/personal-info" element={<InfoPage />} />
+          <Route path="/chat" element={<ChatPage />} />
 
           {/* protected routes*/}
-          <Route path="/chat" element={<ChatPage />} />
+          
         </Routes>
       </BrowserRouter>
     </>
