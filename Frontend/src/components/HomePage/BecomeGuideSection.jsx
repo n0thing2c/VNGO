@@ -47,7 +47,7 @@ export default function BecomeGuideSection() {
 
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                   <DialogTrigger asChild>
-                    <button className="bg-[#5A74F8] hover:bg-[#4a63d8] text-white px-6 py-3 rounded-xl transition-colors font-medium">
+                    <button className="bg-[#020765] hover:bg-[#068F64] text-white px-6 py-3 rounded-xl transition-colors font-medium">
                       Apply now
                     </button>
                   </DialogTrigger>
@@ -124,7 +124,7 @@ export default function BecomeGuideSection() {
                         </button>
                         <button
                           type="submit"
-                          className="flex-1 bg-[#5A74F8] hover:bg-[#4a63d8] text-white px-4 py-2 rounded-lg transition-colors"
+                          className="flex-1 bg-[#020765] hover:bg-[#068F64] text-white px-4 py-2 rounded-lg transition-colors"
                         >
                           Submit Application
                         </button>

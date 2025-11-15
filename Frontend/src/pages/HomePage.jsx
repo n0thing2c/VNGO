@@ -7,6 +7,7 @@ import TravelStatsSection from "@/components/HomePage/TravelStatsSection";
 import InfoSection from "@/components/HomePage/InfoSection";
 import ReviewsSection from "@/components/HomePage/ReviewsSection";
 import BecomeGuideSection from "@/components/HomePage/BecomeGuideSection"
+import FadeInWrapper from "@/components/FadeInWrapper";
 
 // API
 import { API_ENDPOINTS } from "@/constant";
@@ -54,17 +55,7 @@ export default function HomePage() {
   const [popularDestinations, setPopularDestinations] = useState([]);
 
   useEffect(() => {
-    // // 1. Fetch locations cho thanh tìm kiếm
-    // fetch(`${API_URL}/locations/`)
-    //   .then(res => res.json())
-    //   .then(data => {
-    //     // API trả về list object, ta chỉ cần { id, name }
-    //     // Giả sử PlaceSerializer trả về `fields = '__all__'`
-    //     setDestinations(data.map(place => ({ id: place.id, name: place.name })));
-    //   })
-    //   .catch(err => console.error("Error fetching locations:", err));
-
-    // 2. Fetch destinations cho mục "Popular dests"
+    // Fetch destinations cho mục "Popular dests"
     fetch(API_ENDPOINTS.GET_POPULAR_DESTINATIONS)
       .then(res => res.json())
       .then(data => {
@@ -78,12 +69,12 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <main>
         <HeroSection />
-        <PopularDestSection popularDestinations={popularDestinations}/>
-        <GuidesSection />
-        <TravelStatsSection />
-        <InfoSection />
-        <ReviewsSection />
-        <BecomeGuideSection />
+        <FadeInWrapper><PopularDestSection popularDestinations={popularDestinations}/></FadeInWrapper>
+        <FadeInWrapper><GuidesSection /></FadeInWrapper>
+        <FadeInWrapper><TravelStatsSection /></FadeInWrapper>
+        <FadeInWrapper><InfoSection /></FadeInWrapper>
+        <FadeInWrapper><ReviewsSection /></FadeInWrapper>
+        <FadeInWrapper><BecomeGuideSection /></FadeInWrapper>
       </main>
     </div>
   );

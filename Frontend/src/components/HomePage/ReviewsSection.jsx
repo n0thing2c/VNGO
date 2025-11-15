@@ -1,5 +1,11 @@
-import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 // mock data
 const reviews = [
@@ -32,71 +38,46 @@ const itemsPerView = {
 };
 
 export default function ReviewsSection() {
-    const [reviewsIndex, setReviewsIndex] = useState(0);
-    const reviewsMaxIndex = reviews.length - itemsPerView.desktop;
-
-    const handleReviewsPrev = () => {
-        setReviewsIndex((prev) => Math.max(0, prev - 1));
-    };
-
-    const handleReviewsNext = () => {
-        setReviewsIndex((prev) => Math.min(reviewsMaxIndex, prev + 1));
-    };
     return(
-        <section id="reviews" className="py-12 md:py-16 lg:py-20 bg-white">
+        <section id="reviews" className="py-16 md:py-20 lg:py-24 bg-white">
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12 lg:mb-16">
               <div className="flex justify-center mb-4 md:mb-6">
-                {/* ĐỔI MÀU: Icon background */}
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
                   <span className="text-5xl">💬</span>
                 </div>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-black mb-2">What travellers say</h2>
             </div>
-
-            <div className="relative">
-              <div className="overflow-hidden">
-                <div
-                  className="flex gap-4 md:gap-6 lg:gap-8 transition-transform duration-300 ease-in-out"
-                  style={{
-                    transform: `translateX(-${reviewsIndex * (100 / itemsPerView.desktop + 2.67)}%)`
-                  }}
-                >
-                  {reviews.map((review) => (
+            
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true, // Cho phép lặp vô tận
+              }}
+              className="w-full max-w-6xl mx-auto"
+            >
+              <CarouselContent className="-ml-4 md:-ml-6 lg:-ml-8">
+                {reviews.map((review) => (
+                  <CarouselItem
+                    key={review.id}
+                    className="pl-4 md:pl-6 lg:pl-8 basis-full md:basis-1/2 lg:basis-1/3"
+                  >
                     <article
                       key={review.id}
-                      className="flex-none w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-21.33px)] border-t border-black/15 pt-6"
+                      className="flex-none border-t border-black/15 pt-6 h-full"
                     >
                       <h3 className="mb-4 text-lg font-semibold text-black">{review.title}</h3>
                       <p className="text-black/60 leading-relaxed">
                         {review.text}
                       </p>
                     </article>
-                  ))}
-                </div>
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex justify-center md:justify-between items-center mt-8 md:mt-10 gap-4 md:absolute md:top-1/2 md:-translate-y-1/2 md:left-0 md:right-0 md:pointer-events-none">
-                <button
-                  onClick={handleReviewsPrev}
-                  disabled={reviewsIndex === 0}
-                  className="bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-full p-2 shadow-md transition-all md:pointer-events-auto md:-translate-x-4 lg:-translate-x-6"
-                  aria-label="Previous reviews"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
-                  onClick={handleReviewsNext}
-                  disabled={reviewsIndex >= reviewsMaxIndex}
-                  className="bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-full p-2 shadow-md transition-all md:pointer-events-auto md:translate-x-4 lg:translate-x-6"
-                  aria-label="Next reviews"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
           </div>
         </section>
     )

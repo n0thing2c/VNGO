@@ -42,7 +42,7 @@ const ToursShowPage = () => {
     const defaultFilters = {
         price: [0, 10000000], // 0 - 10 triệu
         duration: [1, 24],     // 0 - 24 giờ
-        groupSize: 1,
+        groupSize: 0,
         rating: 0,           // 0 = All
         transportation: [],  // array rỗng
         tags: [],            // array rỗng
@@ -123,7 +123,7 @@ const ToursShowPage = () => {
         if (filters.duration[0] > 1) params.append('duration_min', filters.duration[0]);
         if (filters.duration[1] < 24) params.append('duration_max', filters.duration[1]);
 
-        if (filters.groupSize > 1) params.append('group_size', filters.groupSize);
+        if (filters.groupSize > 0) params.append('group_size', filters.groupSize);
         if (filters.rating > 0) params.append('rating_min', filters.rating);
 
         if (filters.transportation.length > 0) params.append('transportation', filters.transportation.join(','));
@@ -270,12 +270,12 @@ const ToursShowPage = () => {
                                     <Label>Group Size</Label>
                                     <Input
                                         type="number"
-                                        min={1}
+                                        min={0}
                                         max={15}
                                         value={tempFilters.groupSize}
                                         onChange={(e) => setTempFilters(prev => ({
                                             ...prev,
-                                            groupSize: Number(e.target.value) || 1
+                                            groupSize: Number(e.target.value) || 0
                                         }))}
                                         className="text-center"
                                         placeholder="How many people?"

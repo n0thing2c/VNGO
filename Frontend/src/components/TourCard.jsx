@@ -63,7 +63,7 @@ export default function TourCard({ tour }) {
         </div>
         <div className="flex items-center gap-2">
           <Users size={16} className="text-gray-600" />
-          <span>Max {groupSize}</span>
+          <span>{groupSize}</span>
         </div>
       </div>
 

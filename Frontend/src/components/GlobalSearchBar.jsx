@@ -191,7 +191,7 @@ export default function GlobalSearchBar() {
                 {/* Nút Search giờ sẽ chọn suggestion đầu tiên */}
                 <button
                     onClick={() => handleSearch()}
-                    className="bg-[#002D78] text-white px-6 py-3 rounded-full hover:bg-[#4a63d8] transition-colors font-medium flex items-center justify-center mr-1"
+                    className="bg-[#020765] hover:bg-[#068F64] text-white px-6 py-3 rounded-full transition-colors font-medium flex items-center justify-center mr-1"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <span className="hidden md:inline">Search</span>

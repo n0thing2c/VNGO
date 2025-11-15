@@ -1,3 +1,5 @@
+import AnimatedStat from "../AnimatedStat";
+
 export default function TravelStatsSection() {
   return (
     <section className="relative py-16 md:py-20 lg:py-24 bg-gray-100 overflow-hidden">
@@ -34,14 +36,18 @@ export default function TravelStatsSection() {
               <div className="bg-white/80 backdrop-blur-sm rounded-full p-4 shadow-md">
                 <div className="flex items-center justify-between px-6">
                   <span className="text-lg font-medium text-gray-700">Travellers served</span>
-                  <span className="text-2xl font-bold text-black">10,000+</span>
+                  <span className="text-2xl font-bold text-black">
+                    <AnimatedStat end={10000} suffix="+" />
+                  </span>
                 </div>
               </div>
               {/* Stat 2 */}
               <div className="bg-white/80 backdrop-blur-sm rounded-full p-4 shadow-md">
                 <div className="flex items-center justify-between px-6">
                   <span className="text-lg font-medium text-gray-700">Tour guides</span>
-                  <span className="text-2xl font-bold text-black">500+</span>
+                  <span className="text-2xl font-bold text-black">
+                    <AnimatedStat end={500} suffix="+" />
+                  </span>
                 </div>
               </div>
             </div>
