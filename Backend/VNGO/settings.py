@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     "Authentication",
     "Tour",
     "Profiles",
-    "Authentication",
     "Chat",
 ]
 
