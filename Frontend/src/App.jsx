@@ -14,7 +14,7 @@ import ChatPage from "./pages/ChatPage";
 import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
 import GuideProfilePage from "@/pages/GuideProfilePage.jsx";
 import ScrollToTop from "./components/ScrollToTop";
-import ProtectedRoute from "@/components/auth/ProtectedRoute.jsx";
+import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
 
 function App() {
     return (

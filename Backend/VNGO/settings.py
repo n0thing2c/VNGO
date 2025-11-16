@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     "Chat",
 ]
 
-#daphne
+# daphne
 ASGI_APPLICATION = "VNGO.asgi.application"
 
 CHANNEL_LAYERS = {
@@ -179,7 +179,7 @@ STATIC_URL = "static/"
 # Trong settings.py
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'Tour/static',
+    BASE_DIR / "Tour/static",
 ]
 
 # Default primary key field type
@@ -272,5 +272,5 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://127.0.0.1:5174$",
 ]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import HeaderChat from "@/components/HeaderChat";
-import Footer from "@/components/Footer";
+import Footer from "@/components/Login&SignUp/Footer";
 import MessageList from "@/components/chat/MessageList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { chatService } from "@/services/chatService";
@@ -17,8 +17,13 @@ const normalizeConversations = (items) => {
     }
 
     const existing = map.get(item.room);
-    const currentTime = item.lastMessageTime ? new Date(item.lastMessageTime).getTime() : 0;
-    const existingTime = existing && existing.lastMessageTime ? new Date(existing.lastMessageTime).getTime() : 0;
+    const currentTime = item.lastMessageTime
+      ? new Date(item.lastMessageTime).getTime()
+      : 0;
+    const existingTime =
+      existing && existing.lastMessageTime
+        ? new Date(existing.lastMessageTime).getTime()
+        : 0;
 
     if (!existing || currentTime >= existingTime) {
       map.set(item.room, {
@@ -52,7 +57,9 @@ export default function ChatPage() {
 
         const otherUserName =
           message?.sender && message.sender.id !== user?.id
-            ? message.sender.username || existing?.contactName || `Room: ${roomName}`
+            ? message.sender.username ||
+              existing?.contactName ||
+              `Room: ${roomName}`
             : existing?.contactName || `Room: ${roomName}`;
 
         const otherUserId =
@@ -64,15 +71,20 @@ export default function ChatPage() {
           room: roomName,
           contactName: otherUserName,
           contactId: otherUserId,
-          lastMessage: message?.content || existing?.lastMessage || "No message yet",
-          lastMessageTime: message?.created_at || existing?.lastMessageTime || null,
+          lastMessage:
+            message?.content || existing?.lastMessage || "No message yet",
+          lastMessageTime:
+            message?.created_at || existing?.lastMessageTime || null,
           responseTime: existing?.responseTime || "30 minutes",
           rating: existing?.rating ?? 3.5,
           reviewCount: existing?.reviewCount ?? 0,
         };
 
         const filtered = prev.filter((c) => c.room !== roomName);
-        const normalized = normalizeConversations([...filtered, updatedConversation]);
+        const normalized = normalizeConversations([
+          ...filtered,
+          updatedConversation,
+        ]);
 
         if (selectedRoom === roomName) {
           const found = normalized.find((c) => c.room === roomName);
@@ -94,7 +106,7 @@ export default function ChatPage() {
         const data = await chatService.getConversations();
         const normalized = normalizeConversations(data || []);
         setConversations(normalized);
-        
+
         // Auto-select first conversation nếu có và chưa có room được chọn
         if (normalized.length > 0 && !selectedRoom) {
           setSelectedRoom(normalized[0].room);
@@ -151,11 +163,15 @@ export default function ChatPage() {
     };
   }, [handleConversationUpdate]);
 
-  const normalizedConversations = useMemo(() => normalizeConversations(conversations), [conversations]);
+  const normalizedConversations = useMemo(
+    () => normalizeConversations(conversations),
+    [conversations]
+  );
 
-  const filteredConversations = normalizedConversations.filter((conv) =>
-    conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.contactId?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = normalizedConversations.filter(
+    (conv) =>
+      conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.contactId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSelectRoom = (roomName) => {
@@ -167,11 +183,13 @@ export default function ChatPage() {
   const handleJoinRoom = (e) => {
     e.preventDefault();
     if (!roomInput.trim()) return;
-    
+
     const roomName = roomInput.trim();
     setSelectedRoom(roomName);
-    
-    const existingConv = normalizedConversations.find((c) => c.room === roomName);
+
+    const existingConv = normalizedConversations.find(
+      (c) => c.room === roomName
+    );
     if (!existingConv) {
       const newConv = {
         room: roomName,
@@ -192,20 +210,22 @@ export default function ChatPage() {
     } else {
       setSelectedContact(existingConv);
     }
-    
+
     setRoomInput("");
   };
 
   return (
     <div className="h-[calc(100vh+259px)] flex flex-col bg-white">
       <HeaderChat />
-      
+
       {/* Room Join Section */}
       <div className="bg-gray-50 border-b px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Users className="w-4 h-4" />
-            <span>Current user: <strong>{user?.username || "Guest"}</strong></span>
+            <span>
+              Current user: <strong>{user?.username || "Guest"}</strong>
+            </span>
           </div>
           <div className="flex-1 max-w-md">
             <form onSubmit={handleJoinRoom} className="flex gap-2">
@@ -226,12 +246,13 @@ export default function ChatPage() {
           </div>
           {selectedRoom && (
             <div className="text-sm text-gray-600">
-              Active room: <strong className="text-blue-600">{selectedRoom}</strong>
+              Active room:{" "}
+              <strong className="text-blue-600">{selectedRoom}</strong>
             </div>
           )}
         </div>
       </div>
-      
+
       {/* Main Content */}
       <div className="flex-1 min-h-0 flex overflow-hidden">
         {/* Left Sidebar - Messages List */}
@@ -259,7 +280,9 @@ export default function ChatPage() {
             />
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-500">Select a conversation to start chatting</p>
+              <p className="text-gray-500">
+                Select a conversation to start chatting
+              </p>
             </div>
           )}
         </div>
@@ -271,4 +294,3 @@ export default function ChatPage() {
     </div>
   );
 }
-

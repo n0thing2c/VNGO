@@ -14,28 +14,31 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.conf import settings
 from django.http import JsonResponse
 from django.urls import path, include
 
+
 def api_root(request):
-    return JsonResponse({
-        'message': 'Welcome to VNGO API',
-        'version': '1.0',
-        'endpoints': {
-            'admin': '/admin/',
-            'api': '/api/'
+    return JsonResponse(
+        {
+            "message": "Welcome to VNGO API",
+            "version": "1.0",
+            "endpoints": {"admin": "/admin/", "api": "/api/"},
         }
-    })
+    )
+
+
 from django.conf.urls.static import static
+
 urlpatterns = [
-    path('', api_root, name='api-root'),
-    path('admin/', admin.site.urls),
-    path('auth/', include('Authentication.urls')),
-    path('api/', include('Tour.urls')),
-    path('profiles/', include('Profiles.urls')),
-    path('auth/', include('Authentication.urls')),
+    path("", api_root, name="api-root"),
+    path("admin/", admin.site.urls),
+    path("auth/", include("Authentication.urls")),
+    path("api/", include("Tour.urls")),
+    path("profiles/", include("Profiles.urls")),
     path("chat/", include("Chat.urls")),
 ]
 
