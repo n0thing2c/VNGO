@@ -1,7 +1,7 @@
-import {BrowserRouter, Route, Routes} from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import TourCreate from "@/pages/TourCreate.jsx";
 import TourPost from "@/pages/TourPost.jsx";
-import {Toaster} from "sonner";
+import { Toaster } from "sonner";
 import TourEdit from "@/pages/TourEdit.jsx";
 import Layout from "@/components/layout/Layout.jsx";
 import HomePage from "@/pages/HomePage.jsx";
@@ -17,40 +17,45 @@ import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
 
 function App() {
-    return (
-        <>
-            <Toaster position="top-center" richColors/>
-            <BrowserRouter>
-                <ScrollToTop />
-                <Routes>
+  return (
+    <>
+      <Toaster position="top-center" richColors />
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
+          {/*public routes*/}
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/login" element={<LogInPage />} />
+          <Route path="/personal-info" element={<InfoPage />} />
 
-                    {/* protected routes*/}
-                    <Route path="/" element={<Layout/>}>
-                        {/*public routes*/}
-                        <Route path="/tour/post/:tour_id" element={<TourPost/>}/>
-                        <Route index element={<HomePage />} />
-                        <Route path="/tours" element={<ToursShowPage/>}/>
-                        <Route path="/signup" element={<SignUpPage />} />
-                        <Route path="/verify-email" element={<VerifyEmailPage />} />
-                        <Route path="/login" element={<LogInPage />} />
-                        <Route path="/personal-info" element={<InfoPage />} />
-                        <Route path="/chat" element={<ChatPage />} />
-                        {/* login routes*/}
-                        <Route element={<ProtectedRoute />}>
-                            <Route path="/profile" element={<GuideProfilePage />} />
-                        </Route>
-                           <Route path="/public-profile" element={<GuidePublicProfilePage />} />
+          <Route path="/" element={<Layout />}>
+            <Route path="/tour/post/:tour_id" element={<TourPost />} />
+            <Route index element={<HomePage />} />
+            <Route path="/tours" element={<ToursShowPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route
+              path="/public-profile"
+              element={<GuidePublicProfilePage />}
+            />
 
-                        {/*guide routes*/}
-                        <Route element={<ProtectedRoute requiredRole="guide"/>}>
-                            <Route path="/tour/create" element={<TourCreate />} />
-                            <Route path="/tour/edit/:tour_id" element={<TourEdit />} />
-                        </Route>
-                    </Route>
-                </Routes>
-            </BrowserRouter>
-        </>
-    );
+            {/* protected routes*/}
+
+            {/* login routes*/}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/profile" element={<GuideProfilePage />} />
+            </Route>
+
+            {/*guide routes*/}
+            <Route element={<ProtectedRoute requiredRole="guide" />}>
+              <Route path="/tour/create" element={<TourCreate />} />
+              <Route path="/tour/edit/:tour_id" element={<TourEdit />} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </>
+  );
 }
 
 export default App;

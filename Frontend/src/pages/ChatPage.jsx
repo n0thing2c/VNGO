@@ -1,6 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import HeaderChat from "@/components/HeaderChat";
-import Footer from "@/components/Login&SignUp/Footer";
 import MessageList from "@/components/chat/MessageList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { chatService } from "@/services/chatService";
@@ -216,8 +214,6 @@ export default function ChatPage() {
 
   return (
     <div className="h-[calc(100vh+259px)] flex flex-col bg-white">
-      <HeaderChat />
-
       {/* Room Join Section */}
       <div className="bg-gray-50 border-b px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
@@ -288,9 +284,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="flex-shrink-0">
-        <Footer />
-      </div>
+      <div className="flex-shrink-0"></div>
     </div>
   );
 }
