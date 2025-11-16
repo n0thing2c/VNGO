@@ -49,6 +49,9 @@ SIMPLE_JWT = {
 # Application definition
 
 INSTALLED_APPS = [
+    "channels",
+    "daphne",
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -62,7 +65,21 @@ INSTALLED_APPS = [
     "Authentication",
     "Tour",
     "Profiles",
+    "Authentication",
+    "Chat",
 ]
+
+#daphne
+ASGI_APPLICATION = "VNGO.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -179,6 +196,41 @@ CORS_ALLOWED_ORIGINS = [
 
 # We need credentials for cookie-based refresh
 CORS_ALLOW_CREDENTIALS = True
+
+# Expose headers
+CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
+
+# Preflight cache duration
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Cho phép tất cả các headers
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Cho phép các methods
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Disable CSRF for API endpoints (since we're using JWT)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
 
 # Expose headers
 CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]

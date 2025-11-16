@@ -10,6 +10,7 @@ import SignUpPage from "./pages/SignUpPage";
 import LogInPage from "./pages/LogInPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import InfoPage from "./pages/PersonalInfoPage";
+import ChatPage from "./pages/ChatPage";
 import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
 import GuideProfilePage from "@/pages/GuideProfilePage.jsx";
 import ScrollToTop from "./components/ScrollToTop";
@@ -33,6 +34,7 @@ function App() {
                         <Route path="/verify-email" element={<VerifyEmailPage />} />
                         <Route path="/login" element={<LogInPage />} />
                         <Route path="/personal-info" element={<InfoPage />} />
+                        <Route path="/chat" element={<ChatPage />} />
                         {/* login routes*/}
                         <Route element={<ProtectedRoute />}>
                             <Route path="/profile" element={<GuideProfilePage />} />
