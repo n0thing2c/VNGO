@@ -12,9 +12,7 @@ const initialProfile = {
   lastName: "",
   age: 0,
   gender: "Female", // Set a default value
-  languages: "",
-  location: "",
-  bio: "",
+  nationality: "",
   profilePictureUrl: "https://placehold.co/100x100/A0A0A0/ffffff?text=User",
 };
 
@@ -31,7 +29,7 @@ const FormField = ({ label, children }) => (
   </div>
 );
 
-export function GuideProfile({ className }) {
+export function TouristProfile({ className }) {
   const [profile, setProfile] = useState(initialProfile);
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
@@ -180,46 +178,21 @@ export function GuideProfile({ className }) {
                 </FormField>
               </div>
 
-              {/* Languages & Location */}
+              {/* Nationality */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Languages">
-                  <textarea
-                    id="languages"
-                    name="languages"
-                    required
-                    value={profile.languages}
-                    onChange={handleInputChange}
-                    className={textareaClasses + " min-h-[120px]"}
-                    placeholder="Enter one language per line"
-                  />
-                </FormField>
-
-                <FormField label="Location">
+                <FormField label="Nationality">
                   <Input
-                    id="location"
-                    name="location"
+                    id="nationality"
+                    name="nationality"
                     type="text"
                     required
                     value={profile.location}
                     onChange={handleInputChange}
                     className="h-10 text-base"
-                    placeholder="e.g. Hanoi, Ho Chi Minh city"
+                    placeholder="e.g. American, Japanese"
                   />
                 </FormField>
               </div>
-
-              {/* Bio */}
-              <FormField label="Bio">
-                <textarea
-                  id="bio"
-                  name="bio"
-                  required
-                  value={profile.bio}
-                  onChange={handleInputChange}
-                  className={textareaClasses + " min-h-[180px]"}
-                  placeholder="Tell tourists about your experience and expertise."
-                />
-              </FormField>
             </div>
 
             {/* Action Buttons are kept outside the rounded border for clarity */}

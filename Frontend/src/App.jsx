@@ -9,10 +9,10 @@ import ToursShowPage from "@/pages/ToursShowPage.jsx";
 import SignUpPage from "./pages/SignUpPage";
 import LogInPage from "./pages/LogInPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
-import InfoPage from "./pages/PersonalInfoPage";
 import ChatPage from "./pages/ChatPage";
 import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
 import GuideProfilePage from "@/pages/GuideProfilePage.jsx";
+import TouristProfilePage from "./pages/TouristProfilePage";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
 
@@ -27,7 +27,6 @@ function App() {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/login" element={<LogInPage />} />
-          <Route path="/personal-info" element={<InfoPage />} />
 
           <Route path="/" element={<Layout />}>
             <Route path="/tour/post/:tour_id" element={<TourPost />} />
@@ -43,9 +42,9 @@ function App() {
 
             {/* login routes*/}
             <Route element={<ProtectedRoute />}>
-              <Route path="/profile" element={<GuideProfilePage />} />
+              <Route path="/guide-profile" element={<GuideProfilePage />} />
+              <Route path="/tourist-profile" element={<TouristProfilePage />} />
             </Route>
-
             {/*guide routes*/}
             <Route element={<ProtectedRoute requiredRole="guide" />}>
               <Route path="/tour/create" element={<TourCreate />} />
