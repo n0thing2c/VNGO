@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import SignUpImg from "@/assets/sign_up_img.png";
 import { useAuthStore } from "@/stores/useAuthStore.js";
 import { useNavigate } from "react-router";
+import { useState } from "react";
 
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
@@ -42,6 +43,7 @@ const getErrorMessage = (error) => {
 export function SignupForm({ className, ...props }) {
   const { signUp, loading } = useAuthStore();
   const navigate = useNavigate();
+  const [hasAgreed, setHasAgreed] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -59,6 +61,11 @@ export function SignupForm({ className, ...props }) {
 
     if (!role) {
       toast.error("Please select a role");
+      return;
+    }
+
+    if (!hasAgreed) {
+      toast.error("Please agree to the Terms of Service and Privacy Policy.");
       return;
     }
 
@@ -203,9 +210,25 @@ export function SignupForm({ className, ...props }) {
         </CardContent>
       </Card>
 
-      <FieldDescription className="px-6 text-center mt-2 text-sm">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+      <FieldDescription className="px-6 mt-2 text-sm flex items-center justify-center gap-2 text-center">
+        <input
+          type="checkbox"
+          id="tos-agree"
+          className="h-4 w-4"
+          checked={hasAgreed}
+          onChange={(e) => setHasAgreed(e.target.checked)}
+        />
+        <label htmlFor="tos-agree" className="select-none">
+          By clicking, you agree to our{" "}
+          <a href="#" className="text-primary underline">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#" className="text-primary underline">
+            Privacy Policy
+          </a>
+          .
+        </label>
       </FieldDescription>
     </div>
   );
