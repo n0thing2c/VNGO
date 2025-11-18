@@ -48,10 +48,21 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 outline-none hover:bg-white/20 rounded-full px-3 py-2 transition-colors">
                     <Menu className="w-10 h-10 text-white" />
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center">
-                      <span className="text-[#5A74F8] text-sm font-semibold">
-                        {user?.name?.slice(0, 2)?.toUpperCase()}
-                      </span>
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                      {user?.avatar_url ? (
+                        <img
+                          src={user.avatar_url}
+                          alt="avatar"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = logo;
+                          }}
+                        />
+                      ) : (
+                        <span className="text-[#5A74F8] text-sm font-semibold">
+                          {user?.username?.slice(0, 2)?.toUpperCase()}
+                        </span>
+                      )}
                     </div>
                     <ChevronDown className="w-5 h-5 text-white" />
                 </DropdownMenuTrigger>

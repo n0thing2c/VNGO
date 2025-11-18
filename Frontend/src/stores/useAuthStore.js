@@ -35,6 +35,15 @@ export const useAuthStore = create(
           set({ loading: false });
         }
       },
+      refreshUser: async () => {
+        try {
+          const me = await authService.me();
+          set({ user: me });
+          return me;
+        } catch (error) {
+          throw error;
+        }
+      },
       logout: async () => {
         set({ accessToken: null, user: null });
         await authService.logout();

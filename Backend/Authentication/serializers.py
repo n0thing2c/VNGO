@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import EmailVerificationToken, PendingSignup
+from Profiles.models import Tourist, Guide
 
 User = get_user_model()
 
@@ -129,10 +130,40 @@ class SignupSerializer(serializers.Serializer):
 
 
 class MeSerializer(serializers.ModelSerializer):
+    profile_completed = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ("username", "email", "role", "email_verified")
+        fields = (
+            "username",
+            "email",
+            "role",
+            "email_verified",
+            "profile_completed",
+            "avatar_url",
+        )
         read_only_fields = fields
+
+    def get_profile_completed(self, obj):
+        try:
+            if obj.role == User.ROLE_TOURIST:
+                return obj.tourist_profile.is_completed
+            if obj.role == User.ROLE_GUIDE:
+                return obj.guide_profile.is_completed
+        except (Tourist.DoesNotExist, Guide.DoesNotExist):
+            return False
+        return False
+
+    def get_avatar_url(self, obj):
+        try:
+            if obj.role == User.ROLE_TOURIST:
+                return obj.tourist_profile.face_image
+            if obj.role == User.ROLE_GUIDE:
+                return obj.guide_profile.face_image
+        except (Tourist.DoesNotExist, Guide.DoesNotExist):
+            return None
+        return None
 
 
 class ResendEmailVerificationSerializer(serializers.Serializer):

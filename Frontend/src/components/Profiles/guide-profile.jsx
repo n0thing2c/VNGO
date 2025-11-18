@@ -1,21 +1,25 @@
 import { Button } from "@/components/ui/button.jsx";
 import { Card, CardContent } from "@/components/ui/card.jsx";
-import { Input } from "@/components/ui/input.jsx"; // Assuming basic Input component is resolvable
+import { Input } from "@/components/ui/input.jsx";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
-import { useState } from "react";
-import { Upload } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import ImageUploader from "@/components/imageuploader.jsx";
+import { useAuthStore } from "@/stores/useAuthStore.js";
+import { profileService } from "@/services/profileService.js";
 
 // Updated: Initial data is mostly cleared for a fresh guide entry
+const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
+
 const initialProfile = {
   firstName: "",
   lastName: "",
-  age: 0,
+  age: "",
   gender: "Female", // Set a default value
   languages: "",
   location: "",
   bio: "",
-  profilePictureUrl: "https://placehold.co/100x100/A0A0A0/ffffff?text=User",
+  profilePictureUrl: DEFAULT_AVATAR,
 };
 
 // Simple reusable Field component using standard HTML/Tailwind styling
@@ -34,7 +38,58 @@ const FormField = ({ label, children }) => (
 export function GuideProfile({ className }) {
   const [profile, setProfile] = useState(initialProfile);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [avatarImages, setAvatarImages] = useState([]);
   const navigate = useNavigate();
+  const refreshUser = useAuthStore((state) => state.refreshUser);
+
+  const fullName = useMemo(() => {
+    const parts = [profile.firstName, profile.lastName]
+      .map((part) => part?.trim())
+      .filter(Boolean);
+    return parts.join(" ");
+  }, [profile.firstName, profile.lastName]);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const data = await profileService.getMyProfile();
+        const [first = "", ...rest] = (data.name || "").split(" ");
+        setProfile({
+          firstName: first,
+          lastName: rest.join(" "),
+          age: data.age?.toString() || "",
+          gender: data.gender || "Female",
+          languages: Array.isArray(data.languages)
+            ? data.languages.join("\n")
+            : "",
+          location: data.location || "",
+          bio: "",
+          profilePictureUrl: data.face_image || DEFAULT_AVATAR,
+        });
+        setAvatarImages(
+          data.face_image ? [{ file: null, url: data.face_image }] : []
+        );
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.detail ||
+            "Unable to load your profile. Please try again."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  const handleAvatarChange = (images) => {
+    const latestImage = images.slice(-1);
+    setAvatarImages(latestImage);
+    setProfile((prev) => ({
+      ...prev,
+      profilePictureUrl: latestImage[0]?.url || DEFAULT_AVATAR,
+    }));
+  };
 
   // Handler for all input changes
   const handleInputChange = (e) => {
@@ -42,35 +97,66 @@ export function GuideProfile({ className }) {
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Simulation of the save/update process
   const handleSave = async (event) => {
     event.preventDefault();
     setIsSaving(true);
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Basic form validation (e.g., check if age is a number)
-    const ageNum = parseInt(profile.age, 10);
-    if (isNaN(ageNum) || ageNum <= 0) {
+    const ageNum = Number(profile.age);
+    if (!Number.isFinite(ageNum) || ageNum <= 0) {
       toast.error("Please enter a valid age.");
       setIsSaving(false);
       return;
     }
 
-    // Console log for simulation
-    console.log("Saving profile data:", profile);
+    const languages = profile.languages
+      .split(/\r?\n|,/)
+      .map((lang) => lang.trim())
+      .filter(Boolean);
 
-    toast.success("Profile saved successfully!");
-    setIsSaving(false);
-  };
+    let faceImageUrl = "";
+    if (avatarImages.length === 0) {
+      faceImageUrl = "";
+    } else if (avatarImages[0]?.file) {
+      const uploadRes = await profileService.uploadProfileImage(
+        avatarImages[0].file
+      );
+      faceImageUrl = uploadRes.url;
+    } else {
+      faceImageUrl = profile.profilePictureUrl;
+    }
 
-  const handleViewPublicProfile = () => {
-    // Navigate to the public profile page (simulated)
-    toast.info("Navigating to public profile...");
-    // Use a placeholder ID since firstName might be empty now
-    const profileIdentifier = profile.firstName || "guest";
-    navigate("/profile/" + profileIdentifier);
+    try {
+      await profileService.updateMyProfile({
+        name: fullName,
+        age: ageNum,
+        gender: profile.gender,
+        languages,
+        location: profile.location,
+        face_image: faceImageUrl,
+      });
+      await refreshUser();
+      if (faceImageUrl) {
+        setProfile((prev) => ({
+          ...prev,
+          profilePictureUrl: faceImageUrl,
+        }));
+        setAvatarImages([{ file: null, url: faceImageUrl }]);
+      } else if (!avatarImages.length) {
+        setProfile((prev) => ({
+          ...prev,
+          profilePictureUrl: DEFAULT_AVATAR,
+        }));
+      }
+      toast.success("Profile saved successfully!");
+      navigate("/", { replace: true });
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.detail ||
+          "Failed to save profile. Please try again."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Tailwind classes for the multiline textarea/select to match input styling
@@ -92,7 +178,7 @@ export function GuideProfile({ className }) {
             {/* Profile Picture Section - REMOVED border-b AND pb-6 */}
             <div className="flex flex-col items-center gap-4 text-center">
               <h2 className="text-lg font-semibold text-gray-800">
-                Add/change profile picture
+                Profile picture
               </h2>
               <div className="relative h-28 w-28 rounded-full overflow-hidden border-4 border-white ring-2 ring-gray-300 shadow-md">
                 <img
@@ -101,21 +187,16 @@ export function GuideProfile({ className }) {
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src =
-                      "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
+                    e.target.src = DEFAULT_AVATAR;
                   }}
                 />
               </div>
 
-              <Button
-                type="button"
-                variant="link"
-                // Changed button color to neutral blue/gray
-                className="text-gray-600 hover:text-blue-700 hover:no-underline flex items-center gap-1 text-sm h-auto p-0"
-              >
-                Upload image
-                <Upload className="h-4 w-4 ml-1" />
-              </Button>
+              <ImageUploader
+                images={avatarImages}
+                allowThumbnail={false}
+                onImagesChange={handleAvatarChange}
+              />
             </div>
 
             {/* Form Fields Section - NOW WRAPPED IN ROUNDED BORDER */}
@@ -132,6 +213,7 @@ export function GuideProfile({ className }) {
                     value={profile.firstName}
                     onChange={handleInputChange}
                     className="h-10 text-base"
+                    disabled={isLoading}
                   />
                 </FormField>
 
@@ -144,6 +226,7 @@ export function GuideProfile({ className }) {
                     value={profile.lastName}
                     onChange={handleInputChange}
                     className="h-10 text-base"
+                    disabled={isLoading}
                   />
                 </FormField>
               </div>
@@ -156,9 +239,10 @@ export function GuideProfile({ className }) {
                     name="age"
                     type="number"
                     required
-                    value={profile.age === 0 ? "" : profile.age}
+                    value={profile.age}
                     onChange={handleInputChange}
                     className="h-10 text-base"
+                    disabled={isLoading}
                   />
                 </FormField>
 
@@ -171,6 +255,7 @@ export function GuideProfile({ className }) {
                     value={profile.gender}
                     onChange={handleInputChange}
                     className={formElementClasses + " h-10 appearance-none"}
+                    disabled={isLoading}
                   >
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
@@ -191,6 +276,7 @@ export function GuideProfile({ className }) {
                     onChange={handleInputChange}
                     className={textareaClasses + " min-h-[120px]"}
                     placeholder="Enter one language per line"
+                    disabled={isLoading}
                   />
                 </FormField>
 
@@ -204,6 +290,7 @@ export function GuideProfile({ className }) {
                     onChange={handleInputChange}
                     className="h-10 text-base"
                     placeholder="e.g. Hanoi, Ho Chi Minh city"
+                    disabled={isLoading}
                   />
                 </FormField>
               </div>
@@ -213,11 +300,11 @@ export function GuideProfile({ className }) {
                 <textarea
                   id="bio"
                   name="bio"
-                  required
                   value={profile.bio}
                   onChange={handleInputChange}
                   className={textareaClasses + " min-h-[180px]"}
                   placeholder="Tell tourists about your experience and expertise."
+                  disabled={isLoading}
                 />
               </FormField>
             </div>
@@ -225,17 +312,9 @@ export function GuideProfile({ className }) {
             {/* Action Buttons are kept outside the rounded border for clarity */}
             <div className="flex justify-end gap-3 pt-4">
               <Button
-                className="h-10 px-6 text-sm bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 shadow-sm"
-                type="button"
-                onClick={handleViewPublicProfile}
-                disabled={isSaving}
-              >
-                View public profile
-              </Button>
-              <Button
                 className="h-10 px-6 text-sm bg-blue-600 hover:bg-blue-700 shadow-lg transition duration-150 ease-in-out"
                 type="submit"
-                disabled={isSaving}
+                disabled={isSaving || isLoading}
               >
                 {isSaving ? (
                   <div className="flex items-center">

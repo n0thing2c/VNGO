@@ -46,15 +46,27 @@ export function LoginForm({ className, ...props }) {
   const { login, loading } = useAuthStore();
   const navigate = useNavigate();
 
+  const routeMap = {
+    tourist: "/tourist-profile",
+    guide: "/guide-profile",
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const username = formData.get("username");
     const password = formData.get("password");
     try {
-      await login(username, password);
+      const user = await login(username, password);
       toast.success("Logged in successfully");
-      navigate("/");
+      const shouldGoToProfile =
+        user?.profile_completed === false && user?.role && routeMap[user.role];
+
+      if (shouldGoToProfile) {
+        navigate(routeMap[user.role], { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (error) {
       const message = getErrorMessage(error);
       toast.error(message);
