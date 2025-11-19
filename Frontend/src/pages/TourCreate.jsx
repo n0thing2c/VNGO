@@ -398,7 +398,7 @@ export default function TourCreate() {
                             <VNDInput
                                 className="flex-1 text-[#23C491] text-xl xl:text-2xl font-semibold"
                                 value={price}
-                                max={1e7}
+                                max={5e6}
                                 onChange={setprice}
                             />
                             <FieldLabel className="text-sm xl:text-base">(per person)</FieldLabel>
@@ -430,18 +430,18 @@ export default function TourCreate() {
                             <Textarea
                                 placeholder="Enter a short description of your tour"
                                 value={
-                                    description.length > 500
+                                    description.length > 1000
                                         ? description
                                         : description
                                 }
                                 onChange={(e) =>
-                                    setdescription(e.target.value.length > 500 ? description : e.target.value)
+                                    setdescription(e.target.value.length > 1000 ? description : e.target.value)
                                 }
                                 rows={5}
                                 className="resize-none py-2 xl:py-3 text-base xl:text-lg"
                             />
                             <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
-            {description.length}/500
+            {description.length}/1000
           </span>
                         </div>
 

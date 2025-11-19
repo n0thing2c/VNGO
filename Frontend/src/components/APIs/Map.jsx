@@ -472,9 +472,9 @@ export function TourRoute({Stops = []}) {
             </div>
 
             {/* Wiki Info Panel */}
-            <div className="w-full max-h-64 overflow-auto border rounded-lg p-4 bg-white shadow-sm">
+
                 <WikiPanel location={selectedLocation}/>
-            </div>
+
         </div>
     );
 }

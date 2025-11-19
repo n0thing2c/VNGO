@@ -12,13 +12,14 @@ const ACHIEVEMENT_COLORS = {
 };
 
 const ACHIEVEMENT_OUTLINES = {
-  popular: "#d71e1e",       // red-700
-  highlyrated: "#ffce2f",   // yellow-500
-  multilingual: "#1d4ed8",  // blue-700
-  budget: "#db2777",        // pink-600
-  luxury: "#79a4f5",        // blue-500
-  reviews: "#e47c0c",       // rose-500
+  popular: "#c21818",       // slightly darker red
+  highlyrated: "#e6c72a",   // slightly darker yellow
+  multilingual: "#1a3dbd",  // slightly darker blue
+  budget: "#c0266c",        // slightly darker pink
+  luxury: "#6ca0e0",        // slightly darker blue
+  reviews: "#d46f09",       // slightly darker rose/orange
 };
+
 
 const ACHIEVEMENT_ICONS = {
   popular: <Flame fill="#ff8a3d" stroke="#ff4500" className="w-4 h-4" />,
@@ -45,21 +46,35 @@ function AchievementBadge({ variant = "popular", label }) {
         }}
       />
 
-      {/* Outer hexagon with colored outline */}
+      {/* Outer hexagon shadow/base (fixed) */}
       <div
-        className={cn(
-          "relative z-10 w-10 h-10 flex items-center justify-center text-white font-bold cursor-pointer transition-transform transform hover:scale-110"
-        )}
+        className="absolute w-10 h-10"
         style={{
-          clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
-          backgroundColor: ACHIEVEMENT_OUTLINES[variant], // keep dark base (gray-800ish)
+          clipPath:
+            "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+          backgroundColor: ACHIEVEMENT_OUTLINES[variant],
+            filter: "brightness(0.7)",
+          transform: "translateY(3px)",
+          zIndex: 5,
+        }}
+      />
+
+      {/* Main hexagon + inner hexagon (hover lifts only this) */}
+      <div
+        className="relative w-10 h-10 flex items-center justify-center text-white font-bold cursor-pointer transition-transform transform group-hover:-translate-y-[-3px]"
+        style={{
+          clipPath:
+            "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+          backgroundColor: ACHIEVEMENT_OUTLINES[variant],
+          zIndex: 10,
         }}
       >
         {/* Inner hexagon */}
         <div
           className="w-9 h-9 flex items-center justify-center bg-white"
           style={{
-            clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+            clipPath:
+              "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
             boxShadow:
               "0 2px 4px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.1)",
           }}
@@ -69,14 +84,13 @@ function AchievementBadge({ variant = "popular", label }) {
       </div>
 
       {/* Label popup */}
-      <span
-        className="absolute left-1/2 -translate-x-1/2 mt-2 w-max opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs px-2 py-1 rounded shadow-lg z-20"
-      >
+      <span className="absolute left-1/2 -translate-x-1/2 mt-2 w-max opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-xl text-black text-xs px-2 py-1 shadow-lg z-20">
         {label}
       </span>
     </div>
   );
 }
+
 
 export { AchievementBadge };
 

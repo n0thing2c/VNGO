@@ -44,6 +44,7 @@ class TourRatingSerializer(serializers.ModelSerializer):
                 "id": obj.tourist.pk,
                 "username": obj.tourist.user.username,
                 "email": obj.tourist.user.email,
+                "avatar": obj.tourist.face_image,
             }
         return None
 
