@@ -1,9 +1,15 @@
 import { Search } from "lucide-react";
-import { useState } from "react";
 
-export default function MessageList({ conversations, selectedRoom, onSelectRoom, searchQuery, onSearchChange }) {
+export default function MessageList({
+  conversations,
+  selectedRoom,
+  onSelectRoom,
+  searchQuery,
+  onSearchChange,
+  heightClass = "max-h-[70vh]",
+}) {
   return (
-    <div className="flex flex-col h-full">
+    <div className={`flex flex-col h-full ${heightClass}`}>
       {/* Header */}
       <div className="p-6 border-b">
         <h1 className="text-3xl font-bold mb-4">Messages</h1>
@@ -23,8 +29,8 @@ export default function MessageList({ conversations, selectedRoom, onSelectRoom,
       {/* Conversation List */}
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            No conversations yet
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">No conversations yet</p>
           </div>
         ) : (
           conversations.map((conversation) => (
@@ -59,11 +65,6 @@ export default function MessageList({ conversations, selectedRoom, onSelectRoom,
                   <p className="text-sm text-gray-500 truncate">
                     {conversation.lastMessage || "No message yet"}
                   </p>
-                  {conversation.contactId && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      {conversation.contactId}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>

@@ -41,7 +41,43 @@ const normalizeMessages = (items = []) => {
   });
 };
 
-export default function ChatWindow({ roomName, contactName, contactId, responseTime, rating, reviewCount, onMessageUpdate }) {
+const startOfDay = (date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const formatDateLabel = (timestamp) => {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const today = startOfDay(new Date());
+  const targetDay = startOfDay(date);
+  const diffTime = today.getTime() - targetDay.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+
+  return date.toLocaleDateString("vi-VN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+export default function ChatWindow({
+  roomName,
+  contactName,
+  contactId,
+  responseTime,
+  rating,
+  reviewCount,
+  onMessageUpdate,
+  heightClass = "max-h-[70vh]",
+}) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -211,7 +247,7 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
   }
 
   return (
-    <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden bg-white">
+    <div className="relative flex-1 flex flex-col overflow-hidden bg-white">
       {/* Overlay to mask initial scroll on room switch */}
       {isOverlayVisible && (
         <div className="absolute inset-0 bg-white z-20 pointer-events-none" />
@@ -219,85 +255,118 @@ export default function ChatWindow({ roomName, contactName, contactId, responseT
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">{user?.username?.[0]?.toUpperCase() || "B"}</div>
+          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">{contactName?.[0]?.toUpperCase() || "U"}</div>
           <div>
             <h2 className="font-semibold text-gray-900">{contactName || "Unknown"}</h2>
-            {responseTime && (
-              <p className="text-sm text-gray-500">Response time: {responseTime}</p>
+            {user?.role === "guide" ? (
+              <p className="text-sm text-gray-500">Nationality: American</p>
+            ) : (
+              responseTime && (
+                <p className="text-sm text-gray-500">Response time: {responseTime}</p>
+              )
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {[1, 2, 3].map((i) => (
-              <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            ))}
-            {[4, 5].map((i) => (
-              <Star key={i} className="w-4 h-4 text-gray-300" />
-            ))}
+        {user?.role !== "guide" && (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {[1, 2, 3].map((i) => (
+                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              ))}
+              {[4, 5].map((i) => (
+                <Star key={i} className="w-4 h-4 text-gray-300" />
+              ))}
+            </div>
+            <span className="text-xs text-gray-600">0</span>
           </div>
-          <span className="text-xs text-gray-600">0</span>
-        </div>
+        )}
       </div>
 
       {/* Messages Area */}
-      <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
+      <div
+        ref={messagesContainerRef}
+        className={`flex-1 min-h-0 overflow-y-auto p-4 space-y-3 ${heightClass}`}
+      >
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">
             No messages yet. Start the conversation!
           </div>
         ) : (
-          messages.map((message) => {
-            const userId = user?.id;
-            const senderId = message?.sender?.id;
-            const currentUsername = user?.username;
-            const senderUsername = message?.sender?.username;
-            const isOwnMessage =
-              (userId != null && senderId != null && String(senderId) === String(userId)) ||
-              (!!currentUsername && !!senderUsername && senderUsername === currentUsername);
-            const senderName = senderUsername || "Unknown";
-            const senderInitial = senderName[0]?.toUpperCase() || "?";
-            
-            return (
-              <div
-                key={`${message.id ?? "tmp"}-${message.created_at}`}
-                className={`flex items-end gap-2 ${isOwnMessage ? "justify-end" : "justify-start"}`}
-              >
-                {!isOwnMessage && (
-                  <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
-                    {senderInitial}
+          (() => {
+            const rendered = [];
+            let lastDateLabel = null;
+
+            messages.forEach((message, index) => {
+              const dateLabel = formatDateLabel(message.created_at);
+              const showDateLabel = dateLabel && dateLabel !== lastDateLabel;
+
+              if (showDateLabel) {
+                lastDateLabel = dateLabel;
+                rendered.push(
+                  <div
+                    key={`date-${dateLabel}-${index}`}
+                    className="flex items-center gap-3 my-6 text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                  >
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span>{dateLabel}</span>
+                    <div className="flex-1 h-px bg-gray-200" />
                   </div>
-                )}
-                
+                );
+              }
+
+              const userId = user?.id;
+              const senderId = message?.sender?.id;
+              const currentUsername = user?.username;
+              const senderUsername = message?.sender?.username;
+              const isOwnMessage =
+                (userId != null && senderId != null && String(senderId) === String(userId)) ||
+                (!!currentUsername && !!senderUsername && senderUsername === currentUsername);
+              const senderName = senderUsername || "Unknown";
+              const senderInitial = senderName[0]?.toUpperCase() || "?";
+
+              rendered.push(
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    isOwnMessage
-                      ? "bg-blue-500 text-white rounded-br-none"
-                      : "bg-gray-100 text-gray-900 rounded-bl-none"
-                  }`}
+                  key={`${message.id ?? "tmp"}-${message.created_at}`}
+                  className={`flex items-end gap-2 ${isOwnMessage ? "justify-end" : "justify-start"}`}
                 >
                   {!isOwnMessage && (
-                    <p className="text-xs font-semibold mb-1 opacity-75">
-                      {senderName}
-                    </p>
+                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
+                      {senderInitial}
+                    </div>
                   )}
-                  <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                  <p className={`text-xs mt-1 ${isOwnMessage ? "opacity-75" : "text-gray-500"}`}>
-                    {new Date(message.created_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-                
-                {isOwnMessage && (
-                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                    {user?.username?.[0]?.toUpperCase() || "U"}
+
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      isOwnMessage
+                        ? "bg-blue-500 text-white rounded-br-none"
+                        : "bg-gray-100 text-gray-900 rounded-bl-none"
+                    }`}
+                  >
+                    {!isOwnMessage && (
+                      <p className="text-xs font-semibold mb-1 opacity-75">
+                        {senderName}
+                      </p>
+                    )}
+                    <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                    <p className={`text-xs mt-1 ${isOwnMessage ? "opacity-75" : "text-gray-500"}`}>
+                      {new Date(message.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
                   </div>
-                )}
-              </div>
-            );
-          })
+
+                  {isOwnMessage && (
+                    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                      {user?.username?.[0]?.toUpperCase() || "U"}
+                    </div>
+                  )}
+                </div>
+              );
+            });
+
+            return rendered;
+          })()
         )}
         <div ref={messagesEndRef} />
       </div>

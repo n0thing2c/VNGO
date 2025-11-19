@@ -3,8 +3,8 @@ import MessageList from "@/components/chat/MessageList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { chatService } from "@/services/chatService";
 import { useAuthStore } from "../../stores/useAuthStore";
-import { Users } from "lucide-react";
 import { notificationService } from "@/services/notifyService";
+import { useLocation } from "react-router-dom";
 
 const normalizeConversations = (items) => {
   const map = new Map();
@@ -43,8 +43,68 @@ export default function ChatPage() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
-  const [roomInput, setRoomInput] = useState("");
   const { user } = useAuthStore();
+  const location = useLocation();
+  const targetRoom = location.state?.targetRoom;
+  const targetUser = location.state?.targetUser;
+
+  const resolveRoomMateName = useCallback(
+    (roomName) => {
+      if (!roomName?.includes("__")) return null;
+      const parts = roomName.split("__").filter(Boolean);
+      if (parts.length === 0) return null;
+      if (!user?.username) {
+        return parts.join(" & ");
+      }
+      const lowerCurrent = user.username.toLowerCase();
+      const partner = parts.find(
+        (name) => name && name.toLowerCase() !== lowerCurrent
+      );
+      return partner || parts[0];
+    },
+    [user?.username]
+  );
+
+  const withDisplayName = useCallback(
+    (conversation) => {
+      if (!conversation) return conversation;
+      
+      // Luôn ưu tiên parse từ room name để đảm bảo lấy đúng người nhận
+      const parsedName = resolveRoomMateName(conversation.room);
+      
+      if (parsedName) {
+        return {
+          ...conversation,
+          contactName: parsedName,
+        };
+      }
+      
+      // Nếu không parse được từ room name, mới dùng contactName từ backend
+      const hasCustomName =
+        conversation.contactName &&
+        !conversation.contactName.toLowerCase().startsWith("room:");
+      
+      if (hasCustomName) {
+        return {
+          ...conversation,
+          contactName: conversation.contactName.trim(),
+        };
+      }
+      
+      const stripped =
+        conversation.contactName?.replace(/^Room:\s*/i, "").trim() || "";
+      return {
+        ...conversation,
+        contactName: stripped || "Unknown contact",
+      };
+    },
+    [resolveRoomMateName]
+  );
+
+  const normalizeAndEnhance = useCallback(
+    (items) => normalizeConversations(items).map(withDisplayName),
+    [withDisplayName]
+  );
 
   const handleConversationUpdate = useCallback(
     (roomName, message) => {
@@ -53,12 +113,17 @@ export default function ChatPage() {
       setConversations((prev) => {
         const existing = prev.find((c) => c.room === roomName);
 
-        const otherUserName =
-          message?.sender && message.sender.id !== user?.id
-            ? message.sender.username ||
-              existing?.contactName ||
-              `Room: ${roomName}`
-            : existing?.contactName || `Room: ${roomName}`;
+        // Luôn ưu tiên parse từ room name để tìm partner (người nhận)
+        const parsedPartnerName = resolveRoomMateName(roomName);
+        
+        // Nếu có message từ người khác (không phải user hiện tại), dùng username của họ
+        // Nếu không, dùng parsed name từ room, hoặc fallback về existing
+        let otherUserName = parsedPartnerName;
+        if (message?.sender && message.sender.id !== user?.id) {
+          otherUserName = message.sender.username || parsedPartnerName || existing?.contactName || "Unknown contact";
+        } else if (!parsedPartnerName) {
+          otherUserName = existing?.contactName || "Unknown contact";
+        }
 
         const otherUserId =
           message?.sender && message.sender.id !== user?.id
@@ -79,7 +144,7 @@ export default function ChatPage() {
         };
 
         const filtered = prev.filter((c) => c.room !== roomName);
-        const normalized = normalizeConversations([
+        const normalized = normalizeAndEnhance([
           ...filtered,
           updatedConversation,
         ]);
@@ -94,7 +159,7 @@ export default function ChatPage() {
         return normalized;
       });
     },
-    [selectedRoom, user?.id]
+    [normalizeAndEnhance, selectedRoom, user?.id, resolveRoomMateName]
   );
 
   // Load conversations từ API khi component mount
@@ -102,7 +167,7 @@ export default function ChatPage() {
     const loadConversations = async () => {
       try {
         const data = await chatService.getConversations();
-        const normalized = normalizeConversations(data || []);
+        const normalized = normalizeAndEnhance(data || []);
         setConversations(normalized);
 
         // Auto-select first conversation nếu có và chưa có room được chọn
@@ -126,10 +191,10 @@ export default function ChatPage() {
       try {
         const data = await chatService.getConversations();
         if (isCancelled) return;
-        const normalized = normalizeConversations(data || []);
+        const normalized = normalizeAndEnhance(data || []);
         setConversations((prev) => {
           // Merge keeping latest info and order
-          const merged = normalizeConversations([...prev, ...normalized]);
+          const merged = normalizeAndEnhance([...prev, ...normalized]);
           return merged;
         });
       } catch {}
@@ -162,8 +227,8 @@ export default function ChatPage() {
   }, [handleConversationUpdate]);
 
   const normalizedConversations = useMemo(
-    () => normalizeConversations(conversations),
-    [conversations]
+    () => normalizeAndEnhance(conversations),
+    [conversations, normalizeAndEnhance]
   );
 
   const filteredConversations = normalizedConversations.filter(
@@ -178,87 +243,55 @@ export default function ChatPage() {
     setSelectedContact(contact || null);
   };
 
-  const handleJoinRoom = (e) => {
-    e.preventDefault();
-    if (!roomInput.trim()) return;
+  useEffect(() => {
+    if (!targetRoom) return;
 
-    const roomName = roomInput.trim();
-    setSelectedRoom(roomName);
+    const contactName =
+      targetUser?.name?.trim() ||
+      targetUser?.username ||
+      "Unknown contact";
+    const contactId =
+      targetUser?.id != null
+        ? String(targetUser.id)
+        : targetUser?.username || targetRoom;
 
-    const existingConv = normalizedConversations.find(
-      (c) => c.room === roomName
-    );
-    if (!existingConv) {
-      const newConv = {
-        room: roomName,
-        contactName: `Room: ${roomName}`,
-        contactId: roomName,
-        lastMessage: "No message yet",
-        lastMessageTime: null,
-        responseTime: "30 minutes",
-        rating: 3.5,
-        reviewCount: 0,
+    setSelectedRoom(targetRoom);
+    setConversations((prev) => {
+      const existing = prev.find((c) => c.room === targetRoom);
+      const updatedConversation = {
+        room: targetRoom,
+        contactName,
+        contactId,
+        lastMessage: existing?.lastMessage || "No message yet",
+        lastMessageTime: existing?.lastMessageTime || null,
+        responseTime: existing?.responseTime || "30 minutes",
+        rating: existing?.rating ?? 3.5,
+        reviewCount: existing?.reviewCount ?? 0,
       };
-      setConversations((prev) => {
-        const normalized = normalizeConversations([...prev, newConv]);
-        const found = normalized.find((item) => item.room === roomName);
-        setSelectedContact(found || newConv);
-        return normalized;
-      });
-    } else {
-      setSelectedContact(existingConv);
-    }
-
-    setRoomInput("");
-  };
+      const filtered = prev.filter((c) => c.room !== targetRoom);
+      const normalized = normalizeAndEnhance([
+        ...filtered,
+        updatedConversation,
+      ]);
+      const found = normalized.find((c) => c.room === targetRoom);
+      setSelectedContact(found || updatedConversation);
+      return normalized;
+    });
+  }, [targetRoom, targetUser]);
 
   return (
-    <div className="h-[calc(100vh+259px)] flex flex-col bg-white">
-      {/* Room Join Section */}
-      <div className="bg-gray-50 border-b px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Users className="w-4 h-4" />
-            <span>
-              Current user: <strong>{user?.username || "Guest"}</strong>
-            </span>
-          </div>
-          <div className="flex-1 max-w-md">
-            <form onSubmit={handleJoinRoom} className="flex gap-2">
-              <input
-                type="text"
-                value={roomInput}
-                onChange={(e) => setRoomInput(e.target.value)}
-                placeholder="Enter room name to join (e.g., 'test-room')"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium"
-              >
-                Join Room
-              </button>
-            </form>
-          </div>
-          {selectedRoom && (
-            <div className="text-sm text-gray-600">
-              Active room:{" "}
-              <strong className="text-blue-600">{selectedRoom}</strong>
-            </div>
-          )}
-        </div>
-      </div>
-
+    <div className="flex flex-col bg-white">
       {/* Main Content */}
       <div className="flex-1 min-h-0 flex overflow-hidden">
         {/* Left Sidebar - Messages List */}
-        <div className="w-80 border-r flex-shrink-0">
+        <div className="w-80 border-r flex-shrink-0 min-h-0">
           <MessageList
             conversations={filteredConversations}
             selectedRoom={selectedRoom}
             onSelectRoom={handleSelectRoom}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            heightClass="max-h-[67vh]"
           />
         </div>
 
@@ -273,9 +306,10 @@ export default function ChatPage() {
               rating={selectedContact.rating}
               reviewCount={selectedContact.reviewCount}
               onMessageUpdate={handleConversationUpdate}
+              heightClass="max-h-[67vh]"
             />
           ) : (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center min-h-[650px]">
               <p className="text-gray-500">
                 Select a conversation to start chatting
               </p>
@@ -283,8 +317,6 @@ export default function ChatPage() {
           )}
         </div>
       </div>
-
-      <div className="flex-shrink-0"></div>
     </div>
   );
 }
