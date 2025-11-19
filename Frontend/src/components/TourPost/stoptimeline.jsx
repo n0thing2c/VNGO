@@ -59,11 +59,25 @@ export default function TourStopsTimeline({ stops = [] }) {
           .animate-fill-line {
             animation: fill-line ${ANIMATION_DURATION_MS / 900}s linear forwards;
           }
+          .subtle-scrollbar::-webkit-scrollbar {
+            height: 6px; /* Height for horizontal scrollbar */
+            width: 6px;
+          }
+          .subtle-scrollbar::-webkit-scrollbar-track {
+            background: transparent; 
+          }
+          .subtle-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e2e8f0; /* Light gray (Tailwind slate-200) */
+            border-radius: 20px;       /* Rounded pill shape */
+          }
+          .subtle-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #cbd5e1; /* Darker on hover */
+          }
         `}
       </style>
 
       <div
-        className="w-full overflow-x-auto py-16 px-4"
+        className="w-full overflow-x-auto py-16 px-4 subtle-scrollbar"
         ref={containerRef}
       >
         <div className="relative flex items-center w-full">

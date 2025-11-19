@@ -270,6 +270,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://localhost:5173$",
     r"^http://127.0.0.1:5173$",
     r"^http://127.0.0.1:5174$",
+    r"^http://localhost:3000$",
 ]
 
 MEDIA_URL = "/media/"
