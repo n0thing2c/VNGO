@@ -43,13 +43,9 @@ import {toast} from "sonner";
 import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import HeroSection from "@/components/HomePage/HeroSection.jsx";
-import {useAuthStore} from "@/stores/useAuthStore.js";
-
-// API
-import { API_ENDPOINTS } from "@/constant";
+import {tourService} from "@/services/tourService.js";
 
 export default function TourCreate() {
-    const accessToken = useAuthStore((state) => state.accessToken);
     //Tour name
     const [tourname, settourname] = useState("");
     //People
@@ -186,59 +182,22 @@ export default function TourCreate() {
 
 
     const handleSubmit = async () => {
-        try {
-            const formData = new FormData();
+        const result = await tourService.createTour({
+            tourname,
+            hour,
+            minpeople,
+            maxpeople,
+            transportation,
+            meeting,
+            addedStops,
+            imageData,
+            selectedTags,
+            price,
+            description,
+        });
 
-            if (!tourname || !hour || !minpeople || !maxpeople || !transportation || !price || !meeting || !addedStops?.length || !imageData) {
-                toast.error("Please fill in all information!");
-                return;
-            }
-
-            formData.append("name", tourname);
-            formData.append("duration", hour || 0);
-            formData.append("min_people", minpeople || 1);
-            formData.append("max_people", maxpeople || 1);
-            formData.append("transportation", transportation);
-            formData.append("meeting_location", meeting);
-            formData.append("price", price || 0);
-            formData.append("places", JSON.stringify(addedStops || []));
-            formData.append("tags", JSON.stringify(selectedTags || []));
-            formData.append("description", description || "No description");
-            imageData.images.forEach((img) => {
-                if (img?.file) formData.append("images", img.file);
-            });
-            formData.append("thumbnail_idx", imageData.thumbnailIdx ?? 0);
-
-            // ✅ Get JWT token from localStorage
-            if (!accessToken) {
-                toast.error("You must be logged in to create a tour!");
-                return;
-            }
-
-            const res = await fetch(API_ENDPOINTS.CREATE_TOUR, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${accessToken}`, // use Zustand token
-                },
-                body: formData,
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                toast.success("Tour created successfully!");
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                console.error("Server response:", data);
-                toast.error("Failed to create tour", {
-                    description: data.detail || data.error || "Unknown error",
-                });
-            }
-        } catch (err) {
-            console.error("Unexpected error:", err);
-            toast.error("Unable to connect to the server.", {
-                description: "Check your Django logs.",
-            });
+        if (result.success) {
+            setTimeout(() => window.location.reload(), 1500);
         }
     };
 

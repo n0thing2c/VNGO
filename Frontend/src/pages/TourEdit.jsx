@@ -41,14 +41,12 @@ import Footer from "@/components/layout/Footer.jsx";
 import Map from "../components/APIs/Map.jsx";
 import {Links, Link} from "react-router-dom";
 import {useAuthStore} from "@/stores/useAuthStore.js";
-import { useNavigate } from "react-router-dom";
-// API
-import { API_ENDPOINTS } from "@/constant";
+import {useNavigate} from "react-router-dom";
+import {tourService} from "@/services/tourService.js";
 
 export default function TourEdit() {
     const navigate = useNavigate();
-    const accessToken = useAuthStore((state) => state.accessToken);
-    const user_name = useAuthStore((state)=>state.user.username)
+    const user_name = useAuthStore((state) => state.user.username)
     const {tour_id} = useParams();
     const [loading, setLoading] = useState(true);
     const [tourData, setTourData] = useState(null);
@@ -211,61 +209,59 @@ export default function TourEdit() {
     };
 
 
-    // Load existing tour
     useEffect(() => {
         async function fetchTour() {
-            try {
-                const res = await fetch(API_ENDPOINTS.GET_TOUR(tour_id), {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error("Tour not found");
+            if (!tour_id) return;
 
-                const tour = data.tour || data;
+            setLoading(true);
 
-                if (tour.guide.username !== user_name) {
-                    toast.error("You cannot edit a tour that doesn't belong to you!");
-                    navigate("/"); // redirect to home or another page
-                    return;
-                }
+            // Call the service
+            const result = await tourService.getTour(tour_id);
 
-                setTourData(tour);
-
-                // Pre-fill form fields
-                settourname(tour.name || "");
-                sethour(tour.duration || 1);
-                setminpeople(tour.min_people || 1);
-                setmaxpeople(tour.max_people || 1);
-                setTransportation(tour.transportation || "");
-                setMeeting(tour.meeting_location || "");
-                setprice(tour.price || 0);
-                setSelectedTags(Array.isArray(tour.tags) ? tour.tags : []);
-                setdescription(tour.description || "");
-                setAddedStops(
-                    Array.isArray(tour.tour_places)
-                        ? tour.tour_places.map(tp => tp.place)
-                        : []
-                );
-                setImageData({
-                    images:
-                        tour.tour_images?.map((img) => ({
-                            url: img.image,
-                            isThumbnail: img.isthumbnail,
-                        })) || [],
-                    thumbnailIdx:
-                        tour.tour_images?.findIndex((i) => i.isthumbnail) ?? 0,
-                });
-            } catch (err) {
-                console.error("Failed to load tour:", err);
-                toast.error("Failed to load tour data");
-            } finally {
+            if (!result.success) {
                 setLoading(false);
+                return;
             }
+
+            const tour = result.data.tour || result.data;
+
+            // Check ownership
+            if (tour.guide.username !== user_name) {
+                toast.error("You cannot edit a tour that doesn't belong to you!");
+                navigate("/"); // redirect if not owner
+                setLoading(false);
+                return;
+            }
+
+            // Pre-fill form fields
+            setTourData(tour);
+            settourname(tour.name || "");
+            sethour(tour.duration || 1);
+            setminpeople(tour.min_people || 1);
+            setmaxpeople(tour.max_people || 1);
+            setTransportation(tour.transportation || "");
+            setMeeting(tour.meeting_location || "");
+            setprice(tour.price || 0);
+            setSelectedTags(Array.isArray(tour.tags) ? tour.tags : []);
+            setdescription(tour.description || "");
+            setAddedStops(
+                Array.isArray(tour.tour_places)
+                    ? tour.tour_places.map(tp => tp.place)
+                    : []
+            );
+            setImageData({
+                images:
+                    tour.tour_images?.map((img) => ({
+                        url: img.image,
+                        isThumbnail: img.isthumbnail,
+                    })) || [],
+                thumbnailIdx: tour.tour_images?.findIndex((i) => i.isthumbnail) ?? 0,
+            });
+
+            setLoading(false);
         }
 
-        if (tour_id) fetchTour();
+        fetchTour();
     }, [tour_id]);
 
     if (loading)
@@ -273,106 +269,28 @@ export default function TourEdit() {
     if (!tourData)
         return <p className="text-center p-4">Tour not found.</p>;
 
-    // ✅ STEP 3: Update handleSubmit to send the new data
     const handleSubmit = async () => {
-        try {
-            // Validate required fields
-            if (
-                !tourname ||
-                !hour ||
-                !minpeople ||
-                !maxpeople ||
-                !transportation ||
-                !price ||
-                !meeting ||
-                !addedStops?.length ||
-                imageData.images.length === 0
-            ) {
-                toast.error("Please fill in all required fields!");
-                return;
-            }
+        const result = await tourService.updateTour({
+            tour_id,
+            tourname,
+            hour,
+            minpeople,
+            maxpeople,
+            transportation,
+            meeting,
+            addedStops,
+            imageData,
+            removedImageUrls,
+            selectedTags,
+            price,
+            description,
+        });
 
-            // Prepare FormData
-            const formData = new FormData();
-            formData.append("name", tourname);
-            formData.append("duration", Number(hour));
-            formData.append("min_people", Number(minpeople));
-            formData.append("max_people", Number(maxpeople));
-            formData.append("transportation", transportation);
-            formData.append("meeting_location", meeting);
-            formData.append("price", Number(price));
-            formData.append("places", JSON.stringify(addedStops));
-            formData.append("tags", JSON.stringify(selectedTags || []));
-            formData.append("description", description || "");
-
-            // --- NEW IMAGE HANDLING LOGIC ---
-
-            // 1. Append NEW image files
-            const newImageFiles = [];
-            imageData.images.forEach((img) => {
-                if (img.file) {
-                    newImageFiles.push(img.file);
-                    formData.append("images", img.file); // 'images' key for new uploads
-                }
-            });
-
-            // 2. Append the list of REMOVED URLs
-            formData.append("removed_images", JSON.stringify(removedImageUrls));
-
-            // 3. Send clear thumbnail data
-            let thumbnailData = {type: null, value: null};
-            if (
-                imageData.thumbnailIdx >= 0 &&
-                imageData.images[imageData.thumbnailIdx]
-            ) {
-                const thumbnailImage = imageData.images[imageData.thumbnailIdx];
-
-                if (thumbnailImage.file) {
-                    // Thumbnail is a NEW file. Find its index *within the newImageFiles array*.
-                    const newFileIndex = newImageFiles.findIndex(
-                        (f) => f === thumbnailImage.file
-                    );
-                    thumbnailData = {type: "new", index: newFileIndex};
-                } else if (thumbnailImage.url) {
-                    // Thumbnail is an EXISTING file. Send its URL.
-                    thumbnailData = {type: "old", url: thumbnailImage.url};
-                }
-            }
-
-            // Backend will parse this to set the thumbnail
-            formData.append("thumbnail_data", JSON.stringify(thumbnailData));
-
-            // --- END OF NEW LOGIC ---
-            if (!accessToken) {
-                toast.error("You must be logged in to update a tour!");
-                return;
-            }
-            // Send PUT request
-            const res = await fetch(API_ENDPOINTS.UPDATE_TOUR(tour_id), {
-                method: "PUT",
-                body: formData,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`, // <-- send token
-                },
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                toast.success("Tour updated successfully!");
-                // Clear the removed images list after a successful save
-                setRemovedImageUrls([]);
-            } else {
-                console.error("Server response:", data);
-                toast.error("Failed to update tour", {
-                    description: data.detail || data.error || "Unknown error",
-                });
-            }
-        } catch (err) {
-            console.error("Unexpected error:", err);
-            toast.error("Failed to update tour", {
-                description: "Check your backend logs.",
-            });
+        if (result.success) {
+            setRemovedImageUrls([]);
+            setTimeout(() => {
+                navigate(`/tour/post/${tour_id}`);
+            }, 1000);
         }
     };
 

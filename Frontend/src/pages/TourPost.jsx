@@ -34,7 +34,24 @@ import {
     RefreshCw,
     Trophy,
     Award, UserStar, Star, Clover,
-    Plus, MessageSquarePlus, Flame, ArrowRightLeft
+    Plus, MessageSquarePlus, Flame, ArrowRightLeft,
+    TreePalm,
+    Sun,
+    Mountain,
+    BookOpen,
+    MapPin,
+    Users,
+    Eye,
+    Activity,
+    Coffee,
+    Moon,
+    Home,
+    ShoppingBag,
+    Camera,
+    Smile,
+    Droplet,
+    Leaf,
+    Volleyball,
 } from "lucide-react"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -75,10 +92,59 @@ import {cn} from "@/lib/utils";
 import TourRating from "@/components/TourPost/tour_rating.jsx";
 import {useAuthStore} from "@/stores/useAuthStore.js";
 import GuideSection from "@/components/TourPost/guidesection.jsx";
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 // API
-import { API_ENDPOINTS } from "@/constant";
+import {API_ENDPOINTS} from "@/constant";
+import {tourService} from "@/services/tourService.js";
 
+export const TOUR_TAG_ICONS = {
+    "Nature": <TreePalm className="w-3 h-3"/>,
+    "Beach": <Sun className="w-3 h-3"/>,
+    "Trekking": <Mountain className="w-3 h-3"/>,
+    "Culture": <BookOpen className="w-3 h-3"/>,
+    "History": <MapPin className="w-3 h-3"/>,
+    "Local Experience": <Users className="w-3 h-3"/>,
+    "Sightseeing": <Eye className="w-3 h-3"/>,
+    "Adventure": <Activity className="w-3 h-3"/>,
+    "Food & Drink": <Coffee className="w-3 h-3"/>,
+    "Nightlife": <Moon className="w-3 h-3"/>,
+    "City Life": <Home className="w-3 h-3"/>,
+    "Shopping": <ShoppingBag className="w-3 h-3"/>,
+    "Photography": <Camera className="w-3 h-3"/>,
+    "Relaxation": <Smile className="w-3 h-3"/>,
+    "Water Sports": <Droplet className="w-3 h-3"/>,
+    "Countryside": <Leaf className="w-3 h-3"/>,
+    "Recreational": <Volleyball className="w-3 h-3"/>,
+};
+const TOUR_TAG_VARIANTS = {
+    "Nature": "brightgreen",
+    "Beach": "sand",
+    "Trekking": "aqua",
+    "Culture": "bluelavender",
+    "History": "mustard",
+    "Local Experience": "mint",
+    "Sightseeing": "teal",
+    "Adventure": "destructive",
+    "Food & Drink": "coral",
+    "Nightlife": "violet",
+    "City Life": "orange",
+    "Shopping": "pink",
+    "Photography": "default",
+    "Relaxation": "lime",
+    "Water Sports": "sky",
+    "Countryside": "olive",
+    "Recreational": "peach",
+};
+
+const ACHIEVEMENT_VARIANTS = {
+    "Popular": "popular",
+    "Highly Rated": "highlyrated",
+    "Multilingual": "multilingual",
+    "Budget": "budget",
+    "Luxury": "luxury",
+    "Most Reviewed": "reviews",
+    // Add more if needed
+};
 export default function TourPost() {
     const userRole = useAuthStore((state) => state.user?.role);
     const isLoggedIn = useAuthStore((state) => !!state.user);
@@ -92,49 +158,22 @@ export default function TourPost() {
     const [ratings, setRatings] = useState([]);
     const [hasRated, setHasRated] = useState(false);
     const [achievements, setAchievements] = useState([]);
-    const TOUR_TAG_VARIANTS = {
-        "Nature": "brightgreen",
-        "Beach": "sand",
-        "Trekking": "aqua",
-        "Culture": "bluelavender",
-        "History": "mustard",
-        "Local Experience": "mint",
-        "Sightseeing": "teal",
-        "Adventure": "destructive",
-        "Food & Drink": "coral",
-        "Nightlife": "violet",
-        "City Life": "orange",
-        "Shopping": "pink",
-        "Photography": "default",
-        "Relaxation": "lime",
-        "Water Sports": "sky",
-        "Countryside": "olive",
-        "Recreational": "peach",
-    };
-    const ACHIEVEMENT_VARIANTS = {
-        "Popular": "popular",
-        "Highly Rated": "highlyrated",
-        "Multilingual": "multilingual",
-        "Budget": "budget",
-        "Luxury": "luxury",
-        "Most Reviewed": "reviews",
-        // Add more if needed
-    };
+
     // Fetch from backend (unchanged)
     useEffect(() => {
         async function fetchTour() {
-            try {
-                const res = await fetch(API_ENDPOINTS.GET_TOUR(tour_id));
-                const data = await res.json();
-                setTourData(data);
-            } catch (err) {
-                console.error("Failed to load tour:", err);
-            } finally {
-                setLoading(false);
+            if (!tour_id) return;
+
+            setLoading(true);
+            const result = await tourService.getTour(tour_id);
+
+            if (result.success) {
+                setTourData(result.data);
             }
+            setLoading(false);
         }
 
-        if (tour_id) fetchTour();
+        fetchTour();
     }, [tour_id]);
 
     useEffect(() => {
@@ -146,7 +185,7 @@ export default function TourPost() {
                     "Popular",
                     "Highly Rated",
                     "Multilingual",
-                    //"Budget",
+                    "Budget",
                     //"Luxury",
                     "Most Reviewed",
                 ]);
@@ -160,18 +199,15 @@ export default function TourPost() {
 
     useEffect(() => {
         async function fetchRatings() {
-            try {
-                const res = await fetch(API_ENDPOINTS.GET_TOUR_RATINGS(tour_id));
-                const data = await res.json();
-                if (data.success) {
-                    setRatings(data.ratings);
-                }
-            } catch (err) {
-                console.error("Failed to fetch ratings:", err);
+            if (!tour_id) return;
+
+            const result = await tourService.getRatings(tour_id);
+            if (result.success) {
+                setRatings(result.data.ratings || []);
             }
         }
 
-        if (tour_id) fetchRatings();
+        fetchRatings();
     }, [tour_id]);
 
     if (loading) return <p className="text-center p-4">Loading tour...</p>;
@@ -200,7 +236,7 @@ export default function TourPost() {
                             </FieldLabel>
 
                             {/* Achievements */}
-                            <div className="flex flex-wrap gap-2 items-center -mb-4">
+                            <div className="flex flex-wrap w-full justify-end gap-2 items-center -mb-4">
                                 {achievements.map((ach) => (
                                     <AchievementBadge
                                         key={ach}
@@ -210,17 +246,22 @@ export default function TourPost() {
                                 ))}
                             </div>
                         </div>
-                        {tour.tags.map((tag, index) =>
-                            (
-                                <span key={index} className="mr-2">
+                        {tour.tags.map((tag, index) => (
+                          <span key={index} className="mr-2">
                             <Badge
-                                variant={TOUR_TAG_VARIANTS[tag] || "default"}
-                                className="cursor-pointer"
+                              variant={TOUR_TAG_VARIANTS[tag] || "default"}
+                              className="cursor-pointer inline-flex items-center gap-1"
                             >
+                              {TOUR_TAG_ICONS[tag] && (
+                                <span className="flex-shrink-0">
+                                  {TOUR_TAG_ICONS[tag]}
+                                </span>
+                              )}
                               {tag}
                             </Badge>
-                        </span>
-                            ))}
+                          </span>
+                        ))}
+
                     </div>
 
 
@@ -276,19 +317,18 @@ export default function TourPost() {
                         <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">
                             Tour Schedule
                         </FieldLabel>
-                        <TourStopsTimeline stops={tour.tour_places?.map(tp => tp.place) || []}/>
+
 
                         <Dialog>
                             <DialogTitle/>
                             <DialogTrigger asChild>
-                                <Button variant="outline"
-                                        className="w-full sm:w-auto rounded-2xl text-white bg-black text-xl">View Tour
-                                    Route</Button>
+                                <button>
+                                    <TourStopsTimeline stops={tour.tour_places?.map(tp => tp.place) || []}/>
+                                </button>
                             </DialogTrigger>
                             <DialogContent className="w-full sm:max-w-4xl">
                                 <DialogDescription/>
                                 <TourRoute Stops={tour.tour_places?.map(tp => tp.place) || []}/>
-
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -442,7 +482,7 @@ export default function TourPost() {
                                     <Calendar22
                                         date={date ?? ""}
                                         onSelect={(e) => setdate(e)}
-                                        buttonClassName="w-30 sm:w-45 text-center rounded-3xl text-base sm:text-md font-bold text-[#23C491]"
+                                        buttonClassName="w-30 sm:w-45 text-center rounded-3xl text-sm sm:text-md font-bold text-[#23C491]"
                                     />
                                 </div>
 

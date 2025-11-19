@@ -2,12 +2,13 @@
 
 import React, {useState} from "react";
 import axios from "axios";
-import ImageUploader from "../imageuploader.jsx";
+import ImageUploader, {ImageDropBox} from "../imageuploader.jsx";
 import {Rating, RatingButton} from "@/components/ui/shadcn-io/rating/index.jsx";
 import {Button} from "@/components/ui/button.jsx";
 import {Textarea} from "@/components/ui/textarea.jsx";
 import TagSelector from "@/components/tagsselector.jsx";
 import {useAuthStore} from "@/stores/useAuthStore.js";
+import {tourService} from "@/services/tourService.js";
 
 export default function TourRate({tourId, onRated}) {
     const accessToken = useAuthStore((state) => state.accessToken);
@@ -61,43 +62,20 @@ export default function TourRate({tourId, onRated}) {
     };
 
     const handleSubmit = async () => {
-        if (!rating) {
-            setError("Please select a rating.");
-            return;
-        }
+        const result = await tourService.submitRating({
+            tourId,
+            rating,
+            review,
+            reviewTags,
+            images,
+        });
 
-        const formData = new FormData();
-        formData.append("rating", rating);
-        formData.append("review", review);
-        formData.append("review_tags", JSON.stringify(reviewTags));
-        images.forEach((img) => formData.append("images", img.file || img));
-
-        try {
-            setLoading(true);
-            setError(null);
-            const res = await axios.post(
-                `http://127.0.0.1:8000/api/tour/rate/${tourId}/`,
-                formData,
-          {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                        Authorization: `Bearer ${accessToken}`, // <--- MUST SEND TOKEN
-                    },
-                }
-            );
-
-            setSuccess("Rating submitted successfully!");
+        if (result.success) {
             setRating(0);
             setReview("");
             setReviewTags([]);
             setImages([]);
-
-            if (onRated) onRated(res.data);
-        } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.error || "Failed to submit rating.");
-        } finally {
-            setLoading(false);
+            if (onRated) onRated(result.data);
         }
     };
 
@@ -137,21 +115,28 @@ export default function TourRate({tourId, onRated}) {
 
             {/* Image Uploader */}
             <div className="mb-4">
-                <ImageUploader
+                {/*<ImageUploader*/}
+                {/*    images={images}*/}
+                {/*    onImagesChange={handleImagesChange}*/}
+                {/*    allowThumbnail={false}*/}
+                {/*/>*/}
+                <ImageDropBox
                     images={images}
                     onImagesChange={handleImagesChange}
-                    allowThumbnail={false}
                 />
             </div>
 
             {/* Submit Button */}
-            <Button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full sm:w-auto bg-black text-white hover:bg-white hover:border-1 hover:border-black hover:text-black py-2 sm:py-3 px-6 rounded-xl transition"
-            >
-                {loading ? "Submitting..." : "Submit Rating"}
-            </Button>
+            <div className="flex justify-end">
+                <Button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="w-full sm:w-auto bg-black text-white hover:bg-white hover:border-1 hover:border-black hover:text-black py-2 sm:py-3 px-6 rounded-xl transition"
+                >
+                    {loading ? "Submitting..." : "Submit Rating"}
+                </Button>
+            </div>
+
 
             {success && (
                 <p className="text-green-600 mt-3 text-sm sm:text-base">{success}</p>

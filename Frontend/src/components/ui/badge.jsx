@@ -48,7 +48,10 @@ const badgeVariants = cva(
                 plum:
                     "border-transparent bg-[#8E4585] text-white [a&]:hover:bg-[#7B3F7B]",
                 olive:
-                    "border-transparent bg-[#808000] text-white [a&]:hover:bg-[#6B6B00]"
+                    "border-transparent bg-[#808000] text-white [a&]:hover:bg-[#6B6B00]",
+                red:
+                    "border-transparent bg-[#DC143C] text-white [a&]:hover:bg-[#B01030]"
+
             },
         },
         defaultVariants: {

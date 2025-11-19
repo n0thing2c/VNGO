@@ -35,7 +35,7 @@ const GuideSection = ({ guide }) => {
         {/* Message button */}
         {userRole !== "guide" && (
           <Button
-            className="bg-[#068F64] rounded-2xl w-fit h-fit text-[10px] flex items-center gap-1"
+            className="bg-[#068F64] rounded-2xl w-auto h-auto text-[9px] flex items-center gap-1"
             onClick={handleMessageClick}
           >
             <MessageCircleMore /> Message {guide.name.trim().split(" ").slice(-1)}

@@ -21,12 +21,20 @@ export function Calendar22({
                            }) {
     const [open, setOpen] = useState(false)
 
+    // Define options for dd/mm/yyyy format
+    const dateFormatOptions = {
+        day: '2-digit',    // dd
+        month: '2-digit',  // mm
+        year: 'numeric',   // yyyy
+    };
+
     return (
         <div className="flex flex-col gap-3">
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <Button variant="outline" className={buttonClassName}>
-                        {date ? date.toLocaleDateString() : ""}
+                        {/* MODIFICATION HERE: Pass 'en-GB' locale and dateFormatOptions */}
+                        {date ? date.toLocaleDateString('en-GB', dateFormatOptions) : ""}
                         <Calendar1Icon/>
                         {/*<ChevronDownIcon/>*/}
                     </Button>
