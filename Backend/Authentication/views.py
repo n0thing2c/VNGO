@@ -156,10 +156,10 @@ class ResendEmailVerificationView(generics.GenericAPIView):
 
 def _set_refresh_cookie(response, refresh_token: str):
     """Attach refresh token as HttpOnly cookie."""
-    is_prod = not settings.DEBUG  # hoặc dùng biến ENV riêng
-    same_site = "None" if is_prod else "Lax"
-    secure = True if is_prod else False
     # Lax is sufficient for same-site frontend; adjust if needed
+    same_site = "None"
+    secure = not settings.DEBUG
+
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
