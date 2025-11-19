@@ -30,8 +30,10 @@ export default function TourStopsTimeline({ stops = [] }) {
       const stopRect = activeStop.getBoundingClientRect();
 
       // Calculate horizontal center position
-      const offsetLeft = stopRect.left - containerRect.left + container.scrollLeft;
-      const offsetCenter = offsetLeft - container.clientWidth / 2 + stopRect.width / 2;
+      const offsetLeft =
+        stopRect.left - containerRect.left + container.scrollLeft;
+      const offsetCenter =
+        offsetLeft - container.clientWidth / 2 + stopRect.width / 2;
 
       container.scrollTo({
         left: offsetCenter,
@@ -57,7 +59,9 @@ export default function TourStopsTimeline({ stops = [] }) {
             to { width: 100%; }
           }
           .animate-fill-line {
-            animation: fill-line ${ANIMATION_DURATION_MS / 900}s linear forwards;
+            animation: fill-line ${
+              ANIMATION_DURATION_MS / 900
+            }s linear forwards;
           }
           .subtle-scrollbar::-webkit-scrollbar {
             height: 6px; /* Height for horizontal scrollbar */
@@ -83,7 +87,8 @@ export default function TourStopsTimeline({ stops = [] }) {
         <div className="relative flex items-center w-full">
           {stops.map((stop, idx) => {
             const isTop = idx % 2 === 0;
-            const stopName = stop.name_en?.split(",")[0] || stop.name || "Unknown stop";
+            const stopName =
+              stop.name_en?.split(",")[0] || stop.name || "Unknown stop";
             const isActive = idx === activeIdx;
 
             return (
@@ -91,14 +96,16 @@ export default function TourStopsTimeline({ stops = [] }) {
                 {/* --- Stop Component --- */}
                 <div
                   ref={(el) => (stopRefs.current[idx] = el)}
-                  className="relative flex flex-col items-center shrink-0"
+                  className="relative flex flex-col items-center shrink-0 px-6 first:ml-8 last:mr-8"
                 >
                   {/* Label on top */}
                   {isTop && (
                     <div className="absolute bottom-full mb-2">
                       <span
                         className={`font-bold text-md text-center whitespace-nowrap transition-all duration-300 ${
-                          isActive ? "text-blue-600 text-lg" : "text-neutral-600"
+                          isActive
+                            ? "text-blue-600 text-lg"
+                            : "text-neutral-600"
                         }`}
                       >
                         {stopName}
@@ -109,7 +116,9 @@ export default function TourStopsTimeline({ stops = [] }) {
                   {/* Circle */}
                   <div
                     className={`w-9 h-9 rounded-full text-white font-bold flex items-center justify-center z-10 shrink-0 border-4 border-white transition-all duration-300 ${
-                      isActive ? "bg-blue-500 scale-120 shadow-lg" : "bg-neutral-400"
+                      isActive
+                        ? "bg-blue-500 scale-120 shadow-lg"
+                        : "bg-neutral-400"
                     }`}
                   >
                     {idx + 1}
@@ -120,7 +129,9 @@ export default function TourStopsTimeline({ stops = [] }) {
                     <div className="absolute top-full mt-2">
                       <span
                         className={`font-bold text-md text-center whitespace-nowrap transition-all duration-300 ${
-                          isActive ? "text-blue-600 text-lg" : "text-neutral-600"
+                          isActive
+                            ? "text-blue-600 text-lg"
+                            : "text-neutral-600"
                         }`}
                       >
                         {stopName}
