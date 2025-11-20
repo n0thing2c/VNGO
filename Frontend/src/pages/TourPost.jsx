@@ -187,9 +187,9 @@ export default function TourPost() {
                     "Popular",
                     "Highly Rated",
                     "Multilingual",
-                    "Budget",
-                    //"Luxury",
-                    "Most Reviewed",
+                    // "Budget",
+                    "Luxury",
+                    // "Most Reviewed",
                 ]);
             } catch (err) {
                 console.error("Failed to fetch achievements:", err);
@@ -231,12 +231,13 @@ export default function TourPost() {
                     {/*row 1*/}
                     <div>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4 sm:gap-2">
+
                             {/* Tour Name */}
                             <FieldLabel
-                                className="text-4xl sm:text-5xl lg:text-6xl font-bold break-words text-[#020765]">
-                                {tour.name}
+                              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#020765] whitespace-nowrap"
+                            >
+                              {tour.name}
                             </FieldLabel>
-
                             {/* Achievements */}
                             <div className="flex flex-wrap w-full justify-end gap-2 items-center -mb-4">
                                 {achievements.map((ach) => (
@@ -355,7 +356,7 @@ export default function TourPost() {
                     // CHANGED: Standardized top-23 to top-24
                     className="flex flex-col bg-neutral-50 w-full max-w-lg mx-auto md:max-w-none md:col-span-2 md:row-span-2 md:sticky top-24 rounded-4xl h-fit">
                     <CardHeader>
-                        <CardTitle className="flex flex-col items-center justify-center p-3">
+                        <CardTitle className="flex flex-col items-center justify-center py-3">
                             <div className="flex items-center justify-between">
 
                                 {/* 2. THE STATUS BADGE */}
@@ -374,7 +375,7 @@ export default function TourPost() {
                                 {/* 1. THE PRICE */}
                                 <FieldLabel
                                     className={cn(
-                                        "text-3xl sm:text-4xl font-medium",
+                                        "text-center text-3xl sm:text-4xl font-medium",
                                     )}
                                 >
                                     {currency === "VND"
