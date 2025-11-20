@@ -1,25 +1,49 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { MessageCircleMore, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/stores/useAuthStore.js";
 import { useNavigate } from "react-router-dom";
 
+const buildRoomName = (touristUsername, guideUsername) => {
+  if (!touristUsername || !guideUsername) return null;
+  return `${touristUsername}__${guideUsername}`;
+};
+
 const GuideSection = ({ guide }) => {
-  const islogged = useAuthStore((state) => state.user);
-  const userRole = useAuthStore((state)=> state.user?.role)
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.role;
   const navigate = useNavigate();
+
+  const guideInitial = guide?.name?.[0]?.toUpperCase() || guide?.username?.[0]?.toUpperCase() || "?";
+
+  const chatPayload = useMemo(() => {
+    if (!guide || !user) return null;
+    const roomName = buildRoomName(user.username, guide.username);
+    if (!roomName) return null;
+    return {
+      targetRoom: roomName,
+      targetUser: {
+        id: guide.id,
+        username: guide.username,
+        name: guide.name,
+      },
+    };
+  }, [guide, user]);
 
   if (!guide) return null; // no guide, render nothing
 
   const handleMessageClick = () => {
-    if (!islogged) {
+    if (!user) {
       navigate("/login"); // redirect to login if not logged in
+      return;
     }
-    else {
-      // implement messaging functionality here
-      console.log("Open chat with guide:", guide.id);
-    }
+
+    if (!chatPayload) return;
+
+    navigate("/chat", {
+      state: chatPayload,
+    });
   };
 
   return (
@@ -29,7 +53,7 @@ const GuideSection = ({ guide }) => {
         <div
           className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700"
         >
-          {guide.name[0].toUpperCase()}
+          {guideInitial}
         </div>
 
         {/* Message button */}
@@ -38,7 +62,10 @@ const GuideSection = ({ guide }) => {
             className="bg-[#068F64] rounded-2xl w-auto h-auto text-[9px] flex items-center gap-1"
             onClick={handleMessageClick}
           >
-            <MessageCircleMore /> Message {guide.name.trim().split(" ").slice(-1)}
+            <MessageCircleMore /> Message{" "}
+            {guide.name
+              ? guide.name.trim().split(" ").slice(-1).join(" ")
+              : guide.username}
           </Button>
         )}
 

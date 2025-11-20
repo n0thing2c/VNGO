@@ -34,8 +34,22 @@ class ConversationListView(generics.GenericAPIView):
     def get(self, request):
         user = request.user
         
+        # Lấy tất cả các rooms mà user tham gia
+        # Room name format: username1__username2
+        # Lấy tất cả rooms có chứa username của user (user đã gửi hoặc nhận tin nhắn)
+        from django.db.models import Q
+        
+        user_username = user.username
+        # Tìm tất cả rooms có chứa username của user trong room name
+        all_user_rooms = Message.objects.filter(
+            Q(room__contains=user_username)
+        ).values("room").distinct()
+        
+        # Lấy last message time cho mỗi room và sắp xếp
         room_entries = (
-            Message.objects.filter(sender=user)
+            Message.objects.filter(
+                room__in=[r["room"] for r in all_user_rooms]
+            )
             .values("room")
             .annotate(last_message_at=Max("created_at"))
             .order_by("-last_message_at")
@@ -44,7 +58,6 @@ class ConversationListView(generics.GenericAPIView):
         conversations = []
         for entry in room_entries:
             room_name = entry["room"]
-            last_message_at = entry.get("last_message_at")
             last_message = (
                 Message.objects.filter(room=room_name)
                 .order_by("-created_at")
