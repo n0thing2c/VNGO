@@ -306,7 +306,7 @@ export default function ChatPage() {
               rating={selectedContact.rating}
               reviewCount={selectedContact.reviewCount}
               onMessageUpdate={handleConversationUpdate}
-              heightClass="max-h-[67vh]"
+              heightClass="min-h-[67vh] max-h-[67vh]"
             />
           ) : (
             <div className="flex-1 flex items-center justify-center min-h-[650px]">
