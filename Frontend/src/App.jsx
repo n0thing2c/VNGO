@@ -15,6 +15,9 @@ import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
 import GuideProfilePage from "@/pages/GuideProfilePage.jsx";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
+import ManagementTours from "@/pages/ManagementTours.jsx";
+import Playground from "@/pages/PlayGround.jsx";
+// dòng 19 với dòng 35 chung vấn đề 
 
 function App() {
   return (
@@ -28,8 +31,11 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/login" element={<LogInPage />} />
           <Route path="/personal-info" element={<InfoPage />} />
-
           <Route path="/" element={<Layout />}>
+            {/* phần Quốc đang làm nè */}
+            <Route path="/management_tour/" element={<ManagementTours />} />
+            <Route path="/playground" element={<Playground />} /> 
+            {/* đừng quan tâm dòng này với file Playground.jsx nếu có lỡ commit (quốc) */}
             <Route path="/tour/post/:tour_id" element={<TourPost />} />
             <Route index element={<HomePage />} />
             <Route path="/tours" element={<ToursShowPage />} />
@@ -42,6 +48,7 @@ function App() {
             {/* protected routes*/}
 
             {/* login routes*/}
+        
             <Route element={<ProtectedRoute />}>
               <Route path="/profile" element={<GuideProfilePage />} />
             </Route>

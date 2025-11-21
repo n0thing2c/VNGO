@@ -86,7 +86,14 @@ function SortableList({item, id, idx, onRemove, onRename}) {
     );
 }
 
-export default function DragList({items, onRemoveItem, onReorder, onRenameItem}) {
+const defaultItems = [
+  { name: "Tham quan vịnh Hạ Long" },
+  { name: "Tắm biển Phú Quốc" },
+  { name: "Khám phá phố cổ Hội An" },
+  { name: "Chinh phục Fansipan" },
+];
+
+export default function DragList({items = defaultItems, onRemoveItem, onReorder, onRenameItem}) {
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})

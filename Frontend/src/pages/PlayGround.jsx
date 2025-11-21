@@ -1,9 +1,9 @@
 // src/pages/Playground.jsx
 
 import AlbumPhotoFrame from "@/components/albumframes"
-import AnimatedStat from "@/components/AnimatedStat"
+// import AnimatedStat from "@/components/AnimatedStat"
 import DragList from "@/components/drag_list"
-import FadeInWrapper from "@/components/FadeInWrapper"
+// import FadeInWrapper from "@/components/FadeInWrapper"
 import ImageUploader from "@/components/imageuploader"
 import VNDInput from "@/components/priceinput"
 import TagSelector from "@/components/tagsselector"
@@ -225,7 +225,7 @@ export default function Playground() {
         />
       </section>
 
-      {/* 2. AnimatedStat */}
+      {/* 2. AnimatedStat
       <section className="py-12 bg-gray-900 text-white rounded-2xl">
         <h2 className="text-3xl font-bold mb-8 text-center">AnimatedStat</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
@@ -234,7 +234,7 @@ export default function Playground() {
           <AnimatedStat end={450} prefix="₫" suffix="M" label="Doanh thu" />
           <AnimatedStat end={12} suffix="k" label="Khách hàng" />
         </div>
-      </section>
+      </section> */}
 
       {/* 3. DragList */}
       <section className="py-12">
@@ -242,7 +242,7 @@ export default function Playground() {
         <DragList />
       </section>
 
-      {/* 4. FadeInWrapper */}
+      {/* 4. FadeInWrapper
       <section className="py-12">
         <h2 className="text-3xl font-bold mb-6">FadeInWrapper (hiệu ứng xuất hiện)</h2>
         <FadeInWrapper>
@@ -250,7 +250,7 @@ export default function Playground() {
             Tôi hiện ra mượt mà lắm nè!
           </div>
         </FadeInWrapper>
-      </section>
+      </section> */}
 
       {/* 5. ImageUploader */}
       <section className="py-12">
