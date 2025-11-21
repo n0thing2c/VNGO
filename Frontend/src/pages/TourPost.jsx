@@ -230,16 +230,23 @@ export default function TourPost() {
 
                     {/*row 1*/}
                     <div>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4 sm:gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-10 gap-4">
 
                             {/* Tour Name */}
                             <FieldLabel
-                              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#020765] whitespace-nowrap"
+                                className="
+                                  font-bold text-[#020765]
+                                  text-3xl sm:text-4xl lg:text-5xl
+                                  max-w-full
+                                  break-words
+                                  leading-snug
+                                "
                             >
-                              {tour.name}
+                                {tour.name}
                             </FieldLabel>
+
                             {/* Achievements */}
-                            <div className="flex flex-wrap w-full justify-end gap-2 items-center -mb-4">
+                            <div className="flex flex-wrap justify-start sm:justify-end w-full sm:w-auto gap-2">
                                 {achievements.map((ach) => (
                                     <AchievementBadge
                                         key={ach}
@@ -341,10 +348,9 @@ export default function TourPost() {
                         <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">
                             Description
                         </FieldLabel>
-                        <FieldLabel className="text-base text-neutral-700 whitespace-pre-line leading-relaxed">
-                            {tour.description}
+                        <FieldLabel className="text-base text-neutral-700 whitespace-pre-line leading-loose">
+                          {tour.description}
                         </FieldLabel>
-
                         {/* MOVED: Reviews section is no longer here */}
                     </div>
                 </div>
