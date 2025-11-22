@@ -24,11 +24,14 @@ function App() {
         <ScrollToTop />
         <Routes>
           {/*public routes*/}
-          <Route path="/signup" element={<SignUpPage />} />
+          {/* <Route path="/signup" element={<SignUpPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/login" element={<LogInPage />} />
+          <Route path="/login" element={<LogInPage />} /> */}
 
           <Route path="/" element={<Layout />}>
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/login" element={<LogInPage />} />
             <Route path="/tour/post/:tour_id" element={<TourPost />} />
             <Route index element={<HomePage />} />
             <Route path="/tours" element={<ToursShowPage />} />

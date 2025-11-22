@@ -47,7 +47,7 @@ export default function BecomeGuideSection() {
 
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                   <DialogTrigger asChild>
-                    <button className="bg-[#020765] hover:bg-[#068F64] text-white px-6 py-3 rounded-xl transition-colors font-medium">
+                    <button className="bg-[#020765] hover:bg-[#068F64] text-white px-6 py-3 rounded-full transition-colors font-medium">
                       Apply now
                     </button>
                   </DialogTrigger>
