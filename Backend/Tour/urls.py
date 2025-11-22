@@ -13,4 +13,5 @@ urlpatterns = [
     path('provinces/all/', views.get_all_provinces, name='api-get-all-provinces'),
     path('tour/rate/<int:tour_id>/', views.tour_rate, name='api-post-rate'),
     path('tour/ratings/<int:tour_id>/', views.tour_get_ratings, name='api-get-ratings'),
+    path('tour/guide/<guide_id>/all/', views.guide_get_all_tours, name='api-get-guide-tours'),
 ]

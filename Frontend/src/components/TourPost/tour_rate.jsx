@@ -1,17 +1,15 @@
 "use client";
 
 import React, {useState} from "react";
-import axios from "axios";
 import ImageUploader, {ImageDropBox} from "../imageuploader.jsx";
 import {Rating, RatingButton} from "@/components/ui/shadcn-io/rating/index.jsx";
 import {Button} from "@/components/ui/button.jsx";
 import {Textarea} from "@/components/ui/textarea.jsx";
 import TagSelector from "@/components/tagsselector.jsx";
-import {useAuthStore} from "@/stores/useAuthStore.js";
 import {tourService} from "@/services/tourService.js";
+import {toast} from "sonner";
 
 export default function TourRate({tourId, onRated}) {
-    const accessToken = useAuthStore((state) => state.accessToken);
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState("");
     const [reviewTags, setReviewTags] = useState([]);
@@ -58,8 +56,13 @@ export default function TourRate({tourId, onRated}) {
 
 
     const handleImagesChange = (imgs) => {
+        if (imgs.length > 10) {
+            toast.error("Maximum 10 images allowed.");
+            imgs = imgs.slice(0, 10);
+        }
         setImages(imgs);
     };
+
 
     const handleSubmit = async () => {
         const result = await tourService.submitRating({
@@ -80,8 +83,7 @@ export default function TourRate({tourId, onRated}) {
     };
 
     return (
-        <div
-            className="w-full max-w-2xl mx-auto p-1 bg-transparent transition-all">
+        <div className="w-[90vw] sm:max-w-2xl mx-auto p-4 bg-transparent relative">
             <h3 className="text-lg sm:text-xl md:text-2xl mb-4 text-center sm:text-left">
                 Rate this tour
             </h3>
@@ -96,15 +98,22 @@ export default function TourRate({tourId, onRated}) {
             </div>
 
             {/* Review */}
-            <Textarea
-                value={review}
-                onChange={(e) => setReview(e.target.value)}
-                placeholder="Write your review..."
-                className="mb-5 bg-transparent"
-            />
+            <div className="relative mb-5 w-full">
+                <Textarea
+                    placeholder="Enter a short description of your tour"
+                    value={review}
+                    onChange={(e) => setReview(e.target.value.slice(0, 1000))}
+                    rows={5}
+                    maxLength={1000}
+                    className="w-full bg-transparent break-words whitespace-normal resize-none"
+                />
+                <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
+      {review.length}/1000
+    </span>
+            </div>
 
             {/* Predefined Tags */}
-            <div className="mb-4">
+            <div className="mb-4 w-full overflow-x-auto">
                 <TagSelector
                     tags={predefinedTags}
                     selectedTags={reviewTags}
@@ -114,20 +123,12 @@ export default function TourRate({tourId, onRated}) {
             </div>
 
             {/* Image Uploader */}
-            <div className="mb-4">
-                {/*<ImageUploader*/}
-                {/*    images={images}*/}
-                {/*    onImagesChange={handleImagesChange}*/}
-                {/*    allowThumbnail={false}*/}
-                {/*/>*/}
-                <ImageDropBox
-                    images={images}
-                    onImagesChange={handleImagesChange}
-                />
+            <div className="mb-4 w-full">
+                <ImageDropBox images={images} onImagesChange={handleImagesChange}/>
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end">
+            <div className="flex justify-end w-full">
                 <Button
                     onClick={handleSubmit}
                     disabled={loading}
@@ -137,14 +138,11 @@ export default function TourRate({tourId, onRated}) {
                 </Button>
             </div>
 
-
-            {success && (
-                <p className="text-green-600 mt-3 text-sm sm:text-base">{success}</p>
-            )}
-            {error && (
-                <p className="text-red-600 mt-3 text-sm sm:text-base">{error}</p>
-            )}
+            {success && <p className="text-green-600 mt-3 text-sm sm:text-base">{success}</p>}
+            {error && <p className="text-red-600 mt-3 text-sm sm:text-base">{error}</p>}
         </div>
+
+
     );
 
 }
