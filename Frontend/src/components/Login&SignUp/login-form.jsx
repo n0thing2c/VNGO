@@ -80,14 +80,14 @@ export function LoginForm({ className, ...props }) {
     >
       <Card className="mx-auto mt-2 md:mt-0 w-[92%]  md:max-w-4xl overflow-hidden p-0 shadow-xl">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-3 md:p-5" onSubmit={handleSubmit}>
-            <FieldGroup className="gap-3 md:gap-4 text-sm">
-              <div className="flex flex-col items-center gap-1 text-center mb-1 md:mb-2">
-                <h1 className="text-xl md:text-2xl font-bold">Log in</h1>
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
+            <FieldGroup className="gap-6 md:gap-8 text-sm">
+              <div className="flex flex-col items-center gap-2 text-center mb-3 md:mb-4">
+                <h1 className="text-2xl md:text-3xl font-bold">Log in</h1>
               </div>
 
               <Field>
-                <FieldLabel className="text-sm" htmlFor="username">
+                <FieldLabel className="text-base mb-2" htmlFor="username">
                   Username
                 </FieldLabel>
                 <Input
@@ -95,12 +95,12 @@ export function LoginForm({ className, ...props }) {
                   name="username"
                   type="username"
                   required
-                  className="h-9 text-sm"
+                  className="h-12 text-base"
                 />
               </Field>
 
               <Field>
-                <FieldLabel className="text-sm" htmlFor="password">
+                <FieldLabel className="text-base mb-2" htmlFor="password">
                   Password
                 </FieldLabel>
                 <Input
@@ -108,13 +108,13 @@ export function LoginForm({ className, ...props }) {
                   name="password"
                   type="password"
                   required
-                  className="h-9 text-sm"
+                  className="h-12 text-base"
                 />
               </Field>
 
               <Field>
                 <Button
-                  className="w-full md:w-auto h-9 px-4 text-sm"
+                  className="w-full md:w-auto h-12 px-6 text-base"
                   type="submit"
                   disabled={loading}
                 >
