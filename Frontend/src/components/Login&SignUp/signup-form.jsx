@@ -185,6 +185,26 @@ export function SignupForm({ className, ...props }) {
               </Field>
 
               <Field>
+                <FieldDescription className="px-6 mt-2 text-sm flex items-center justify-center gap-2 text-center">
+                  <input
+                    type="checkbox"
+                    id="tos-agree"
+                    className="h-4 w-4"
+                    checked={hasAgreed}
+                    onChange={(e) => setHasAgreed(e.target.checked)}
+                  />
+                  <label htmlFor="tos-agree" className="select-none">
+                    By clicking, you agree to our{" "}
+                    <a href="#" className="text-primary underline">
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a href="#" className="text-primary underline">
+                      Privacy Policy
+                    </a>
+                    .
+                  </label>
+                </FieldDescription>
                 <Button
                   className="w-full md:w-auto h-9 px-4 text-sm"
                   type="submit"
@@ -209,27 +229,6 @@ export function SignupForm({ className, ...props }) {
           </div>
         </CardContent>
       </Card>
-
-      <FieldDescription className="px-6 mt-2 text-sm flex items-center justify-center gap-2 text-center">
-        <input
-          type="checkbox"
-          id="tos-agree"
-          className="h-4 w-4"
-          checked={hasAgreed}
-          onChange={(e) => setHasAgreed(e.target.checked)}
-        />
-        <label htmlFor="tos-agree" className="select-none">
-          By clicking, you agree to our{" "}
-          <a href="#" className="text-primary underline">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="text-primary underline">
-            Privacy Policy
-          </a>
-          .
-        </label>
-      </FieldDescription>
     </div>
   );
 }

@@ -30,26 +30,34 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                 to={`/tours?location=${encodeURIComponent(dest.name_en)}`}
                 key={dest.id}
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full">
-                  <div className="relative h-64 -mx-6 -mt-6 px-6 pt-6 overflow-hidden rounded-t-xl">
+                <Card className="group h-full overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl rounded-2xl cursor-pointer">
+                  <div className="relative h-72 overflow-hidden">
                     <img
-                      src={dest.image} // Dùng ảnh đại diện từ API
+                      src={dest.image}
                       alt={dest.name_en.split(",")[0]}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    {/* Hiển thị tên điểm đến trên ảnh */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <h3 className="absolute bottom-4 left-10 text-2xl font-semibold text-white">
+                    
+                    {/* Gradient overlay: Làm tối dần để chữ dễ đọc hơn */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
+                    
+                    <h3 className="absolute bottom-5 left-6 text-3xl font-bold text-white tracking-wide drop-shadow-md">
                       {dest.name_en.split(",")[0]}
                     </h3>
                   </div>
-                  <CardContent className="p-4">
-                    {/* Thông tin phụ: có bao nhiêu tour */}
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      <span className="text-sm">
-                        {dest.tour_count}{" "}
-                        {dest.tour_count > 1 ? "tours" : "tour"} available
+
+                  <CardContent className="p-6 bg-white relative z-10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-gray-600 group-hover:text-blue-600 transition-colors duration-300">
+                        <MapPin className="w-5 h-5 mr-2" />
+                        <span className="font-medium text-base">
+                          {dest.tour_count}{" "}
+                          {dest.tour_count > 1 ? "tours" : "tour"} available
+                        </span>
+                      </div>
+                      
+                      <span className="text-gray-300 group-hover:text-blue-500 transition-colors duration-300">
+                        ➔
                       </span>
                     </div>
                   </CardContent>

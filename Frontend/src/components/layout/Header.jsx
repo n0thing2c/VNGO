@@ -14,6 +14,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 export default function Header() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const isLoginSignupPage = location.pathname === '/login' || location.pathname === '/signup';
   // Dùng "selector" (hàm mũi tên) để component chỉ
   // re-render khi 'user' thay đổi, chứ không phải khi 'loading' thay đổi.
   const user = useAuthStore((state) => state.user);
@@ -22,7 +23,7 @@ export default function Header() {
 
   return (
     <header className="bg-black sticky top-0 z-50 border-b border-black/10">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+      <div className="max-w-full mx-auto px-2 md:px-4">
         <div className="flex items-center justify-between py-3 md:py-4">
           {/* Logo - Clickable to home */}
           <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
@@ -34,7 +35,7 @@ export default function Header() {
           </Link>
 
           {/* Hiển thị search bar ở giữa NẾU KHÔNG PHẢI trang chủ */}
-          {!isHomePage && (
+          {!isHomePage && !isLoginSignupPage && (
             <div className="hidden md:flex justify-center flex-1 min-w-0 px-4">
               {/* DÙNG COMPONENT TOÀN CỤC */}
               <GlobalSearchBar />
@@ -73,14 +74,18 @@ export default function Header() {
                   ) : (
                     <DropdownMenuItem>My Bookings</DropdownMenuItem>
                   )}
-                  <DropdownMenuItem>Message</DropdownMenuItem>
-                  <DropdownMenuItem onClick={logout}>
+                  <DropdownMenuItem>
+                    <Link to="/chat">
+                      Message
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout} className="text-[#CC3737]">
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          ) : (
+          ) : (!isLoginSignupPage && (
             <div className="flex items-center gap-2 md:gap-3">
               <div className="flex items-center gap-4">
                 <Link to="/login">
@@ -95,7 +100,7 @@ export default function Header() {
                 </Link>
               </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
     </header>
