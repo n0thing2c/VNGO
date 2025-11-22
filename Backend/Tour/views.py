@@ -623,3 +623,95 @@ def get_all_provinces(request):
         return Response(response_data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ------------------------
+# My Tours (For Guide Management Page)
+# ------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_tours(request):
+    """
+    Get all tours created by the authenticated guide.
+    For Guide Management Page - My Tours section.
+    """
+    try:
+        # Check if user is a guide
+        guide_profile = getattr(request.user, 'guide_profile', None)
+        if not guide_profile:
+            return Response(
+                {'success': False, 'error': 'Only guides can access this endpoint'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get all tours by this guide
+        tours_queryset = Tour.objects.filter(guide=guide_profile).order_by('-id')
+        
+        # Build response with tour details
+        response_data = []
+        for tour in tours_queryset:
+            # Get thumbnail image
+            images = TourImage.objects.filter(tour=tour)
+            thumbnail = images.filter(isthumbnail=True).first()
+            image_obj = thumbnail or images.first()
+            image_url = request.build_absolute_uri(image_obj.image.url) if image_obj else None
+            
+            # Get location string
+            places = tour.places.all()
+            if places:
+                names = [p.name_en.split(',')[0] for p in places]
+                names = names[:4]
+                location_str = " - ".join(names)
+            else:
+                location_str = "Many Places"
+            
+            # Get booking statistics for this tour
+            from Management.models import Booking, BookingStatus
+            from django.utils import timezone
+            
+            total_bookings = Booking.objects.filter(tour=tour, tour_date__gte=timezone.now().date()).count()
+            pending_bookings = Booking.objects.filter(
+                tour=tour, 
+                status=BookingStatus.PENDING,
+                tour_date__gte=timezone.now().date()
+            ).count()
+            accepted_bookings = Booking.objects.filter(
+                tour=tour,
+                status=BookingStatus.ACCEPTED,
+                tour_date__gte=timezone.now().date()
+            ).count()
+            
+            average_rating = round(tour.average_rating(), 1)
+            
+            response_data.append({
+                'id': tour.id,
+                'title': tour.name,
+                'price': tour.price,
+                'rating': average_rating,
+                'reviews': tour.rating_count,
+                'duration': tour.duration,
+                'groupSize': f"{tour.min_people}-{tour.max_people} people",
+                'transportation': tour.transportation,
+                'tags': tour.tags,
+                'image': image_url,
+                'location': location_str,
+                'description': tour.description,
+                # Booking statistics
+                'bookings': {
+                    'total': total_bookings,
+                    'pending': pending_bookings,
+                    'accepted': accepted_bookings,
+                }
+            })
+        
+        return Response({
+            'success': True,
+            'tours': response_data,
+            'count': len(response_data)
+        }, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

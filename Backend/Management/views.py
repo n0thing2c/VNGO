@@ -1,0 +1,538 @@
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.utils import timezone
+
+from .models import Booking, BookingNotification, BookingStatus
+from .serializers import (
+    BookingSerializer,
+    BookingCreateSerializer,
+    BookingResponseSerializer,
+    BookingListSerializer,
+    BookingNotificationSerializer,
+)
+from Profiles.models import Tourist, Guide
+from Tour.models import Tour
+
+
+class BookingPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class BookingViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing bookings
+    Handles all CRUD operations for bookings
+    """
+
+    permission_classes = [IsAuthenticated]
+    pagination_class = BookingPagination
+
+    def get_queryset(self):
+        """
+        Filter bookings based on user role
+        Auto-exclude past bookings (where tour date/time has passed)
+        """
+        user = self.request.user
+
+        if user.role == "tourist":
+            # Tourist sees their own bookings (only future or today's bookings)
+            try:
+                tourist = user.tourist_profile
+                return (
+                    Booking.objects.filter(
+                        tourist=tourist, tour_date__gte=timezone.now().date()
+                    )
+                    .select_related("tourist", "guide", "tour")
+                    .prefetch_related("tour__tour_images")
+                )
+            except Tourist.DoesNotExist:
+                return Booking.objects.none()
+
+        elif user.role == "guide":
+            # Guide sees bookings for their tours (only future or today's bookings)
+            try:
+                guide = user.guide_profile
+                return (
+                    Booking.objects.filter(
+                        guide=guide, tour_date__gte=timezone.now().date()
+                    )
+                    .select_related("tourist", "guide", "tour")
+                    .prefetch_related("tour__tour_images")
+                )
+            except Guide.DoesNotExist:
+                return Booking.objects.none()
+
+        return Booking.objects.none()
+
+    def get_serializer_class(self):
+        """
+        Return appropriate serializer based on action
+        """
+        if self.action == "create":
+            return BookingCreateSerializer
+        elif self.action == "list":
+            return BookingListSerializer
+        return BookingSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Operation 1: Tourist sends a booking request
+        POST /management/bookings/
+        """
+        # Only tourists can create bookings
+        if request.user.role != "tourist":
+            return Response(
+                {"error": "Only tourists can create booking requests"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            tourist = request.user.tourist_profile
+        except Tourist.DoesNotExist:
+            return Response(
+                {
+                    "error": "Tourist profile not found. Please complete your profile first."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Add tourist to data
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Add tourist to validated data
+        serializer.validated_data["tourist"] = tourist
+
+        booking = serializer.save()
+
+        # Return full booking details
+        response_serializer = BookingSerializer(booking)
+        return Response(
+            {
+                "message": "Booking request sent successfully",
+                "booking": response_serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Get detailed booking information
+        GET /management/bookings/{id}/
+        """
+        booking = self.get_object()
+        serializer = BookingSerializer(booking, context={"request": request})
+        return Response(serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        """
+        List bookings with filtering
+        GET /management/bookings/
+        Query params:
+        - status: filter by status (pending/accepted/declined/cancelled/completed)
+        - upcoming: true/false (only accepted future bookings)
+        """
+        queryset = self.get_queryset()
+
+        # Filter by status
+        status_filter = request.query_params.get("status", None)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        # Filter upcoming bookings
+        upcoming = request.query_params.get("upcoming", None)
+        if upcoming and upcoming.lower() == "true":
+            queryset = queryset.filter(
+                status=BookingStatus.ACCEPTED, tour_date__gte=timezone.now().date()
+            )
+
+        # Order by date
+        queryset = queryset.order_by("-tour_date", "-tour_time")
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="respond")
+    def respond_to_booking(self, request, pk=None):
+        """
+        Operation 2: Guide responds to booking request (accept/decline)
+        POST /management/bookings/{id}/respond/
+        Body: { "action": "accept" or "decline", "decline_reason": "..." }
+        """
+        # Only guides can respond to bookings
+        if request.user.role != "guide":
+            return Response(
+                {"error": "Only guides can respond to booking requests"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        booking = self.get_object()
+
+        # Verify guide owns this booking
+        try:
+            guide = request.user.guide_profile
+            if booking.guide != guide:
+                return Response(
+                    {"error": "You can only respond to your own bookings"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except Guide.DoesNotExist:
+            return Response(
+                {"error": "Guide profile not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check booking is pending
+        if booking.status != BookingStatus.PENDING:
+            return Response(
+                {"error": f"Cannot respond to booking with status: {booking.status}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate response data
+        response_serializer = BookingResponseSerializer(data=request.data)
+        response_serializer.is_valid(raise_exception=True)
+
+        action_type = response_serializer.validated_data["action"]
+
+        if action_type == "accept":
+            booking.accept()
+            message = f"Your booking for {booking.tour.name} on {booking.tour_date} has been accepted!"
+
+            # Create notification for tourist
+            BookingNotification.objects.create(
+                booking=booking,
+                recipient=booking.tourist.user,
+                notification_type="booking_accepted",
+                message=message,
+            )
+
+            serializer = BookingSerializer(booking)
+            return Response(
+                {"message": "Booking accepted successfully", "booking": serializer.data}
+            )
+
+        else:  # decline - notify and delete immediately
+            decline_reason = response_serializer.validated_data.get(
+                "decline_reason", ""
+            )
+            tour_name = booking.tour.name
+            tour_date = booking.tour_date
+            tourist_user = booking.tourist.user
+
+            # Create notification before deleting
+            # Note: We create notification without FK to booking since it will be deleted
+            from Authentication.models import User
+            from django.core.mail import send_mail
+
+            # Send in-app notification or email (since booking will be deleted, we can't link to it)
+            # For now, we'll skip creating BookingNotification since it requires a booking FK
+            # Instead, you might want to implement a separate NotificationLog model for deleted bookings
+
+            # Delete the booking immediately
+            booking.delete()
+
+            return Response(
+                {
+                    "message": "Booking declined and removed from system",
+                    "details": {
+                        "tour_name": tour_name,
+                        "tour_date": str(tour_date),
+                        "reason": decline_reason,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+
+    @action(detail=False, methods=["get"], url_path="my-requests")
+    def my_booking_requests(self, request):
+        """
+        Operation 3: View booking requests for created tours (for tourist)
+        GET /management/bookings/my-requests/
+        Returns all bookings made by the authenticated tourist (only future bookings)
+        """
+        if request.user.role != "tourist":
+            return Response(
+                {"error": "This endpoint is only for tourists"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            tourist = request.user.tourist_profile
+        except Tourist.DoesNotExist:
+            return Response(
+                {"error": "Tourist profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Only show bookings that haven't passed yet
+        queryset = (
+            Booking.objects.filter(
+                tourist=tourist, tour_date__gte=timezone.now().date()
+            )
+            .select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-created_at")
+        )
+
+        # Filter by status if provided
+        status_filter = request.query_params.get("status", None)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = BookingSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = BookingSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="requests")
+    def booking_requests(self, request):
+        """
+        Operation 2 (View): View all booking requests (for guide)
+        GET /management/bookings/requests/
+        Returns all bookings (pending + accepted) for the guide's tours (only future bookings)
+        Can filter by status using query param: ?status=pending or ?status=accepted
+        """
+        if request.user.role != "guide":
+            return Response(
+                {"error": "This endpoint is only for guides"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            guide = request.user.guide_profile
+        except Guide.DoesNotExist:
+            return Response(
+                {"error": "Guide profile not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get all bookings (pending + accepted, only future dates)
+        queryset = (
+            Booking.objects.filter(guide=guide, tour_date__gte=timezone.now().date())
+            .select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-created_at")
+        )
+
+        # Filter by status if provided
+        status_filter = request.query_params.get("status", None)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = BookingSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = BookingSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="upcoming-tours")
+    def upcoming_tours(self, request):
+        """
+        Operation 4: Manage upcoming tours for accepted requests
+        GET /management/bookings/upcoming-tours/
+        Returns all accepted bookings with future dates (for both tourists and guides)
+        """
+        user = request.user
+
+        if user.role == "tourist":
+            try:
+                tourist = user.tourist_profile
+                queryset = Booking.objects.filter(
+                    tourist=tourist,
+                    status=BookingStatus.ACCEPTED,
+                    tour_date__gte=timezone.now().date(),
+                )
+            except Tourist.DoesNotExist:
+                return Response(
+                    {"error": "Tourist profile not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        elif user.role == "guide":
+            try:
+                guide = user.guide_profile
+                queryset = Booking.objects.filter(
+                    guide=guide,
+                    status=BookingStatus.ACCEPTED,
+                    tour_date__gte=timezone.now().date(),
+                )
+            except Guide.DoesNotExist:
+                return Response(
+                    {"error": "Guide profile not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            return Response(
+                {"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        queryset = (
+            queryset.select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("tour_date", "tour_time")
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = BookingSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = BookingSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def booking_statistics(request):
+    """
+    Get booking statistics for the authenticated user
+    GET /management/statistics/
+    """
+    user = request.user
+
+    if user.role == "tourist":
+        try:
+            tourist = user.tourist_profile
+            bookings = Booking.objects.filter(
+                tourist=tourist, tour_date__gte=timezone.now().date()
+            )
+
+            stats = {
+                "total_bookings": bookings.count(),
+                "pending": bookings.filter(status=BookingStatus.PENDING).count(),
+                "accepted": bookings.filter(status=BookingStatus.ACCEPTED).count(),
+                "upcoming": bookings.filter(
+                    status=BookingStatus.ACCEPTED, tour_date__gte=timezone.now().date()
+                ).count(),
+            }
+        except Tourist.DoesNotExist:
+            return Response(
+                {"error": "Tourist profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    elif user.role == "guide":
+        try:
+            guide = user.guide_profile
+            bookings = Booking.objects.filter(
+                guide=guide, tour_date__gte=timezone.now().date()
+            )
+
+            stats = {
+                "total_bookings": bookings.count(),
+                "pending": bookings.filter(status=BookingStatus.PENDING).count(),
+                "accepted": bookings.filter(status=BookingStatus.ACCEPTED).count(),
+                "upcoming": bookings.filter(
+                    status=BookingStatus.ACCEPTED, tour_date__gte=timezone.now().date()
+                ).count(),
+            }
+        except Guide.DoesNotExist:
+            return Response(
+                {"error": "Guide profile not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        return Response(
+            {"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return Response(stats)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def notifications(request):
+    """
+    Get notifications for the authenticated user
+    GET /management/notifications/
+    Query params:
+    - unread: true/false (filter unread notifications)
+    """
+    user = request.user
+
+    queryset = BookingNotification.objects.filter(recipient=user).select_related(
+        "booking", "booking__tour"
+    )
+
+    # Filter unread if requested
+    unread_filter = request.query_params.get("unread", None)
+    if unread_filter and unread_filter.lower() == "true":
+        queryset = queryset.filter(is_read=False)
+
+    queryset = queryset.order_by("-created_at")[:50]  # Limit to last 50 notifications
+
+    serializer = BookingNotificationSerializer(queryset, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id):
+    """
+    Mark a notification as read
+    POST /management/notifications/{id}/read/
+    """
+    user = request.user
+
+    notification = get_object_or_404(
+        BookingNotification, id=notification_id, recipient=user
+    )
+
+    notification.mark_as_read()
+
+    serializer = BookingNotificationSerializer(notification)
+    return Response(
+        {"message": "Notification marked as read", "notification": serializer.data}
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_all_notifications_read(request):
+    """
+    Mark all notifications as read for the authenticated user
+    POST /management/notifications/read-all/
+    """
+    user = request.user
+
+    updated_count = BookingNotification.objects.filter(
+        recipient=user, is_read=False
+    ).update(is_read=True)
+
+    return Response(
+        {
+            "message": f"{updated_count} notifications marked as read",
+            "count": updated_count,
+        }
+    )

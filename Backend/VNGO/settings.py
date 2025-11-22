@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "Tour",
     "Profiles",
     "Chat",
+    "Management",
 ]
 
 # daphne
