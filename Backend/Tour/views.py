@@ -2,6 +2,8 @@ from rest_framework.decorators import api_view, parser_classes, permission_class
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny
+
+from Profiles.models import Guide
 from .models import Tour, Place, TourImage
 from .serializers import TourSerializer
 from django.conf import settings
@@ -269,6 +271,42 @@ def tour_get(request, tour_id):
         return Response({'success': False, 'error': 'Tour not found'}, status=404)
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=400)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def guide_get_all_tours(request, guide_id):
+    """
+    Get all tours created by a specific guide, formatted for TourCard.
+    """
+    try:
+        guide = Guide.objects.get(pk=guide_id)
+    except Guide.DoesNotExist:
+        return Response({'success': False, 'error': 'Guide not found'}, status=404)
+
+    try:
+        tours = Tour.objects.filter(guide=guide).order_by('-id')  # latest first
+        serializer = TourSerializer(tours, many=True, context={'request': request})
+        tours_data = []
+
+        for t in serializer.data:
+            tours_data.append({
+                "id": t['id'],
+                "title": t['name'],
+                "description": t['description'],
+                "image": t['tour_images'][0]['image'] if t.get('tour_images') else "https://placehold.co/400x300/60a5fa/ffffff?text=Tour+Image",
+                "rating": t.get('average_rating', 0),
+                "reviews": t.get('rating_count', 0),
+                "duration": t['duration'],
+                "groupSize": t['max_people'],
+                "transportation": t['transportation'],
+                "price": t['price']
+            })
+
+        return Response({'success': True, 'tours': tours_data})
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=400)
+
 
 # --- GET ACHIEVEMENT ---
 @api_view(["GET"])

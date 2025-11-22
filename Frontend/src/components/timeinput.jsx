@@ -8,7 +8,7 @@ export default function TimeInput({ value, onChange }) {
 
   return (
     <div
-      className="relative w-30 sm:w-45 cursor-pointer"
+      className="relative w-35 sm:w-40 cursor-pointer"
       onClick={() => inputRef.current?.showPicker()}
     >
       {/* Fake display */}

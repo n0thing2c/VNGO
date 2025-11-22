@@ -190,6 +190,27 @@ export const tourService = {
             return {success: false, error: err};
         }
     },
+    getAllToursByGuide: async (guideId) => {
+      if (!guideId) {
+        toast.error("Guide ID is required!");
+        return { success: false };
+      }
+
+      try {
+        const res = await api.get(`/api/tour/guide/${guideId}/all/`);
+        if (res.data.success) {
+          return { success: true, data: res.data.tours };
+        } else {
+          toast.error(res.data.error || "Failed to load guide's tours");
+          return { success: false };
+        }
+      } catch (err) {
+        console.error("Error fetching guide tours:", err);
+        toast.error("Unable to connect to the server.");
+        return { success: false, error: err };
+      }
+    },
+
     submitRating: async ({ tourId, rating, review, reviewTags = [], images = [] }) => {
     if (!rating) {
       toast.error("Please select a rating.");
