@@ -1,6 +1,6 @@
 import {useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {MapPin, Loader2} from 'lucide-react';
+import {MapPin, Loader2, Search} from 'lucide-react';
 
 // API
 import { API_ENDPOINTS } from "@/constant";
@@ -191,12 +191,24 @@ export default function GlobalSearchBar() {
                 {/* Nút Search giờ sẽ chọn suggestion đầu tiên */}
                 <button
                     onClick={() => handleSearch()}
-                    className="bg-[#020765] hover:bg-[#068F64] text-white px-6 py-3 rounded-full transition-colors font-medium flex items-center justify-center mr-1"
+                    className="
+                      bg-gradient-to-r from-[#020765] to-[#23c491] 
+                      hover:from-[#23c491] hover:to-[#020765] 
+                      text-white 
+                      w-12 h-12
+                      rounded-full 
+                      transition-all duration-300 ease-in-out 
+                      font-medium 
+                      flex items-center justify-center 
+                      mr-1
+                      shadow-xl hover:shadow-2xl hover:scale-[1.03]
+                    "
                 >
-                  <span className="flex items-center justify-center gap-2">
+                  {/* <span className="flex items-center justify-center gap-2">
                     <span className="hidden md:inline">Search</span>
                     <span className="md:hidden">Go</span>
-                  </span>
+                  </span> */}
+                  <Search className="w-6 h-6" />
                 </button>
             </div>
         </div>
