@@ -29,7 +29,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, content, **kwargs):
         """
-        Kỳ vọng payload JSON từ client, ví dụ:
+        Expect JSON payload from client, e.g.:
           {"type": "chat.message", "message": "Hello"}
           {"type": "typing"}
         """

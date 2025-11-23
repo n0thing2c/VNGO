@@ -43,7 +43,7 @@ export default function ChatPage() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
-  const { user } = useAuthStore();
+  const { user, refreshUser, accessToken } = useAuthStore();
   const location = useLocation();
   const targetRoom = location.state?.targetRoom;
   const targetUser = location.state?.targetUser;
@@ -65,11 +65,18 @@ export default function ChatPage() {
     [user?.username]
   );
 
+  // Ensure user data is loaded if we have a token but no user (fixes "first load" issue)
+  useEffect(() => {
+    if (accessToken && !user) {
+      refreshUser();
+    }
+  }, [accessToken, user, refreshUser]);
+
   const withDisplayName = useCallback(
     (conversation) => {
       if (!conversation) return conversation;
       
-      // Luôn ưu tiên parse từ room name để đảm bảo lấy đúng người nhận
+      // Always prioritize parsing from room name to ensure getting the correct recipient
       const parsedName = resolveRoomMateName(conversation.room);
       
       if (parsedName) {
@@ -79,7 +86,7 @@ export default function ChatPage() {
         };
       }
       
-      // Nếu không parse được từ room name, mới dùng contactName từ backend
+      // If parsing from room name fails, then use contactName from backend
       const hasCustomName =
         conversation.contactName &&
         !conversation.contactName.toLowerCase().startsWith("room:");
@@ -113,11 +120,11 @@ export default function ChatPage() {
       setConversations((prev) => {
         const existing = prev.find((c) => c.room === roomName);
 
-        // Luôn ưu tiên parse từ room name để tìm partner (người nhận)
+        // Always prioritize parsing from room name to find partner (recipient)
         const parsedPartnerName = resolveRoomMateName(roomName);
         
-        // Nếu có message từ người khác (không phải user hiện tại), dùng username của họ
-        // Nếu không, dùng parsed name từ room, hoặc fallback về existing
+        // If there is a message from another person (not the current user), use their username
+        // Otherwise, use parsed name from room, or fallback to existing
         let otherUserName = parsedPartnerName;
         if (message?.sender && message.sender.id !== user?.id) {
           otherUserName = message.sender.username || parsedPartnerName || existing?.contactName || "Unknown contact";
@@ -162,7 +169,7 @@ export default function ChatPage() {
     [normalizeAndEnhance, selectedRoom, user?.id, resolveRoomMateName]
   );
 
-  // Load conversations từ API khi component mount
+  // Load conversations from API when component mounts
   useEffect(() => {
     const loadConversations = async () => {
       try {
@@ -170,7 +177,7 @@ export default function ChatPage() {
         const normalized = normalizeAndEnhance(data || []);
         setConversations(normalized);
 
-        // Auto-select first conversation nếu có và chưa có room được chọn
+        // Auto-select first conversation if available and no room is selected
         if (normalized.length > 0 && !selectedRoom) {
           setSelectedRoom(normalized[0].room);
           setSelectedContact(normalized[0]);
@@ -280,11 +287,11 @@ export default function ChatPage() {
   }, [targetRoom, targetUser]);
 
   return (
-    <div className="flex flex-col bg-white">
+    <div>
       {/* Main Content */}
-      <div className="flex-1 min-h-0 flex overflow-hidden">
+      <div className="flex px-[1%] py-[1%] gap-4 bg-gray-200" >
         {/* Left Sidebar - Messages List */}
-        <div className="w-80 border-r flex-shrink-0 min-h-0">
+        <div className="w-[17%] rounded-2xl bg-white">
           <MessageList
             conversations={filteredConversations}
             selectedRoom={selectedRoom}
@@ -296,7 +303,7 @@ export default function ChatPage() {
         </div>
 
         {/* Right Side - Chat Window */}
-        <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+        <div className="flex-1 rounded-2xl overflow-hidden bg-white">
           {selectedContact ? (
             <ChatWindow
               roomName={selectedRoom}
@@ -306,10 +313,10 @@ export default function ChatPage() {
               rating={selectedContact.rating}
               reviewCount={selectedContact.reviewCount}
               onMessageUpdate={handleConversationUpdate}
-              heightClass="min-h-[67vh] max-h-[67vh]"
+              heightClass="min-h-[62vh] max-h-[62vh]"
             />
           ) : (
-            <div className="flex-1 flex items-center justify-center min-h-[650px]">
+            <div className="flex-1 flex items-center justify-center min-h-[79vh]">
               <p className="text-gray-500">
                 Select a conversation to start chatting
               </p>

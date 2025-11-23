@@ -34,18 +34,18 @@ class ConversationListView(generics.GenericAPIView):
     def get(self, request):
         user = request.user
         
-        # Lấy tất cả các rooms mà user tham gia
+        # Get all rooms that the user participates in
         # Room name format: username1__username2
-        # Lấy tất cả rooms có chứa username của user (user đã gửi hoặc nhận tin nhắn)
+        # Get all rooms containing the user's username (user sent or received messages)
         from django.db.models import Q
         
         user_username = user.username
-        # Tìm tất cả rooms có chứa username của user trong room name
+        # Find all rooms containing the user's username in the room name
         all_user_rooms = Message.objects.filter(
             Q(room__contains=user_username)
         ).values("room").distinct()
         
-        # Lấy last message time cho mỗi room và sắp xếp
+        # Get last message time for each room and sort
         room_entries = (
             Message.objects.filter(
                 room__in=[r["room"] for r in all_user_rooms]

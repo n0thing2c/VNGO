@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Send, Star } from "lucide-react";
 import { websocketService } from "@/services/websocketService";
 import { chatService } from "@/services/chatService";
+import { tourService } from "@/services/tourService";
 import { useAuthStore } from "../../../stores/useAuthStore";
 
 const normalizeMessages = (items = []) => {
@@ -60,7 +61,7 @@ const formatDateLabel = (timestamp) => {
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
 
-  return date.toLocaleDateString("vi-VN", {
+  return date.toLocaleDateString("en-EN", {
     weekday: "long",
     day: "2-digit",
     month: "2-digit",
@@ -86,6 +87,41 @@ export default function ChatWindow({
   const justSwitchedRoomRef = useRef(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const { user } = useAuthStore();
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+
+  useEffect(() => {
+    if (!contactId || user?.role === "guide") return;
+
+    const fetchGuideRating = async () => {
+      setAverageRating(0);
+      setTotalReviews(0);
+
+      const res = await tourService.getAllToursByGuide(contactId);
+      if (res.success && Array.isArray(res.data)) {
+        const tours = res.data;
+        if (tours.length > 0) {
+          // Calculate average of tour ratings
+          const totalRating = tours.reduce(
+            (acc, tour) => acc + (parseFloat(tour.rating) || 0),
+            0
+          );
+          const avg = totalRating / tours.length;
+          
+          // Calculate total reviews across all tours
+          const totalRev = tours.reduce(
+            (acc, tour) => acc + (parseInt(tour.reviews) || 0), 
+            0
+          );
+
+          setAverageRating(avg);
+          setTotalReviews(totalRev);
+        }
+      }
+    };
+
+    fetchGuideRating();
+  }, [contactId, user?.role]);
 
   const handleNotifyParent = (message) => {
     if (typeof onMessageUpdate === "function" && message) {
@@ -222,15 +258,21 @@ export default function ChatWindow({
     };
   }, [roomName]);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !websocketService.isConnected()) return;
+    const handleSendMessage = (e) => {
+      e.preventDefault();
+      // Only block when WebSocket connection is lost
+      if (!websocketService.isConnected()) return;
+      // NEW LOGIC:
+      // If newMessage has content after trim() -> Keep it.
+      // If empty -> Assign icon "👍".
+      const messageToSend = newMessage.trim() || "👍";
+      websocketService.sendMessage(messageToSend);
 
-    websocketService.sendMessage(newMessage.trim());
-    setNewMessage("");
-    // Auto-scroll on send (container only)
-    setTimeout(() => ensureScrollBottom(true), 0);
-  };
+      setNewMessage(""); // Clear input field
+
+      // Auto-scroll on send
+      setTimeout(() => ensureScrollBottom(true), 0);
+    };
 
   const handleTyping = () => {
     if (websocketService.isConnected()) {
@@ -253,7 +295,7 @@ export default function ChatWindow({
         <div className="absolute inset-0 bg-white z-20 pointer-events-none" />
       )}
       {/* Chat Header */}
-      <div className="p-4 border-b flex items-center justify-between">
+      <div className="p-4 border-b-1 border-black rounded-b-3xl  flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">{contactName?.[0]?.toUpperCase() || "U"}</div>
           <div>
@@ -270,14 +312,18 @@ export default function ChatWindow({
         {user?.role !== "guide" && (
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              {[1, 2, 3].map((i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-              {[4, 5].map((i) => (
-                <Star key={i} className="w-4 h-4 text-gray-300" />
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-4 h-4 ${
+                    star <= Math.round(averageRating)
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
+                  }`}
+                />
               ))}
             </div>
-            <span className="text-xs text-gray-600">0</span>
+            <span className="text-xs text-gray-600">{totalReviews}</span>
           </div>
         )}
       </div>
@@ -372,7 +418,7 @@ export default function ChatWindow({
       </div>
 
       {/* Message Input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t">
+      <form onSubmit={handleSendMessage} className="p-4 ">
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -382,15 +428,30 @@ export default function ChatWindow({
               handleTyping();
             }}
             placeholder="Type your message here"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border border-black rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button
-            type="submit"
-            disabled={!newMessage.trim() || !websocketService.isConnected()}
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            <Send className="w-5 h-5" />
-          </button>
+            <button
+                type="submit"
+                disabled={!websocketService.isConnected()}
+                className="
+                  p-3 rounded-full shrink-0 transition-all duration-200
+                  text-blue-600 hover:bg-blue-50 active:scale-95
+                  disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed
+                "
+              >
+                {!newMessage.trim() ? (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                    <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z" />
+                </svg>) :
+                (<svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-6 h-6 ml-1"
+                >
+                  <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                </svg>)}
+              </button>
         </div>
       </form>
     </div>

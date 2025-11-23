@@ -1,13 +1,13 @@
 import api from "@/lib/axios";
 
 export const chatService = {
-  // Lấy danh sách conversations/rooms của user
+  // Get user's list of conversations/rooms
   getConversations: async () => {
     const response = await api.get("/chat/conversations/");
     return response.data;
   },
 
-  // Lấy danh sách messages của một room
+  // Get list of messages for a room
   getMessages: async (roomName, limit = 100) => {
     const response = await api.get(`/chat/${roomName}/messages/`, {
       params: { limit },

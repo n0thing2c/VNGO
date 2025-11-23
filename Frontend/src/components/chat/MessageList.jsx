@@ -21,7 +21,7 @@ export default function MessageList({
             placeholder="Search messages"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-black rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -38,7 +38,7 @@ export default function MessageList({
               key={conversation.room}
               onClick={() => onSelectRoom(conversation.room)}
               className={`p-4 cursor-pointer hover:bg-gray-50 transition ${
-                selectedRoom === conversation.room ? "bg-gray-100" : ""
+                selectedRoom === conversation.room ? "bg-gray-100 border border-black" : ""
               }`}
             >
               <div className="flex items-center gap-3">
