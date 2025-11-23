@@ -8,7 +8,8 @@ urlpatterns = [
     path("tour/put/<int:tour_id>/", views.tour_put, name="put_tour_info"),
     path("tour/get/all/", views.get_all_tours, name='api-get-all-tours'),
     path("tour/my-tours/", views.get_my_tours, name="get_my_tours"),  # NEW: For Guide Management
-    
+    path("tour/guide/<int:guide_id>/all/", views.guide_get_all_tours, name="guide-get-all-tours"),
+
     # Tour Details
     path("tour/achievements/<int:tour_id>/", views.tour_achievements, name="get_tour_achievements"),
     path('tour/rate/<int:tour_id>/', views.tour_rate, name='api-post-rate'),

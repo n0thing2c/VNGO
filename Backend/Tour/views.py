@@ -325,27 +325,22 @@ def tour_achievements(request, tour_id):
     #     achievements.append("Popular")
 
     # Highly Rated: 4+ stars
-    # avg_rating = tour.ratings / max(tour.rates, 1)  # Avoid division by zero
-    # if avg_rating >= 4:
-    #     achievements.append("Highly Rated")
+    avg_rating = tour.average_rating()  # uses your model method
+    if avg_rating >= 4:
+        achievements.append("Highly Rated")
 
     # Multilingual: Tour guide knows 3+ languages
-    # guide = TourGuide.objects.filter(tour=tour).first()
-    # if guide and len(guide.languages) >= 3:
-    #     achievements.append("Multilingual")
+    guide = tour.guide
+    if guide and guide.languages and len(guide.languages) >= 3:
+        achievements.append("Multilingual")
 
     # Budget: price < 300k
-    if tour.price < 300_000:
+    if tour.price <= 300_000:
         achievements.append("Budget")
 
     # Luxury: price > 1,000,000
-    if tour.price > 1_000_000:
+    if tour.price >= 1_000_000:
         achievements.append("Luxury")
-
-    # Reliable: 80%+ confirmed bookings
-    # confirmed_count = ConfirmedBooking.objects.filter(tour=tour).count()
-    # if booking_count and confirmed_count / booking_count >= 0.8:
-    #     achievements.append("Reliable")
 
     return Response({"achievements": achievements})
 # --- POST RATING ---

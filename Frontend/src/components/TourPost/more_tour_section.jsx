@@ -34,7 +34,7 @@ export default function MoreTourByGuide({ guide, currentTourId }) {
     const displayedTours = expanded ? tours : tours.slice(0, 3);
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex flex-col items-center text-center">
+        <div className="w-full max-w-6xl mx-auto flex flex-col items-center text-center -mt-8">
             <LucidePersonStanding className="w-10 h-10 mb-2 text-gray-600"/>
             <FieldLabel className="text-4xl font-semibold mb-10 text-gray-600">
                 More Tours by {guide.name}

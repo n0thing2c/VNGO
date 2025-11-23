@@ -154,7 +154,7 @@ export default function TourPost() {
     const {tour_id} = useParams();
     const [tourData, setTourData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [currency, setCurrency] = useState("VND");
+    const [currency, setCurrency] = useState("USD");
     const [groupsize, setgroupsize] = useState(null);
     const [date, setdate] = useState(null);
     const [time, settime] = useState(null);
@@ -184,14 +184,8 @@ export default function TourPost() {
             try {
                 const res = await fetch(API_ENDPOINTS.GET_TOUR_ACHIEVEMENTS(tour_id));
                 const data = await res.json();
-                setAchievements([
-                    "Popular",
-                    "Highly Rated",
-                    "Multilingual",
-                    // "Budget",
-                    "Luxury",
-                    // "Most Reviewed",
-                ]);
+                setAchievements(data.achievements || []);
+
             } catch (err) {
                 console.error("Failed to fetch achievements:", err);
             }
@@ -223,7 +217,7 @@ export default function TourPost() {
         <div className="items-center">
             {/* CHANGED: Tighter container and less vertical margin */}
             <div
-                className="grid grid-cols-1 md:grid-cols-5 gap-y-6 md:gap-x-8 lg:gap-x-24 max-w-6xl mx-auto py-6 px-4 my-24">
+                className="grid grid-cols-1 md:grid-cols-5 gap-y-6 md:gap-x-8 lg:gap-x-24 max-w-6xl mx-auto px-4 my-24">
 
                 {/* Main Content Area */}
                 {/* (No changes in this section) */}
@@ -247,7 +241,7 @@ export default function TourPost() {
                             </FieldLabel>
 
                             {/* Achievements */}
-                            <div className="flex flex-wrap justify-start sm:justify-end w-full sm:w-auto gap-2">
+                            <div className="flex flex-wrap justify-start sm:justify-end w-full sm:w-auto gap-2 sm:mt-2">
                                 {achievements.map((ach) => (
                                     <AchievementBadge
                                         key={ach}
@@ -258,17 +252,17 @@ export default function TourPost() {
                             </div>
                         </div>
                         {tour.tags.map((tag, index) => (
-                          <span key={index} className="mr-2">
+                            <span key={index} className="mr-2">
                             <Badge
-                              variant={TOUR_TAG_VARIANTS[tag] || "default"}
-                              className="cursor-pointer inline-flex items-center gap-1"
+                                variant={TOUR_TAG_VARIANTS[tag] || "default"}
+                                className="cursor-pointer inline-flex items-center gap-1"
                             >
                               {TOUR_TAG_ICONS[tag] && (
-                                <span className="flex-shrink-0">
+                                  <span className="flex-shrink-0">
                                   {TOUR_TAG_ICONS[tag]}
                                 </span>
                               )}
-                              {tag}
+                                {tag}
                             </Badge>
                           </span>
                         ))}
@@ -277,7 +271,7 @@ export default function TourPost() {
 
 
                     {/*row 2*/}
-                    <div className="flex items-center gap-2 sm:gap-3 mb-5">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3">
                         {/* Star / Custom Icon Rating */}
                         <div className="flex gap-1">
                             {Array.from({length: 5}).map((_, index) => (
@@ -350,7 +344,7 @@ export default function TourPost() {
                             Description
                         </FieldLabel>
                         <FieldLabel className="text-base text-neutral-700 whitespace-pre-line leading-loose">
-                          {tour.description}
+                            {tour.description}
                         </FieldLabel>
                         {/* MOVED: Reviews section is no longer here */}
                     </div>
@@ -361,25 +355,30 @@ export default function TourPost() {
                 <Card
                     // CHANGED: Removed md:max-h-[...] and md:overflow-y-auto to remove the scrollbar
                     // CHANGED: Standardized top-23 to top-24
-                    className="flex flex-col bg-neutral-50 w-full max-w-lg mx-auto md:max-w-none md:col-span-2 md:row-span-2 md:sticky top-24 rounded-3xl h-fit">
+                    className="flex flex-col bg-neutral-50 w-full max-w-lg mx-auto md:max-w-none md:col-span-2 md:row-span-2 md:sticky top-26 rounded-3xl h-fit">
                     <CardHeader>
-                        <CardTitle className="flex flex-col items-center justify-center py-1 -mb-4">
+                        <CardTitle className="flex flex-col items-center justify-center -mb-4">
                             <div className="flex items-center justify-between">
 
-                                {/* 2. THE STATUS BADGE */}
-                                {achievements.includes("Budget") && (
-                                    <span
-                                        className="rounded-full bg-emerald-50 px-1 py-0.5 text-[10px] font-medium text-emerald-600 -mt-6 -mr-1">
-                                        Budget
-                                    </span>
-                                )}
-                                {achievements.includes("Luxury") && (
-                                    <span
-                                        className="ml-3 rounded-full bg-sky-100 px-1 py-0.5 text-[10px] font-medium text-[#60a5fa] -mt-6 -mr-1">
-                                        Luxury
-                                    </span>
-                                )}
-                                {/* 1. THE PRICE */}
+                                {/* THE STATUS BADGE (only Budget or Luxury) */}
+                                <span
+                                    className={cn(
+                                        "rounded-full px-1 py-0.5 -mt-6 -mr-1 text-[10px] font-medium",
+                                        achievements.includes("Budget")
+                                            ? "bg-emerald-50 text-emerald-600"
+                                            : achievements.includes("Luxury")
+                                                ? "bg-sky-100 text-[#60a5fa]"
+                                                : "invisible"
+                                    )}
+                                >
+                                    {achievements.includes("Budget")
+                                        ? "Budget"
+                                        : achievements.includes("Luxury")
+                                            ? "Luxury"
+                                            : "Placeh"}
+                                </span>
+
+                                {/* THE PRICE */}
                                 <FieldLabel
                                     className={cn(
                                         "text-center text-2xl sm:text-3xl font-medium",
@@ -389,7 +388,8 @@ export default function TourPost() {
                                         ? `${(tour.price * (groupsize || tour.min_people)).toLocaleString()} VND`
                                         : `$${((tour.price * (groupsize || tour.min_people)) / 25000).toFixed(2)} USD`}
                                 </FieldLabel>
-                                {/* 3. THE BUTTON */}
+
+                                {/* THE BUTTON */}
                                 <Button
                                     size="icon"
                                     onClick={() => setCurrency(currency === "VND" ? "USD" : "VND")}
@@ -398,38 +398,39 @@ export default function TourPost() {
                                     <ArrowRightLeft color="black" className="w-full h-full"/>
                                 </Button>
                             </div>
+
                             <FieldLabel className="text-neutral-500 font-light text-base">includes all fees</FieldLabel>
                         </CardTitle>
                     </CardHeader>
-                    <FieldSeparator/>
+                    <FieldSeparator className="h-0"/>
                     {/* Using the more compact layout from the previous step */}
                     <CardContent className="flex flex-col">
-                        <div className="flex justify-between items-center p-2">
+                        <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
-                                <UserPlus className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0"/>
+                                <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 <span>Max group size:</span>
                             </div>
                             <FieldLabel
                                 className="text-md text-[#333333] font-medium text-right">{tour.min_people} - {tour.max_people} people</FieldLabel>
                         </div>
 
-                        <div className="flex justify-between items-center p-2">
+                        <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
-                                <Clock className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0"/>
+                                <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 <span>Duration:</span>
                             </div>
                             <FieldLabel className="text-md text-[#333333] font-medium text-right">Up
                                 to {tour.duration} hours</FieldLabel>
                         </div>
 
-                        <div className="flex justify-between items-center p-2">
+                        <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
                                 {tour.transportation === "walk" &&
-                                    <Footprints className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0"/>}
+                                    <Footprints className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>}
                                 {tour.transportation === "private" &&
-                                    <MotorbikeIcon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0"/>}
+                                    <MotorbikeIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>}
                                 {tour.transportation === "public" &&
-                                    <BusFront className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0"/>}
+                                    <BusFront className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>}
                                 <span>Transportation:</span>
                             </div>
                             <FieldLabel className="text-md text-[#333333] font-medium capitalize text-right">
@@ -439,9 +440,9 @@ export default function TourPost() {
                             </FieldLabel>
                         </div>
 
-                        <div className="flex justify-between items-center p-2">
+                        <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
-                                <Pin className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0"/>
+                                <Pin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 <span>Meeting location:</span>
                             </div>
                             <FieldLabel className="text-md text-[#333333] font-medium text-right">
@@ -453,7 +454,7 @@ export default function TourPost() {
 
                         {/* CHANGED: Made input rows more compact (p-3 to p-2) */}
                         {userRole !== "guide" && (
-                            <div className="flex flex-col gap-3 p-1 mt-2 mb-3">
+                            <div className="flex flex-col gap-2 p-1 mt-3 mb-3">
                                 <div
                                     className="bg-white flex justify-between items-center border-neutral-300 border-1 width rounded-4xl p-1">
                                     <FieldLabel className="text-md sm:text-lg text-black px-2">
@@ -507,8 +508,8 @@ export default function TourPost() {
                                     {/*    className="w-30 sm:w-45 text-center rounded-3xl text-lg sm:text-xl font-bold text-[#23C491]"*/}
                                     {/*/>*/}
                                     <TimeInput
-                                    value={time??""}
-                                    onChange={(e)=>settime(e.target.value)}
+                                        value={time ?? ""}
+                                        onChange={(e) => settime(e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -517,7 +518,7 @@ export default function TourPost() {
 
                         {/* CHANGED: Reduced margin-top (mt-4 to mt-2) */}
                         {userRole !== "guide" && (
-                            <div className="relative w-full mt-4">
+                            <div className="relative w-full mt-2">
 
                                 {/* 2. Conditionally render the "Popular" badge */}
                                 {achievements.includes("Popular") && (
@@ -602,11 +603,10 @@ export default function TourPost() {
                     <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">Reviews</FieldLabel>
 
 
-
                     {/* Display fetched ratings */}
                     {ratings.length > 0 ? (
                         <div className="break-words whitespace-normal max-w-full">
-                          <TourRating ratings={ratings}/>
+                            <TourRating ratings={ratings}/>
                         </div>
                     ) : (
                         <p className="text-gray-500 mt-4">No reviews yet. Be the first to review!</p>
@@ -615,7 +615,7 @@ export default function TourPost() {
 
             </div>
             <div className="mb-10">
-                <MoreTourByGuide guide={tour.guide} currentTourId={tour.id} />
+                <MoreTourByGuide guide={tour.guide} currentTourId={tour.id}/>
             </div>
 
         </div>
