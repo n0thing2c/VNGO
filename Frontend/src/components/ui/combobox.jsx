@@ -8,6 +8,7 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
@@ -22,9 +23,17 @@ export function Combobox({
   value,
   setValue,
   placeholder = "Select item...",
-  className = "w-[200px]" // default width
+  className = "w-[200px]",
 }) {
   const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+
+  const filteredItems = React.useMemo(() => {
+    if (!search) return items
+    return items.filter((item) =>
+      item.label.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [items, search])
 
   const selectedItem = items.find((item) => item.value === value)
 
@@ -35,7 +44,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("justify-between", className)}
+          className={cn("justify-between font-normal", className)}
         >
           {selectedItem ? selectedItem.label : placeholder}
           <ChevronsUpDown className="opacity-50" />
@@ -43,16 +52,23 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className={cn("p-0", className)}>
         <Command>
+          <CommandInput
+            placeholder="Search..."
+            value={search}
+            onValueChange={setSearch} // works with ShadCN CommandInput
+            className="h-9"
+          />
           <CommandList>
             <CommandEmpty>No item found.</CommandEmpty>
             <CommandGroup>
-              {items.map((item) => (
+              {filteredItems.map((item) => (
                 <CommandItem
                   key={item.value}
                   value={item.value}
-                  onSelect={() => {
-                    setValue(item.value)
+                  onSelect={(currentValue) => {
+                    setValue(currentValue)
                     setOpen(false)
+                    setSearch("") // clear search after selection
                   }}
                   className={cn(
                     "cursor-pointer",

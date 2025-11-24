@@ -20,7 +20,7 @@ export default function Header() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = !!user; // Tạo một biến boolean tiện lợi
-
+  const profileHref = user?.role === "tourist" ? "/tourist-profile/" : "/guide-profile/";
   return (
     <header className="bg-black sticky top-0 z-50 border-b border-black/10">
       <div className="max-w-full mx-auto px-2 md:px-4">
@@ -71,7 +71,11 @@ export default function Header() {
                       <ChevronDown className="w-5 h-5 text-white" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                      <DropdownMenuItem>
+                          <Link to={profileHref} className="block w-full text-left">
+                              Profile
+                          </Link>
+                      </DropdownMenuItem>
                     {user.role === 'guide' ? (
                       <DropdownMenuItem>My Tours</DropdownMenuItem>
                     ) : (

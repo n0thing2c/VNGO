@@ -44,12 +44,13 @@ function App() {
             {/* protected routes*/}
 
             {/* login routes*/}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/guide-profile" element={<GuideProfilePage />} />
+            <Route element={<ProtectedRoute requiredRole="tourist" />}>
               <Route path="/tourist-profile" element={<TouristProfilePage />} />
+
             </Route>
             {/*guide routes*/}
             <Route element={<ProtectedRoute requiredRole="guide" />}>
+              <Route path="/guide-profile" element={<GuideProfilePage />} />
               <Route path="/tour/create" element={<TourCreate />} />
               <Route path="/tour/edit/:tour_id" element={<TourEdit />} />
             </Route>
