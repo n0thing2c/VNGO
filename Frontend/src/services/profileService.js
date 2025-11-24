@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import {toast} from "sonner";
 
 export const profileService = {
     getMyProfile: async () => {
@@ -13,9 +14,61 @@ export const profileService = {
         const formData = new FormData();
         formData.append("image", file);
         const response = await api.post("/profiles/upload-avatar/", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: {"Content-Type": "multipart/form-data"},
         });
         return response.data;
+    },
+    submitGuideRating: async ({profileId, rating, review, reviewTags = [], images = []}) => {
+        if (!rating) {
+            toast.error("Please select a rating.");
+            return {success: false};
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append("rating", rating);
+            formData.append("review", review);
+            formData.append("review_tags", JSON.stringify(reviewTags));
+            images.forEach((img) => formData.append("images", img.file || img));
+
+            const res = await api.post(`/api/profiles/rate/${profileId}/`, formData, {
+                headers: {"Content-Type": "multipart/form-data"},
+            });
+
+            toast.success("Rating submitted successfully!");
+            return {success: true, data: res.data};
+        } catch (err) {
+            console.error("Error submitting profile rating:", err);
+
+            if (err.response?.data) {
+                toast.error("Failed to submit rating", {
+                    description: err.response.data.detail || err.response.data.error || "Unknown error",
+                });
+            } else {
+                toast.error("Unable to connect to the server.");
+            }
+
+            return {success: false, error: err};
+        }
+    },
+
+    getGuideRatings: async (profileId) => {
+        try {
+            const res = await api.get(`/api/profiles/ratings/${profileId}/`);
+            return {success: true, data: res.data};
+        } catch (err) {
+            console.error("Error fetching profile ratings:", err);
+
+            if (err.response?.data) {
+                toast.error("Failed to load ratings", {
+                    description: err.response.data.detail || err.response.data.error || "Unknown error",
+                });
+            } else {
+                toast.error("Unable to connect to the server.");
+            }
+
+            return {success: false, error: err};
+        }
     },
 };
 

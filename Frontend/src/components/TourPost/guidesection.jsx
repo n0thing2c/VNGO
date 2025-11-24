@@ -50,10 +50,16 @@ const GuideSection = ({ guide }) => {
     <Card className="w-full bg-neutral-100 rounded-4xl p-4 flex flex-col sm:flex-row gap-4 items-center h-full">
       <div className="flex-shrink-0 flex flex-col items-center gap-2">
         {/* Avatar */}
-        <div
-          className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700"
-        >
-          {guideInitial}
+        <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden text-xl font-bold text-gray-700">
+          {guide.avatar ? (
+            <img
+              src={guide.avatar}
+              alt={guide.name || guide.username}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            guideInitial
+          )}
         </div>
 
         {/* Message button */}
@@ -84,7 +90,7 @@ const GuideSection = ({ guide }) => {
               stroke="currentColor"
             />
           ))}
-          <span className="text-sm ml-1">({guide.rating})</span>
+          <span className="text-sm ml-1"> {guide.rating.toFixed(1)} ({guide.rating_count} votes)</span>
         </div>
       </div>
     </Card>

@@ -88,9 +88,9 @@ import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import {Badge} from "@/components/ui/badge.jsx";
 import {AchievementBadge} from "@/components/TourPost/tour_achievements.jsx";
-import TourRate from "@/components/TourPost/tour_rate.jsx";
 import {cn} from "@/lib/utils";
-import TourRating from "@/components/TourPost/tour_rating.jsx";
+import RatingList from "@/components/rating/ratings.jsx";
+import Rate from "@/components/rating/rate.jsx";
 import {useAuthStore} from "@/stores/useAuthStore.js";
 import GuideSection from "@/components/TourPost/guidesection.jsx";
 import {Link} from "react-router-dom";
@@ -251,24 +251,24 @@ export default function TourPost() {
                                 ))}
                             </div>
                         </div>
-                        {tour.tags.map((tag, index) => (
-                            <span key={index} className="mr-2">
-                            <Badge
-                                variant={TOUR_TAG_VARIANTS[tag] || "default"}
-                                className="cursor-pointer inline-flex items-center gap-1"
-                            >
-                              {TOUR_TAG_ICONS[tag] && (
-                                  <span className="flex-shrink-0">
-                                  {TOUR_TAG_ICONS[tag]}
+                        <div className="flex flex-wrap gap-y-2">
+                            {tour.tags.map((tag, index) => (
+                                <span key={index} className="mr-2">
+                                  <Badge
+                                      variant={TOUR_TAG_VARIANTS[tag] || "default"}
+                                      className="cursor-pointer inline-flex items-center gap-1"
+                                  >
+                                    {TOUR_TAG_ICONS[tag] && (
+                                        <span className="flex-shrink-0">
+                                        {TOUR_TAG_ICONS[tag]}
+                                      </span>
+                                    )}
+                                      {tag}
+                                  </Badge>
                                 </span>
-                              )}
-                                {tag}
-                            </Badge>
-                          </span>
-                        ))}
-
+                            ))}
+                        </div>
                     </div>
-
 
                     {/*row 2*/}
                     <div className="flex items-center gap-2 sm:gap-3 mb-3">
@@ -573,9 +573,10 @@ export default function TourPost() {
 
                                     <DialogContent className="w-full sm:max-w-[45rem] shadow-xl rounded-xl break-words">
                                         <DialogDescription/>
-                                        <TourRate
-                                            tourId={tourData.tour.id}
-                                            onRatingSubmit={(newRating) => {
+                                        <Rate
+                                            id={tourData.tour.id}
+                                            type="tour"
+                                            onRated={(newRating) => {
                                                 setRatings((prev) => [newRating, ...prev]);
                                                 setHasRated(true);
                                             }}
@@ -606,7 +607,7 @@ export default function TourPost() {
                     {/* Display fetched ratings */}
                     {ratings.length > 0 ? (
                         <div className="break-words whitespace-normal max-w-full">
-                            <TourRating ratings={ratings}/>
+                            <RatingList ratings={ratings} type="tour"/>
                         </div>
                     ) : (
                         <p className="text-gray-500 mt-4">No reviews yet. Be the first to review!</p>

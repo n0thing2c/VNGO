@@ -8,6 +8,7 @@ from .utils import cleanup_expired_pending_signups
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     list_display = (
+        "id",
         "username",
         "email",
         "role",

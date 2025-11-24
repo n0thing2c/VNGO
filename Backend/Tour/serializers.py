@@ -78,7 +78,8 @@ class TourSerializer(serializers.ModelSerializer):
             return {
                 "id": guide.user.id,
                 "name": guide.name,
-                "rating": guide.rating,
+                "rating": guide.average_rating(),
+                "rating_count": guide.rating_count,
                 "languages": guide.languages,
                 "location": guide.location,
                 "avatar": guide.face_image,

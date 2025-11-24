@@ -1,0 +1,35 @@
+// tagVariants.js
+export const TOUR_TAG_VARIANTS = {
+  "Scenic": "bluelavender",
+  "Luxury Experience": "violet",
+  "Well Organized": "sky",
+  "Fun Activities": "orange",
+  "Comfortable Transport": "teal",
+  "Excellent Food": "coral",
+  "Adventure": "aqua",
+  "Great Value": "lime",
+  "Family Friendly": "mint",
+  "Friendly Guide": "brightgreen",
+  "Unfriendly Staff": "plum",
+  "Boring": "sand",
+  "Overpriced": "mustard",
+  "Low Quality Food": "peach",
+  "Not Worth It": "coral",
+};
+
+export const GUIDE_TAG_VARIANTS = {
+  "Friendly": "brightgreen",
+  "Professional": "teal",
+  "Knowledgeable": "sky",
+  "Patient": "bluelavender",
+  "Helpful": "mint",
+  "Enthusiastic": "aqua",
+  "Organized": "violet",
+  "Punctual": "lime",
+  "Energetic": "coral",
+  "Unfriendly": "plum",
+  "Unprofessional": "sand",
+  "Rude": "mustard",
+  "Late": "peach",
+  "Unhelpful": "pink",
+};
