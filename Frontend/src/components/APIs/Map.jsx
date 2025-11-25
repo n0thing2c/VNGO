@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState, useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     MapContainer,
     TileLayer,
@@ -11,12 +11,12 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import {Input} from "@/components/ui/input.jsx";
+import { Input } from "@/components/ui/input.jsx";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
 import WikiPanel from "@/components/APIs/wiki_panel.jsx";
-import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert.jsx";
-
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert.jsx";
+//just a test comment
 // Fix Leaflet default icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -29,7 +29,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // Fly animation for any position
-function FlyToLocation({position}) {
+function FlyToLocation({ position }) {
     const map = useMap();
     useEffect(() => {
         if (position) map.flyTo(position, 15);
@@ -38,7 +38,7 @@ function FlyToLocation({position}) {
 }
 
 // Routing stops
-function RoutingMachine({waypoints}) {
+function RoutingMachine({ waypoints }) {
     const map = useMap();
     useEffect(() => {
         if (!map || waypoints.length < 2) return;
@@ -60,7 +60,7 @@ function RoutingMachine({waypoints}) {
                     L.latLng(waypoints[i].lat, waypoints[i].lon),
                     L.latLng(waypoints[i + 1].lat, waypoints[i + 1].lon),
                 ],
-                lineOptions: {styles: [{color: routeColors[i % routeColors.length], weight: 5}]},
+                lineOptions: { styles: [{ color: routeColors[i % routeColors.length], weight: 5 }] },
                 show: false,
                 addWaypoints: false,
                 routeWhileDragging: false,
@@ -102,7 +102,7 @@ const createNumberedIcon = (number) =>
         popupAnchor: [0, -14],
     });
 
-export default function Map({className = "", onLocationAdd, addedStops = []}) {
+export default function Map({ className = "", onLocationAdd, addedStops = [] }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [markerPosition, setMarkerPosition] = useState(null);
@@ -156,7 +156,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                 }
             } catch (err) {
                 console.show(err);
-                setSuggestions([{display_name: "Failed to load locations.", isPlaceholder: true}]);
+                setSuggestions([{ display_name: "Failed to load locations.", isPlaceholder: true }]);
             }
         }, 300);
 
@@ -176,7 +176,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     };
 
     function parseCityProvinceFromLabel(label) {
-        if (!label) return {city_vi: "Không rõ", province_vi: "Không rõ"};
+        if (!label) return { city_vi: "Không rõ", province_vi: "Không rõ" };
 
         const parts = label.split(",").map(p => p.trim());
 
@@ -210,7 +210,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
             }
         }
 
-        return {city_vi, province_vi};
+        return { city_vi, province_vi };
     }
 
 
@@ -222,7 +222,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
         const [lat, lon] = markerPosition;
 
         // Parse city/province/postal from markerLabel
-        const {city_vi, province_vi} = parseCityProvinceFromLabel(markerLabel);
+        const { city_vi, province_vi } = parseCityProvinceFromLabel(markerLabel);
 
         // Reset UI instantly
         setMarkerPosition(null);
@@ -287,11 +287,10 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                         {suggestions.map((place, idx) => (
                             <li
                                 key={place.place_id || idx}
-                                className={`p-2 text-sm ${
-                                    place.isPlaceholder
+                                className={`p-2 text-sm ${place.isPlaceholder
                                         ? "text-gray-500 italic cursor-default select-none"
                                         : "hover:bg-gray-100 cursor-pointer"
-                                }`}
+                                    }`}
                                 onMouseDown={(e) => {
                                     if (place.isPlaceholder) return; // prevent clicking
                                     e.preventDefault();
@@ -317,9 +316,9 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     />
 
-                    {userLocation && <FlyToLocation position={userLocation}/>}
+                    {userLocation && <FlyToLocation position={userLocation} />}
 
-                    {addedStops.length > 1 && <RoutingMachine waypoints={addedStops}/>}
+                    {addedStops.length > 1 && <RoutingMachine waypoints={addedStops} />}
 
                     {addedStops.map((stop, idx) => (
                         <Marker
@@ -338,7 +337,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                         <CircleMarker
                             center={userLocation}
                             radius={10}
-                            pathOptions={{color: "white", fillColor: "#2563eb", fillOpacity: 1}}
+                            pathOptions={{ color: "white", fillColor: "#2563eb", fillOpacity: 1 }}
                         >
                             <Popup>You are here</Popup>
                         </CircleMarker>
@@ -348,7 +347,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                         <>
                             <Marker
                                 position={markerPosition}
-                                eventHandlers={{add: (e) => e.target.openPopup()}}
+                                eventHandlers={{ add: (e) => e.target.openPopup() }}
                             >
                                 <Popup className="!max-w-[90vw] text-center">
                                     <div className="space-y-2">
@@ -362,24 +361,24 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                                     </div>
                                 </Popup>
                             </Marker>
-                            <FlyToLocation position={markerPosition}/>
+                            <FlyToLocation position={markerPosition} />
                         </>
                     )}
-                    {focusPos && <FlyToLocation position={focusPos}/>}
+                    {focusPos && <FlyToLocation position={focusPos} />}
 
                 </MapContainer>
             </div>
 
             {wikiVisible && selectedLocation && (
                 <div className="w-full">
-                    <WikiPanel location={selectedLocation}/>
+                    <WikiPanel location={selectedLocation} />
                 </div>
             )}
         </div>
     );
 }
 
-export function TourRoute({Stops = []}) {
+export function TourRoute({ Stops = [] }) {
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [flyTo, setFlyTo] = useState(null);
 
@@ -398,7 +397,7 @@ export function TourRoute({Stops = []}) {
                 // B. Fixes the focus by running fitBounds *after* the map is visible
                 if (Stops.length > 0) {
                     const bounds = L.latLngBounds(Stops.map((s) => [s.lat, s.lon]));
-                    map.fitBounds(bounds, {padding: [30, 30]});
+                    map.fitBounds(bounds, { padding: [30, 30] });
                 }
             }, 100); // 100ms is usually enough
 
@@ -435,7 +434,7 @@ export function TourRoute({Stops = []}) {
                 <MapContainer
                     center={[Stops[0].lat, Stops[0].lon]}
                     zoom={13}
-                    style={{width: "100%", height: "100%"}}
+                    style={{ width: "100%", height: "100%" }}
                     className="rounded-lg"
 
                     // --- 5. Add whenCreated to get the map instance ---
@@ -450,10 +449,10 @@ export function TourRoute({Stops = []}) {
                     {/* <FitToStops Stops={Stops}/> */}
 
                     {/* Routing line */}
-                    <RoutingMachine waypoints={Stops}/>
+                    <RoutingMachine waypoints={Stops} />
 
                     {/* Fly to marker */}
-                    {flyTo && <FlyToLocation position={flyTo}/>}
+                    {flyTo && <FlyToLocation position={flyTo} />}
 
                     {/* ... (rest of your markers) ... */}
                     {Stops.map((stop, idx) => (
@@ -473,7 +472,7 @@ export function TourRoute({Stops = []}) {
 
             {/* Wiki Info Panel */}
 
-                <WikiPanel location={selectedLocation}/>
+            <WikiPanel location={selectedLocation} />
 
         </div>
     );
