@@ -13,7 +13,7 @@ from .models import Tour, Place, TourImage, Transportation, TourPlace, TourRatin
 from .serializers import TourSerializer, PlaceSerializer, TourRatingSerializer, TourImageSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, parser_classes, permission_classes
-from django.db.models import Count, Q, F
+from django.db.models import Count, Q, F, FloatField, ExpressionWrapper, Case, When, Value
 from collections import Counter
 # --- CREATE TOUR ---
 @api_view(['POST'])
@@ -475,7 +475,7 @@ def get_filter_options(request):
 @permission_classes([AllowAny])
 def get_all_tours(request):
     try:
-        tours_queryset = Tour.objects.all().order_by('-id')
+        tours_queryset = Tour.objects.all()
 
 
         # Query params
@@ -549,6 +549,36 @@ def get_all_tours(request):
                 # Use icontains for case-insensitive match in JSON array
                 q_filter |= Q(tags__icontains=tag)
             tours_queryset = tours_queryset.filter(q_filter).distinct()
+
+        # -------------------
+        # Sorting
+        # -------------------
+        sort_option = request.GET.get('sort', '')
+        # Only annotate avg_rating if needed
+        if sort_option in ['rating_asc', 'rating_desc']:
+            tours_queryset = tours_queryset.annotate(
+                avg_rating=ExpressionWrapper(
+                    Case(
+                        When(rating_count__lte=0, then=Value(0.0)),
+                        default=F('rating_total') * 1.0 / F('rating_count'),  # cast to float
+                    ),
+                    output_field=FloatField()
+                )
+            )
+        if sort_option == 'price_asc':
+            tours_queryset = tours_queryset.order_by('price')
+        elif sort_option == 'price_desc':
+            tours_queryset = tours_queryset.order_by('-price')
+        elif sort_option == 'duration_asc':
+            tours_queryset = tours_queryset.order_by('duration')
+        elif sort_option == 'duration_desc':
+            tours_queryset = tours_queryset.order_by('-duration')
+        elif sort_option == 'rating_asc':
+            tours_queryset = tours_queryset.order_by('avg_rating')
+        elif sort_option == 'rating_desc':
+            tours_queryset = tours_queryset.order_by('-avg_rating')
+        else:
+            tours_queryset = tours_queryset.order_by('-id')  # default newest first
 
         # Build response
         response_data = []
