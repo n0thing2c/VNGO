@@ -8,7 +8,7 @@ import PastTours from "@/components/management/PastTours";
 export default function ManagementTours() {
   // const { user } = useAuthStore();
   // const isGuide = user?.roles?.includes("guide");
-  const isGuide = false; // ← FAKE GUIDE MODE - xóa dòng này khi test xong
+  const isGuide = true; // ← FAKE GUIDE MODE - xóa dòng này khi test xong
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">

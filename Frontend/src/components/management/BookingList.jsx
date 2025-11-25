@@ -8,7 +8,7 @@ const mockData = [
         id: 1,
         title: "Phu Quoc Island",
         guideName: "My",
-        status: "Confirmed",
+        status: "Accepted",
         image: "https://images.unsplash.com/photo-1577717906932-1f9cde8e1255?w=800&auto=format&fit=crop",
     },
     {
@@ -29,14 +29,14 @@ const mockData = [
         id: 4,
         title: "Da Lat Flower Garden",
         guideName: "Lan Anh",
-        status: "Confirmed",
+        status: "Accepted",
         image: "https://images.unsplash.com/photo-1540979384820-2b1f3f31b44f?w=800&auto=format&fit=crop",
     },
     {
         id: 5,
         title: "Hoi An Ancient Town",
         guideName: "Trung",
-        status: "Confirmed",
+        status: "Accepted",
         image: "https://images.unsplash.com/photo-1555400035847-742d343f2cb9?w=800&auto=format&fit=crop",
     },
     {

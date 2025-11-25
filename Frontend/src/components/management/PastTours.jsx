@@ -27,11 +27,12 @@ export default function PastTours({ role }) {
                 <h3 className="font-semibold text-lg">{tour.title}</h3>
                 <p className="text-sm text-gray-600 mt-1">{tour.date}</p>
                 <div className="flex items-center gap-2 mt-4">
-                  <span className="text-yellow-500">★★★★★</span>
+                  <span className="text-yellow-500">...</span>
+                  {/* này là star rate */}
                   <span className="font-medium">{tour.rating}</span>
                 </div>
                 <Button className="mt-4 w-full rounded-full" variant="outline">
-                  Viết đánh giá
+                  Write review
                 </Button>
               </>
             ) : (
@@ -39,11 +40,11 @@ export default function PastTours({ role }) {
               <>
                 <h3 className="font-semibold text-lg">{tour.title}</h3>
                 <div className="mt-4 space-y-2 text-sm">
-                  <p>Số khách: <strong>{tour.guests}</strong></p>
-                  <p>Doanh thu: <strong className="text-green-600">{tour.revenue}</strong></p>
+                  <p>Amount: <strong>{tour.guests}</strong></p>
+                  <p>Revenue: <strong className="text-green-600">{tour.revenue}</strong></p>
                 </div>
                 <Button className="mt-4 w-full rounded-full" variant="outline">
-                  Xem chi tiết
+                  View details
                 </Button>
               </>
             )}

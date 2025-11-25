@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
 export default function BookingCard({ booking }) {
-  const isConfirmed = booking.status.toLowerCase() === "confirmed";
+  const isAccepted = booking.status.toLowerCase() === "Accepted";
 
   return (
     <Card className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-shadow">
@@ -17,7 +17,7 @@ export default function BookingCard({ booking }) {
         />
         <Badge
           className={`absolute top-4 left-4 font-medium px-3 py-1 ${
-            isConfirmed
+            isAccepted
               ? "bg-green-100 text-green-800"
               : "bg-yellow-100 text-yellow-800"
           }`}
