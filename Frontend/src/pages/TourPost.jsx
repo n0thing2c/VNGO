@@ -179,6 +179,10 @@ export default function TourPost() {
 
             if (result.success) {
                 setTourData(result.data);
+                // Set default group size to min_people
+                if (result.data.tour && result.data.tour.min_people) {
+                    setgroupsize(result.data.tour.min_people);
+                }
             }
             setLoading(false);
         }
@@ -215,8 +219,11 @@ export default function TourPost() {
     }, [tour_id]);
 
     const handleBookingRequest = async () => {
+        // Ensure groupsize is set to minimum if somehow it's still null
+        const finalGroupSize = groupsize || tour.min_people;
+        
         // Validate required fields
-        if (!groupsize || groupsize < tour.min_people || groupsize > tour.max_people) {
+        if (finalGroupSize < tour.min_people || finalGroupSize > tour.max_people) {
             toast.error(`Please enter a valid group size (${tour.min_people}-${tour.max_people} people)`);
             return;
         }
@@ -261,7 +268,7 @@ export default function TourPost() {
 
             const bookingData = {
                 tour: parseInt(tour.id),
-                number_of_guests: parseInt(groupsize),
+                number_of_guests: parseInt(finalGroupSize),
                 tour_date: formattedDate,
                 tour_time: formattedTime,
                 special_requests: specialRequests || "",
@@ -550,17 +557,24 @@ export default function TourPost() {
                                         value={groupsize ?? tour.min_people}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                            setgroupsize(value === "" ? "" : Number(value));
+                                            const numValue = value === "" ? "" : Number(value);
+                                            
+                                            // Enforce minimum immediately during typing
+                                            if (numValue !== "" && numValue < tour.min_people) {
+                                                setgroupsize(tour.min_people);
+                                            } else if (numValue !== "" && numValue > tour.max_people) {
+                                                setgroupsize(tour.max_people);
+                                            } else {
+                                                setgroupsize(numValue);
+                                            }
                                         }}
                                         onBlur={() => {
-                                            if (groupsize === "" || isNaN(groupsize)) {
+                                            // Ensure valid value on blur
+                                            if (groupsize === "" || isNaN(groupsize) || groupsize < tour.min_people) {
                                                 setgroupsize(tour.min_people);
+                                            } else if (groupsize > tour.max_people) {
+                                                setgroupsize(tour.max_people);
                                             }
-                                            const clamped = Math.min(
-                                                Math.max(groupsize, tour.min_people),
-                                                tour.max_people
-                                            );
-                                            setgroupsize(clamped);
                                         }}
                                         className="w-35 sm:w-40 text-center rounded-3xl text-sm sm:text-md font-bold text-[#23C491]"
                                     />
@@ -631,12 +645,13 @@ export default function TourPost() {
                                                     return;
                                                 }
                                                 
-                                                // Validate before opening dialog
-                                                if (!groupsize || groupsize < tour.min_people || groupsize > tour.max_people) {
-                                                    e.preventDefault();
-                                                    toast.error(`Please enter a valid group size (${tour.min_people}-${tour.max_people} people)`);
-                                                    return;
-                                                }
+                                // Validate before opening dialog
+                                const checkGroupSize = groupsize || tour.min_people;
+                                if (checkGroupSize < tour.min_people || checkGroupSize > tour.max_people) {
+                                    e.preventDefault();
+                                    toast.error(`Please enter a valid group size (${tour.min_people}-${tour.max_people} people)`);
+                                    return;
+                                }
                                                 
                                                 if (!date) {
                                                     e.preventDefault();
@@ -678,7 +693,7 @@ export default function TourPost() {
                                                 </div>
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-gray-600">Group Size:</span>
-                                                    <span className="font-semibold">{groupsize || tour.min_people} people</span>
+                                                    <span className="font-semibold">{(groupsize && groupsize >= tour.min_people) ? groupsize : tour.min_people} people</span>
                                                 </div>
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-gray-600">Date:</span>
