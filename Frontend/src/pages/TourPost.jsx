@@ -99,6 +99,8 @@ import {API_ENDPOINTS} from "@/constant";
 import {tourService} from "@/services/tourService.js";
 import TimeInput from "@/components/timeinput.jsx";
 import MoreTourByGuide from "@/components/TourPost/more_tour_section.jsx";
+import {managementService} from "@/services/managementService.js";
+import {useNavigate} from "react-router-dom";
 
 const TOUR_TAG_ICONS = {
     "Nature": <Binoculars className="w-3 h-3"/>,
@@ -149,8 +151,10 @@ const ACHIEVEMENT_VARIANTS = {
     // Add more if needed
 };
 export default function TourPost() {
-    const userRole = useAuthStore((state) => state.user?.role);
-    const isLoggedIn = useAuthStore((state) => !!state.user);
+    const navigate = useNavigate();
+    const user = useAuthStore((state) => state.user);
+    const userRole = user?.role;
+    const isLoggedIn = !!user;
     const {tour_id} = useParams();
     const [tourData, setTourData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -161,6 +165,9 @@ export default function TourPost() {
     const [ratings, setRatings] = useState([]);
     const [hasRated, setHasRated] = useState(false);
     const [achievements, setAchievements] = useState([]);
+    const [specialRequests, setSpecialRequests] = useState("");
+    const [showBookingDialog, setShowBookingDialog] = useState(false);
+    const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
 
     // Fetch from backend (unchanged)
     useEffect(() => {
@@ -206,6 +213,81 @@ export default function TourPost() {
 
         fetchRatings();
     }, [tour_id]);
+
+    const handleBookingRequest = async () => {
+        // Validate required fields
+        if (!groupsize || groupsize < tour.min_people || groupsize > tour.max_people) {
+            toast.error(`Please enter a valid group size (${tour.min_people}-${tour.max_people} people)`);
+            return;
+        }
+        
+        if (!date) {
+            toast.error("Please select a tour date");
+            return;
+        }
+        
+        if (!time) {
+            toast.error("Please select a start time");
+            return;
+        }
+
+        setIsSubmittingBooking(true);
+
+        try {
+            // Format date to YYYY-MM-DD
+            let formattedDate;
+            if (date instanceof Date) {
+                formattedDate = date.toISOString().split('T')[0];
+            } else if (typeof date === 'string') {
+                // If it's already a string, ensure it's in YYYY-MM-DD format
+                const dateObj = new Date(date);
+                formattedDate = dateObj.toISOString().split('T')[0];
+            } else {
+                formattedDate = date;
+            }
+
+            // Ensure time is in HH:MM:SS or HH:MM format
+            let formattedTime = time;
+            if (time && !time.includes(':')) {
+                // If time doesn't have colons, it might be in wrong format
+                toast.error("Invalid time format");
+                setIsSubmittingBooking(false);
+                return;
+            }
+            // Add seconds if not present
+            if (time && time.split(':').length === 2) {
+                formattedTime = `${time}:00`;
+            }
+
+            const bookingData = {
+                tour: parseInt(tour.id),
+                number_of_guests: parseInt(groupsize),
+                tour_date: formattedDate,
+                tour_time: formattedTime,
+                special_requests: specialRequests || "",
+            };
+
+            console.log("Booking data being sent:", bookingData);
+
+            const result = await managementService.createBooking(bookingData);
+
+            if (result.success) {
+                setShowBookingDialog(false);
+                // Reset form
+                setSpecialRequests("");
+                
+                // Redirect to management page after a short delay
+                setTimeout(() => {
+                    navigate("/management");
+                }, 1500);
+            }
+        } catch (error) {
+            console.error("Error in handleBookingRequest:", error);
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsSubmittingBooking(false);
+        }
+    };
 
     if (loading) return <p className="text-center p-4">Loading tour...</p>;
     if (!tourData) return <p className="text-center p-4">Tour not found.</p>;
@@ -531,24 +613,129 @@ export default function TourPost() {
                                   </span>
                                 )}
 
-                                {/* 3. The Button */}
-                                <Button
-                                    onClick={() => {
-                                        if (!isLoggedIn) {
-                                            window.location.href = "/login";
-                                            console.log("not logged");// redirect nếu chưa login
-                                        } else {
-                                            console.log("logged");// handle booking logic
-                                        }
-                                    }}
-                                    className={cn(
-                                        "text-lg sm:text-xl rounded-4xl w-full h-fit py-3 transition-all duration-300",
-                                        "bg-[#068F64] text-white hover:bg-[#23C491] hover:text-yellow-50 active:scale-[0.98] active:brightness-95",
-                                        achievements.includes("Popular") && "pt-4"
-                                    )}
-                                >
-                                    REQUEST BOOKING
-                                </Button>
+                                {/* 3. The Button with Dialog */}
+                                <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            onClick={(e) => {
+                                                if (!isLoggedIn) {
+                                                    e.preventDefault();
+                                                    navigate("/login");
+                                                    return;
+                                                }
+
+                                                // Check if user is a tourist
+                                                if (userRole !== "tourist") {
+                                                    e.preventDefault();
+                                                    toast.error("Only tourists can book tours");
+                                                    return;
+                                                }
+                                                
+                                                // Validate before opening dialog
+                                                if (!groupsize || groupsize < tour.min_people || groupsize > tour.max_people) {
+                                                    e.preventDefault();
+                                                    toast.error(`Please enter a valid group size (${tour.min_people}-${tour.max_people} people)`);
+                                                    return;
+                                                }
+                                                
+                                                if (!date) {
+                                                    e.preventDefault();
+                                                    toast.error("Please select a tour date");
+                                                    return;
+                                                }
+                                                
+                                                if (!time) {
+                                                    e.preventDefault();
+                                                    toast.error("Please select a start time");
+                                                    return;
+                                                }
+                                            }}
+                                            className={cn(
+                                                "text-lg sm:text-xl rounded-4xl w-full h-fit py-3 transition-all duration-300",
+                                                "bg-[#068F64] text-white hover:bg-[#23C491] hover:text-yellow-50 active:scale-[0.98] active:brightness-95",
+                                                achievements.includes("Popular") && "pt-4"
+                                            )}
+                                        >
+                                            REQUEST BOOKING
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-[500px]">
+                                        <DialogHeader>
+                                            <DialogTitle className="text-2xl font-bold text-[#020765]">
+                                                Confirm Booking Request
+                                            </DialogTitle>
+                                            <DialogDescription className="text-gray-600">
+                                                Review your booking details before submitting
+                                            </DialogDescription>
+                                        </DialogHeader>
+
+                                        <div className="space-y-4 py-4">
+                                            {/* Booking Summary */}
+                                            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-600">Tour:</span>
+                                                    <span className="font-semibold text-[#020765]">{tour.name}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-600">Group Size:</span>
+                                                    <span className="font-semibold">{groupsize || tour.min_people} people</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-600">Date:</span>
+                                                    <span className="font-semibold">
+                                                        {date ? new Date(date).toLocaleDateString() : "Not selected"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-600">Time:</span>
+                                                    <span className="font-semibold">{time || "Not selected"}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center pt-2 border-t border-gray-300">
+                                                    <span className="text-gray-600 font-semibold">Total Price:</span>
+                                                    <span className="font-bold text-[#23C491] text-lg">
+                                                        {(tour.price * (groupsize || tour.min_people)).toLocaleString()} VND
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Special Requests */}
+                                            <div className="space-y-2">
+                                                <FieldLabel className="text-sm font-medium">
+                                                    Special Requests (Optional)
+                                                </FieldLabel>
+                                                <Textarea
+                                                    placeholder="Any special requirements or notes for the guide..."
+                                                    value={specialRequests}
+                                                    onChange={(e) => setSpecialRequests(e.target.value)}
+                                                    className="min-h-[100px] resize-none"
+                                                    maxLength={500}
+                                                />
+                                                <p className="text-xs text-gray-500 text-right">
+                                                    {specialRequests.length}/500 characters
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex gap-3">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setShowBookingDialog(false)}
+                                                className="flex-1 rounded-full"
+                                                disabled={isSubmittingBooking}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={handleBookingRequest}
+                                                disabled={isSubmittingBooking || !groupsize || !date || !time}
+                                                className="flex-1 bg-[#068F64] hover:bg-[#23C491] text-white rounded-full"
+                                            >
+                                                {isSubmittingBooking ? "Submitting..." : "Confirm Booking"}
+                                            </Button>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         )}
 

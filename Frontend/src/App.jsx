@@ -30,27 +30,31 @@ function App() {
           <Route path="/login" element={<LogInPage />} /> */}
 
           <Route path="/" element={<Layout />}>
+            {/* Public routes */}
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/login" element={<LogInPage />} />
             <Route path="/tour/post/:tour_id" element={<TourPost />} />
+            <Route path="/tour/:tour_id" element={<TourPost />} />
             <Route index element={<HomePage />} />
             <Route path="/tours" element={<ToursShowPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/management_tour/" element={<ManagementTours />} />
             <Route
               path="/public-profile"
               element={<GuidePublicProfilePage />}
             />
 
-            {/* protected routes*/}
+            {/* Protected routes - require authentication */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/management" element={<ManagementTours />} />
+            </Route>
 
-            {/* login routes*/}
+            {/* Tourist only routes */}
             <Route element={<ProtectedRoute requiredRole="tourist" />}>
               <Route path="/tourist-profile" element={<TouristProfilePage />} />
-
             </Route>
-            {/*guide routes*/}
+
+            {/* Guide only routes */}
             <Route element={<ProtectedRoute requiredRole="guide" />}>
               <Route path="/guide-profile" element={<GuideProfilePage />} />
               <Route path="/tour/create" element={<TourCreate />} />

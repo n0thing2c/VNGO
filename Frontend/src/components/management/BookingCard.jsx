@@ -1,41 +1,198 @@
 // src/components/management/BookingCard.jsx
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Calendar, Clock, Users, DollarSign } from "lucide-react";
+import { useState } from "react";
+import { managementService } from "@/services/managementService";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
-export default function BookingCard({ booking }) {
-  const isAccepted = booking.status.toLowerCase() === "Accepted";
+export default function BookingCard({ booking, showActions = false, refreshData }) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
+  const [showDeclineDialog, setShowDeclineDialog] = useState(false);
+
+  const getStatusStyle = (status) => {
+    const statusLower = status?.toLowerCase() || "";
+    if (statusLower.includes("accept")) {
+      return "bg-green-100 text-green-800 shadow-lg";
+    } else if (statusLower.includes("pending")) {
+      return "bg-yellow-100 text-yellow-800 shadow-lg";
+    } else if (statusLower.includes("decline")) {
+      return "bg-red-100 text-red-800 shadow-lg";
+    }
+    return "bg-gray-100 text-gray-800 shadow-lg";
+  };
+
+  const handleAccept = async () => {
+    setIsProcessing(true);
+    const result = await managementService.respondToBooking(booking.id, "accept");
+    
+    if (result.success) {
+      toast.success("Booking accepted successfully!");
+      if (refreshData) {
+        await refreshData();
+      }
+    }
+    
+    setIsProcessing(false);
+  };
+
+  const handleDecline = async () => {
+    if (!declineReason.trim()) {
+      toast.error("Please provide a reason for declining.");
+      return;
+    }
+
+    setIsProcessing(true);
+    const result = await managementService.respondToBooking(
+      booking.id, 
+      "decline", 
+      declineReason
+    );
+    
+    if (result.success) {
+      toast.success("Booking declined.");
+      setShowDeclineDialog(false);
+      setDeclineReason("");
+      if (refreshData) {
+        await refreshData();
+      }
+    }
+    
+    setIsProcessing(false);
+  };
 
   return (
-    <Card className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-shadow">
-      <div className="relative">
+    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
+      {/* Full width image - no gap at top */}
+      <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
         <img
           src={booking.image || "/placeholder.jpg"}
           alt={booking.title}
-          className="w-full h-52 object-cover"
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <Badge
-          className={`absolute top-4 left-4 font-medium px-3 py-1 ${
-            isAccepted
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
+        <Badge className={`absolute top-4 left-4 font-medium px-3 py-1 ${getStatusStyle(booking.status)}`}>
           {booking.status}
         </Badge>
       </div>
 
-      <div className="p-6">
-        <h3 className="font-bold text-xl text-gray-900">{booking.title}</h3>
-        <p className="text-sm text-gray-600 mt-1">
-          Tour guide: <span className="font-semibold">{booking.guideName}</span>
-        </p>
+      <div className="p-6 flex-1 flex flex-col">
+        <h3 className="font-bold text-xl text-gray-900 mb-2">{booking.title}</h3>
+        
+        {/* Info cho Tourist: hiển thị guide name */}
+        {booking.guideName && !showActions && (
+          <p className="text-sm text-gray-600 mb-3">
+            Tour guide: <span className="font-semibold">{booking.guideName}</span>
+          </p>
+        )}
 
-        <Button asChild className="mt-5 w-full bg-green-600 hover:bg-green-700 rounded-full h-12">
-          <Link to={`/tour/${booking.id}`}>View details</Link>
+        {/* Info cho Guide: hiển thị tourist name */}
+        {booking.touristName && showActions && (
+          <p className="text-sm text-gray-600 mb-3">
+            Tourist: <span className="font-semibold">{booking.touristName}</span>
+          </p>
+        )}
+
+        {/* Booking details in 2 columns */}
+        <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-4">
+          {booking.tourDate && (
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{new Date(booking.tourDate).toLocaleDateString()}</span>
+            </div>
+          )}
+          
+          {booking.tourTime && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 flex-shrink-0" />
+              <span>{booking.tourTime}</span>
+            </div>
+          )}
+          
+          {booking.number_of_guests && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 flex-shrink-0" />
+              <span>{booking.number_of_guests} guest{booking.number_of_guests > 1 ? 's' : ''}</span>
+            </div>
+          )}
+          
+          {booking.totalPrice && (
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
+              <span className="font-semibold text-green-600 truncate">
+                {booking.totalPrice.toLocaleString()} ₫
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Actions for Guide (Accept/Decline) - push to bottom */}
+        {showActions && booking.status_key === "pending" && (
+          <div className="space-y-2 mb-3 mt-auto">
+            <Button 
+              onClick={handleAccept}
+              disabled={isProcessing}
+              className="w-full bg-green-600 hover:bg-green-700 rounded-full h-10"
+            >
+              {isProcessing ? "Processing..." : "Accept"}
+            </Button>
+            
+            <AlertDialog open={showDeclineDialog} onOpenChange={setShowDeclineDialog}>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  disabled={isProcessing}
+                  variant="outline" 
+                  className="w-full rounded-full h-10 border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  Decline
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Decline Booking Request</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Please provide a reason for declining this booking request.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <Textarea 
+                  placeholder="Reason for declining..."
+                  value={declineReason}
+                  onChange={(e) => setDeclineReason(e.target.value)}
+                  className="min-h-[100px]"
+                />
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDecline}
+                    disabled={isProcessing || !declineReason.trim()}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isProcessing ? "Processing..." : "Decline Booking"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
+
+        {/* View details button - push to bottom if no actions */}
+        <Button asChild className={`w-full bg-green-600 hover:bg-green-700 rounded-full h-12 ${!showActions || booking.status_key !== "pending" ? 'mt-auto' : ''}`}>
+          <Link to={`/tour/${booking.tourId}`}>View tour</Link>
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }

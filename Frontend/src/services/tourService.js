@@ -232,19 +232,19 @@ export const tourService = {
 
       toast.success("Rating submitted successfully!");
       return { success: true, data: res.data };
-    } catch (err) {
-      console.error("Error submitting rating:", err);
+      } catch (err) {
+        console.error("Error submitting rating:", err);
 
-      if (err.response?.data) {
-        toast.error("Failed to submit rating", {
-          description: err.response.data.detail || err.response.data.error || "Unknown error",
-        });
-      } else {
-        toast.error("Unable to connect to the server.");
+        if (err.response?.data) {
+          toast.error("Failed to submit rating", {
+            description: err.response.data.detail || err.response.data.error || "Unknown error",
+          });
+        } else {
+          toast.error("Unable to connect to the server.");
+        }
+
+        return { success: false, error: err };
       }
-
-      return { success: false, error: err };
-    }
   },
     getRatings: async (tourId) => {
     try {
@@ -261,6 +261,26 @@ export const tourService = {
         toast.error("Unable to connect to the server.");
       }
 
+      return { success: false, error: err };
+    }
+  },
+  
+  /**
+   * Get my tours (guide only)
+   * GET /api/tour/my-tours/
+   */
+  getMyTours: async () => {
+    try {
+      const res = await api.get("/api/tour/my-tours/");
+      if (res.data.success) {
+        return { success: true, data: res.data.tours, count: res.data.count };
+      } else {
+        toast.error(res.data.error || "Failed to load your tours");
+        return { success: false };
+      }
+    } catch (err) {
+      console.error("Error fetching my tours:", err);
+      toast.error("Unable to load your tours.");
       return { success: false, error: err };
     }
   },
