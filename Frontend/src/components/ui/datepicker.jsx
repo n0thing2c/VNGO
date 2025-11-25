@@ -55,9 +55,10 @@ export function Calendar22({
                         }}
                         disabled={(currentDate) => {
                             // return true to disable a date
+                            // Disable today and past dates - only allow future dates
                             const today = new Date();
                             today.setHours(0, 0, 0, 0); // ignore time
-                            return currentDate < today;
+                            return currentDate <= today;
                         }}
                     />
                 </PopoverContent>

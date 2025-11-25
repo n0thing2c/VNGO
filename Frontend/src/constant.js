@@ -13,3 +13,20 @@ export const API_ENDPOINTS = {
     GET_TOUR_ACHIEVEMENTS: (id)=>`${API_BASE_URL}/tour/achievements/${id}/`,
     GET_TOUR_RATINGS: (id)=>`${API_BASE_URL}/tour/ratings/${id}/`,
 };
+
+// App routes
+export const ROUTES = {
+    HOME: '/',
+    LOGIN: '/login',
+    SIGNUP: '/signup',
+    VERIFY_EMAIL: '/verify-email',
+    TOURS: '/tours',
+    TOUR_POST: (id) => `/tour/post/${id}`,
+    TOUR_CREATE: '/tour/create',
+    TOUR_EDIT: (id) => `/tour/edit/${id}`,
+    CHAT: '/chat',
+    MANAGEMENT: '/management',
+    TOURIST_PROFILE: '/tourist-profile',
+    GUIDE_PROFILE: '/guide-profile',
+    PUBLIC_PROFILE: '/public-profile',
+};

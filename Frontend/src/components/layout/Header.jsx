@@ -77,9 +77,17 @@ export default function Header() {
                           </Link>
                       </DropdownMenuItem>
                     {user.role === 'guide' ? (
-                      <DropdownMenuItem>My Tours</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link to="/management" className="block w-full text-left">
+                          My Tours
+                        </Link>
+                      </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem>My Bookings</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link to="/management" className="block w-full text-left">
+                          My Bookings
+                        </Link>
+                      </DropdownMenuItem>
                     )}
                     <DropdownMenuItem>
                       <Link to="/chat" className="block w-full text-left">

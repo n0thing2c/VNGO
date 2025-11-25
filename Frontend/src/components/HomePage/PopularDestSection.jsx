@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "../ui/card";
 import { MapPin } from "lucide-react";
 
 export default function PopularDestSection({ popularDestinations = [] }) {
@@ -30,12 +29,13 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                 to={`/tours?location=${encodeURIComponent(dest.name_en)}`}
                 key={dest.id}
               >
-                <Card className="group h-full overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl rounded-2xl cursor-pointer">
-                  <div className="relative h-72 overflow-hidden">
+                <div className="group h-full overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl rounded-2xl cursor-pointer bg-white flex flex-col">
+                  {/* Full width image - no gap at top */}
+                  <div className="relative h-72 overflow-hidden flex-shrink-0">
                     <img
                       src={dest.image}
                       alt={dest.name_en.split(",")[0]}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     
                     {/* Gradient overlay: Làm tối dần để chữ dễ đọc hơn */}
@@ -46,7 +46,7 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                     </h3>
                   </div>
 
-                  <CardContent className="p-6 bg-white relative z-10">
+                  <div className="p-6 bg-white relative z-10">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center text-gray-600 group-hover:text-blue-600 transition-colors duration-300">
                         <MapPin className="w-5 h-5 mr-2" />
@@ -60,8 +60,8 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                         ➔
                       </span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>

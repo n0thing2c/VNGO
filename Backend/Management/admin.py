@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Booking, BookingNotification
+from .models import Booking, BookingNotification, PastTour
 
 
 @admin.register(Booking)
@@ -102,4 +102,83 @@ class BookingNotificationAdmin(admin.ModelAdmin):
         """Optimize queryset with select_related"""
         queryset = super().get_queryset(request)
         queryset = queryset.select_related('booking', 'recipient')
+        return queryset
+
+
+@admin.register(PastTour)
+class PastTourAdmin(admin.ModelAdmin):
+    """
+    Admin interface for PastTour model
+    """
+    list_display = [
+        'id',
+        'tour_name',
+        'tourist_name',
+        'guide_name',
+        'tour_date',
+        'tour_time',
+        'number_of_guests',
+        'total_price',
+        'completed_at',
+    ]
+    list_filter = [
+        'tour_date',
+        'completed_at',
+    ]
+    search_fields = [
+        'tourist_name',
+        'guide_name',
+        'tour_name',
+        'tourist__user__username',
+        'guide__user__username',
+    ]
+    readonly_fields = [
+        'completed_at',
+        'original_booking_date',
+    ]
+    fieldsets = (
+        ('Participant Information', {
+            'fields': (
+                'tourist',
+                'tourist_name',
+                'guide',
+                'guide_name',
+            )
+        }),
+        ('Tour Information', {
+            'fields': (
+                'tour',
+                'tour_name',
+                'tour_description',
+                'duration',
+            )
+        }),
+        ('Tour Details', {
+            'fields': (
+                'number_of_guests',
+                'tour_date',
+                'tour_time',
+                'total_price',
+                'special_requests',
+            )
+        }),
+        ('References', {
+            'fields': (
+                'booking',
+            )
+        }),
+        ('Timestamps', {
+            'fields': (
+                'original_booking_date',
+                'completed_at',
+            )
+        }),
+    )
+    ordering = ['-tour_date', '-tour_time']
+    date_hierarchy = 'tour_date'
+    
+    def get_queryset(self, request):
+        """Optimize queryset with select_related"""
+        queryset = super().get_queryset(request)
+        queryset = queryset.select_related('tourist', 'guide', 'tour', 'booking')
         return queryset

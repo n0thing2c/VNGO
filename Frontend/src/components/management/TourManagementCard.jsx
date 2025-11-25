@@ -1,0 +1,111 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Clock, Users, Star, DollarSign, BookOpen, CheckCircle, AlertCircle } from "lucide-react";
+
+export default function TourManagementCard({ tour }) {
+  return (
+    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
+      {/* Full width image - no gap at top */}
+      <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
+        <img
+          src={tour.image || "/placeholder.jpg"}
+          alt={tour.title}
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+        />
+        
+        {/* Booking stats badge */}
+        {tour.bookings && tour.bookings.total > 0 && (
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
+            {tour.bookings.pending > 0 && (
+              <Badge className="bg-yellow-100 text-yellow-800 font-medium px-3 py-1 shadow-lg">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {tour.bookings.pending} pending
+              </Badge>
+            )}
+            {tour.bookings.accepted > 0 && (
+              <Badge className="bg-green-100 text-green-800 font-medium px-3 py-1 shadow-lg">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                {tour.bookings.accepted} accepted
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Rating badge */}
+        {tour.rating > 0 && (
+          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+              <span className="font-semibold text-gray-900">{tour.rating}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-6 flex-1 flex flex-col">
+        <h3 className="font-bold text-xl text-gray-900 mb-2 line-clamp-2">{tour.title}</h3>
+        
+        {/* Location */}
+        {tour.location && (
+          <p className="text-sm text-gray-600 mb-3 line-clamp-1">📍 {tour.location}</p>
+        )}
+
+        {/* Tour stats in 2 columns */}
+        <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-4">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 flex-shrink-0" />
+            <span>{tour.duration}h</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 flex-shrink-0" />
+            <span>{tour.groupSize}</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
+            <span className="font-semibold text-green-600">
+              {tour.price.toLocaleString()} ₫
+            </span>
+          </div>
+
+          {tour.bookings && (
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 flex-shrink-0" />
+              <span>{tour.bookings.total} booking{tour.bookings.total !== 1 ? 's' : ''}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Tags */}
+        {tour.tags && tour.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {tour.tags.slice(0, 3).map((tag, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {tour.tags.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{tour.tags.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Actions - push to bottom */}
+        <div className="flex gap-2 mt-auto">
+          <Button asChild className="flex-1 bg-green-600 hover:bg-green-700 rounded-full h-11">
+            <Link to={`/tour/edit/${tour.id}`}>Edit</Link>
+          </Button>
+          <Button asChild variant="outline" className="flex-1 rounded-full h-11">
+            <Link to={`/tour/${tour.id}`}>View</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+

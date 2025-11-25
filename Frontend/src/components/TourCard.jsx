@@ -40,12 +40,13 @@ export default function TourCard({ tour }) {
   };
 
   return (
-    <Link to={`/tour/post/${id}`} className="block rounded-3xl bg-white shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl">
-      <div className="relative">
+    <Link to={`/tour/post/${id}`} className="block rounded-3xl bg-white shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col h-full">
+      {/* Full width image - no gap at top */}
+      <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
         <img 
           src={image} 
           alt={title} 
-          className="w-full h-56 object-cover" 
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
           onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/400x300/fecaca/991b1b?text=Image+Error'; }}
         />
         {/* You can add badges here if needed, e.g., for "Featured" */}
