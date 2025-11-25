@@ -17,6 +17,7 @@ import "leaflet-routing-machine";
 import WikiPanel from "@/components/APIs/wiki_panel.jsx";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert.jsx";
 //just a test comment
+//another test comment
 // Fix Leaflet default icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -288,8 +289,8 @@ export default function Map({ className = "", onLocationAdd, addedStops = [] }) 
                             <li
                                 key={place.place_id || idx}
                                 className={`p-2 text-sm ${place.isPlaceholder
-                                        ? "text-gray-500 italic cursor-default select-none"
-                                        : "hover:bg-gray-100 cursor-pointer"
+                                    ? "text-gray-500 italic cursor-default select-none"
+                                    : "hover:bg-gray-100 cursor-pointer"
                                     }`}
                                 onMouseDown={(e) => {
                                     if (place.isPlaceholder) return; // prevent clicking
