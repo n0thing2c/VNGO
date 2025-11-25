@@ -16,10 +16,11 @@ import {Checkbox} from "../components/ui/checkbox";
 import {Label} from "../components/ui/label";
 import {useSearchParams} from 'react-router-dom'; // read params
 import TourCard from '@/components/TourCard';
-import { getProvinceImage } from '@/utils/provinceImages';
+import {getProvinceImage} from '@/utils/provinceImages';
 
 // API
-import { API_ENDPOINTS } from "@/constant";
+import {API_ENDPOINTS} from "@/constant";
+import SortSelect from "@/components/sortbutton.jsx";
 
 const ToursShowPage = () => {
     // LẤY searchParams TỪ URL
@@ -66,6 +67,15 @@ const ToursShowPage = () => {
 
     // State cho ảnh hero
     const [heroImage, setHeroImage] = useState(getProvinceImage('')) // Lấy ảnh default ban đầu
+
+    //Sorting
+    const SORT_OPTIONS = [
+        {field: 'default', label: 'Default', defaultDirection: 'asc'},
+        {field: 'price', label: 'Price', defaultDirection: 'asc'},
+        {field: 'duration', label: 'Duration', defaultDirection: 'asc'},
+        {field: 'rating', label: 'Rating', defaultDirection: 'desc'}, // top rated first
+    ];
+    const [sort, setSort] = useState('');
 
     // --- Hàm Format ---
     const formatPrice = (price) => {
@@ -129,6 +139,9 @@ const ToursShowPage = () => {
         if (filters.transportation.length > 0) params.append('transportation', filters.transportation.join(','));
         if (filters.tags.length > 0) params.append('tags', filters.tags.join(','));
 
+        //Sort
+        if (sort) params.append('sort', sort);
+
         // Gọi API
         console.log("Fetching with params:", params.toString());
         fetch(`${API_ENDPOINTS.GET_ALL_TOURS}?${params.toString()}`)
@@ -142,7 +155,7 @@ const ToursShowPage = () => {
                 setIsLoading(false);
             });
 
-    }, [searchTerm, selectedLocation, filters]); // Re-fetch khi các filter này thay đổi
+    }, [searchTerm, selectedLocation, filters, sort]); // Re-fetch khi các filter này thay đổi
 
     // --- Các hàm xử lý Filter ---
 
@@ -173,9 +186,9 @@ const ToursShowPage = () => {
             {/* --- Hero Section --- */}
             <div className="relative w-full h-48 md:h-64 bg-gray-800">
                 <img
-                src={heroImage || "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"}
-                alt="Scenic view"
-                className="w-full h-full object-cover opacity-50"
+                    src={heroImage || "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"}
+                    alt="Scenic view"
+                    className="w-full h-full object-cover opacity-50"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                     {/* <h1 className="text-3xl md:text-5xl font-bold text-white text-center px-4 capitalize">
@@ -333,6 +346,14 @@ const ToursShowPage = () => {
                         Clear Filters
                     </Button>
 
+                    <div className="flex items-center gap-2 ml-auto">
+                      <span className="font-normal">Sort by:</span>
+                      <SortSelect sort={sort} setSort={setSort} options={SORT_OPTIONS} />
+                    </div>
+
+
+
+
                     {/* Quick Filter: Tags (Ví dụ) */}
                     {/* Bạn có thể thêm các nút quick filter cho tags ở đây nếu muốn */}
                     {/* <Button variant="outline" size="sm" onClick={() => setFilters(prev => ({...prev, tags: ['food']}))}>
@@ -355,7 +376,7 @@ const ToursShowPage = () => {
                 {/* --- Tours Grid --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {tours.map((tour) => (
-                        <TourCard key={tour.id} tour={tour} />
+                        <TourCard key={tour.id} tour={tour}/>
                     ))}
                 </div>
 
