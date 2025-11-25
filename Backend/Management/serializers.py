@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Booking, BookingNotification, BookingStatus
+from .models import Booking, BookingNotification, BookingStatus, PastTour
 from Tour.models import Tour
 from Profiles.models import Tourist, Guide
 from django.utils import timezone
@@ -244,4 +244,188 @@ class BookingNotificationSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = ['id', 'booking_id', 'tour_name', 'notification_type', 'message', 'created_at']
+
+
+class PastTourSerializer(serializers.ModelSerializer):
+    """
+    Serializer for PastTour model - showing completed tour history
+    """
+    # Additional computed fields
+    tour_thumbnail = serializers.SerializerMethodField()
+    tourist_username = serializers.CharField(source='tourist.user.username', read_only=True)
+    guide_username = serializers.CharField(source='guide.user.username', read_only=True)
+    
+    class Meta:
+        model = PastTour
+        fields = [
+            'id',
+            'tourist',
+            'tourist_name',
+            'tourist_username',
+            'guide',
+            'guide_name',
+            'guide_username',
+            'tour',
+            'tour_name',
+            'tour_description',
+            'number_of_guests',
+            'tour_date',
+            'tour_time',
+            'duration',
+            'total_price',
+            'special_requests',
+            'completed_at',
+            'original_booking_date',
+            'tour_thumbnail',
+        ]
+        read_only_fields = fields  # All fields are read-only
+    
+    def get_tour_thumbnail(self, obj):
+        """Get tour thumbnail image URL if tour still exists"""
+        if obj.tour:
+            thumbnail = obj.tour.tour_images.filter(isthumbnail=True).first()
+            if thumbnail and thumbnail.image:
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(thumbnail.image.url)
+        return None
+
+
+class PastTourListSerializer(serializers.ModelSerializer):
+    """
+    Simplified serializer for listing past tours
+    """
+    tourist_username = serializers.CharField(source='tourist.user.username', read_only=True)
+    guide_username = serializers.CharField(source='guide.user.username', read_only=True)
+    tour_thumbnail = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = PastTour
+        fields = [
+            'id',
+            'tourist_name',
+            'tourist_username',
+            'guide_name',
+            'guide_username',
+            'tour_name',
+            'tour_thumbnail',
+            'number_of_guests',
+            'tour_date',
+            'tour_time',
+            'duration',
+            'total_price',
+            'completed_at',
+        ]
+        read_only_fields = fields
+    
+    def get_tour_thumbnail(self, obj):
+        """Get tour thumbnail image URL if tour still exists"""
+        if obj.tour:
+            thumbnail = obj.tour.tour_images.filter(isthumbnail=True).first()
+            if thumbnail and thumbnail.image:
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(thumbnail.image.url)
+        return None
+
+
+class FrontendBookingCardSerializer(serializers.ModelSerializer):
+    """
+    Lightweight booking serializer tailored for the current frontend cards
+    """
+
+    title = serializers.CharField(source="tour.name", read_only=True)
+    tourId = serializers.IntegerField(source="tour.id", read_only=True)
+    guideName = serializers.CharField(source="guide.name", read_only=True)
+    touristName = serializers.CharField(source="tourist.name", read_only=True)
+    status = serializers.CharField(source="get_status_display", read_only=True)
+    status_key = serializers.CharField(source="status", read_only=True)
+    image = serializers.SerializerMethodField()
+    totalPrice = serializers.SerializerMethodField()
+    tourDate = serializers.DateField(source="tour_date", read_only=True)
+    tourTime = serializers.TimeField(source="tour_time", read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = [
+            "id",
+            "tourId",
+            "title",
+            "guideName",
+            "touristName",
+            "status",
+            "status_key",
+            "image",
+            "tourDate",
+            "tourTime",
+            "number_of_guests",
+            "totalPrice",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+    def get_image(self, obj):
+        """Return the same thumbnail logic used elsewhere"""
+        thumbnail = obj.tour.tour_images.filter(isthumbnail=True).first()
+        if thumbnail and thumbnail.image:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(thumbnail.image.url)
+        return None
+
+    def get_totalPrice(self, obj):
+        return float(obj.total_price)
+
+
+class FrontendPastTourCardSerializer(serializers.ModelSerializer):
+    """
+    Past tour serializer matching the simplified cards in the frontend
+    """
+
+    title = serializers.CharField(source="tour_name", read_only=True)
+    tourId = serializers.IntegerField(source="tour.id", read_only=True)
+    guideName = serializers.CharField(source="guide_name", read_only=True)
+    touristName = serializers.CharField(source="tourist_name", read_only=True)
+    date = serializers.SerializerMethodField()
+    revenue = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PastTour
+        fields = [
+            "id",
+            "tourId",
+            "title",
+            "guideName",
+            "touristName",
+            "number_of_guests",
+            "duration",
+            "date",
+            "revenue",
+            "rating",
+            "image",
+        ]
+        read_only_fields = fields
+
+    def get_date(self, obj):
+        return obj.tour_date.strftime("%d/%m/%Y")
+
+    def get_revenue(self, obj):
+        amount = obj.total_price or 0
+        return f"{amount:,.0f} ₫"
+
+    def get_rating(self, obj):
+        if obj.tour and obj.tour.rating_count:
+            return round(obj.tour.average_rating(), 1)
+        return None
+
+    def get_image(self, obj):
+        if obj.tour:
+            thumbnail = obj.tour.tour_images.filter(isthumbnail=True).first()
+            if thumbnail and thumbnail.image:
+                request = self.context.get("request")
+                if request:
+                    return request.build_absolute_uri(thumbnail.image.url)
+        return None
 

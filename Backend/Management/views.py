@@ -7,13 +7,17 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Booking, BookingNotification, BookingStatus
+from .models import Booking, BookingNotification, BookingStatus, PastTour
 from .serializers import (
     BookingSerializer,
     BookingCreateSerializer,
     BookingResponseSerializer,
     BookingListSerializer,
     BookingNotificationSerializer,
+    PastTourSerializer,
+    PastTourListSerializer,
+    FrontendBookingCardSerializer,
+    FrontendPastTourCardSerializer,
 )
 from Profiles.models import Tourist, Guide
 from Tour.models import Tour
@@ -412,6 +416,142 @@ class BookingViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"], url_path="past-tours")
+    def past_tours(self, request):
+        """
+        View past tours from PastTour model (completed tours with saved history)
+        GET /management/bookings/past-tours/
+        Returns all past tour records (for both tourists and guides)
+        
+        This now queries the PastTour model instead of Booking model
+        """
+        user = request.user
+
+        if user.role == "tourist":
+            try:
+                tourist = user.tourist_profile
+                queryset = PastTour.objects.filter(tourist=tourist)
+            except Tourist.DoesNotExist:
+                return Response(
+                    {"error": "Tourist profile not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        elif user.role == "guide":
+            try:
+                guide = user.guide_profile
+                queryset = PastTour.objects.filter(guide=guide)
+            except Guide.DoesNotExist:
+                return Response(
+                    {"error": "Guide profile not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            return Response(
+                {"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        queryset = (
+            queryset.select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-tour_date", "-tour_time")
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = PastTourListSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = PastTourListSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=["get"], url_path="past-tour-detail")
+    def past_tour_detail(self, request, pk=None):
+        """
+        Get detailed information about a specific past tour
+        GET /management/bookings/{past_tour_id}/past-tour-detail/
+        """
+        user = request.user
+        
+        try:
+            past_tour = PastTour.objects.select_related(
+                "tourist", "guide", "tour"
+            ).prefetch_related("tour__tour_images").get(pk=pk)
+            
+            # Verify user has access to this past tour
+            if user.role == "tourist":
+                if past_tour.tourist.user != user:
+                    return Response(
+                        {"error": "You don't have permission to view this past tour"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            elif user.role == "guide":
+                if past_tour.guide.user != user:
+                    return Response(
+                        {"error": "You don't have permission to view this past tour"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            else:
+                return Response(
+                    {"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            serializer = PastTourSerializer(past_tour, context={"request": request})
+            return Response(serializer.data)
+            
+        except PastTour.DoesNotExist:
+            return Response(
+                {"error": "Past tour not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=False, methods=["post"], url_path="migrate-past-bookings")
+    def migrate_past_bookings(self, request):
+        """
+        Manually trigger migration of past bookings to PastTour model
+        POST /management/bookings/migrate-past-bookings/
+        Only accessible by staff/admin users
+        """
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Only staff can trigger this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        # Find all accepted bookings that are in the past
+        past_bookings = Booking.objects.filter(
+            status=BookingStatus.ACCEPTED,
+            tour_date__lt=timezone.now().date(),
+        ).select_related("tourist", "guide", "tour")
+        
+        migrated_count = 0
+        skipped_count = 0
+        errors = []
+        
+        for booking in past_bookings:
+            try:
+                # Check if already migrated
+                if PastTour.objects.filter(booking=booking).exists():
+                    skipped_count += 1
+                    continue
+                
+                # Create past tour record
+                PastTour.create_from_booking(booking)
+                migrated_count += 1
+                
+            except Exception as e:
+                errors.append(f"Booking {booking.id}: {str(e)}")
+        
+        return Response({
+            "message": "Migration completed",
+            "migrated": migrated_count,
+            "skipped": skipped_count,
+            "errors": errors,
+        })
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -419,23 +559,26 @@ def booking_statistics(request):
     """
     Get booking statistics for the authenticated user
     GET /management/statistics/
+    Now includes past_tours count from PastTour model
     """
     user = request.user
 
     if user.role == "tourist":
         try:
             tourist = user.tourist_profile
-            bookings = Booking.objects.filter(
-                tourist=tourist, tour_date__gte=timezone.now().date()
-            )
+            all_bookings = Booking.objects.filter(tourist=tourist)
+            future_bookings = all_bookings.filter(tour_date__gte=timezone.now().date())
+            # Count past tours from PastTour model instead
+            past_tours_count = PastTour.objects.filter(tourist=tourist).count()
 
             stats = {
-                "total_bookings": bookings.count(),
-                "pending": bookings.filter(status=BookingStatus.PENDING).count(),
-                "accepted": bookings.filter(status=BookingStatus.ACCEPTED).count(),
-                "upcoming": bookings.filter(
+                "total_bookings": future_bookings.count(),
+                "pending": future_bookings.filter(status=BookingStatus.PENDING).count(),
+                "accepted": future_bookings.filter(status=BookingStatus.ACCEPTED).count(),
+                "upcoming": future_bookings.filter(
                     status=BookingStatus.ACCEPTED, tour_date__gte=timezone.now().date()
                 ).count(),
+                "past_tours": past_tours_count,
             }
         except Tourist.DoesNotExist:
             return Response(
@@ -446,17 +589,19 @@ def booking_statistics(request):
     elif user.role == "guide":
         try:
             guide = user.guide_profile
-            bookings = Booking.objects.filter(
-                guide=guide, tour_date__gte=timezone.now().date()
-            )
+            all_bookings = Booking.objects.filter(guide=guide)
+            future_bookings = all_bookings.filter(tour_date__gte=timezone.now().date())
+            # Count past tours from PastTour model instead
+            past_tours_count = PastTour.objects.filter(guide=guide).count()
 
             stats = {
-                "total_bookings": bookings.count(),
-                "pending": bookings.filter(status=BookingStatus.PENDING).count(),
-                "accepted": bookings.filter(status=BookingStatus.ACCEPTED).count(),
-                "upcoming": bookings.filter(
+                "total_bookings": future_bookings.count(),
+                "pending": future_bookings.filter(status=BookingStatus.PENDING).count(),
+                "accepted": future_bookings.filter(status=BookingStatus.ACCEPTED).count(),
+                "upcoming": future_bookings.filter(
                     status=BookingStatus.ACCEPTED, tour_date__gte=timezone.now().date()
                 ).count(),
+                "past_tours": past_tours_count,
             }
         except Guide.DoesNotExist:
             return Response(
@@ -468,6 +613,98 @@ def booking_statistics(request):
         )
 
     return Response(stats)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def frontend_management_snapshot(request):
+    """
+    Simplified dataset tailored for the current frontend management UI
+    GET /management/frontend/snapshot/
+    """
+    user = request.user
+    context = {"request": request}
+
+    if user.role == "tourist":
+        try:
+            tourist = user.tourist_profile
+        except Tourist.DoesNotExist:
+            return Response(
+                {"error": "Tourist profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        bookings = (
+            Booking.objects.filter(
+                tourist=tourist,
+                tour_date__gte=timezone.now().date(),
+            )
+            .select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-created_at")
+        )
+        past_tours = (
+            PastTour.objects.filter(tourist=tourist)
+            .select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-tour_date", "-tour_time")
+        )
+
+        return Response(
+            {
+                "role": "tourist",
+                "bookings": FrontendBookingCardSerializer(
+                    bookings, many=True, context=context
+                ).data,
+                "incomingRequests": [],
+                "pastTours": FrontendPastTourCardSerializer(
+                    past_tours, many=True, context=context
+                ).data,
+            }
+        )
+
+    if user.role == "guide":
+        try:
+            guide = user.guide_profile
+        except Guide.DoesNotExist:
+            return Response(
+                {"error": "Guide profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        incoming = (
+            Booking.objects.filter(
+                guide=guide,
+                tour_date__gte=timezone.now().date(),
+            )
+            .select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-created_at")
+        )
+        past_tours = (
+            PastTour.objects.filter(guide=guide)
+            .select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-tour_date", "-tour_time")
+        )
+
+        return Response(
+            {
+                "role": "guide",
+                "bookings": [],
+                "incomingRequests": FrontendBookingCardSerializer(
+                    incoming, many=True, context=context
+                ).data,
+                "pastTours": FrontendPastTourCardSerializer(
+                    past_tours, many=True, context=context
+                ).data,
+            }
+        )
+
+    return Response(
+        {"error": "Invalid user role"},
+        status=status.HTTP_400_BAD_REQUEST,
+    )
 
 
 @api_view(["GET"])

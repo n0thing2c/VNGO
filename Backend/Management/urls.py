@@ -26,6 +26,11 @@ urlpatterns = [
     # STATISTICS
     # ============================================
     path("statistics/", views.booking_statistics, name="booking-statistics"),
+    path(
+        "frontend/snapshot/",
+        views.frontend_management_snapshot,
+        name="frontend-management-snapshot",
+    ),
     # ============================================
     # NOTIFICATIONS
     # ============================================
