@@ -5,10 +5,10 @@ export default function EmptyBookingState() {
     <div className="text-center py-20">
       <PackageOpen className="w-20 h-20 mx-auto text-gray-300 mb-6" />
       <h3 className="text-xl font-semibold text-gray-700 mb-2">
-        Bạn chưa có đặt tour nào
+        No booking yet
       </h3>
       <p className="text-gray-500">
-        Khi bạn đặt tour, chúng sẽ xuất hiện ở đây nhé!
+        Your upcoming trips will show up here once you book.
       </p>
     </div>
   );
