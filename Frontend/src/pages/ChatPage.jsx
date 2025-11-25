@@ -132,10 +132,32 @@ export default function ChatPage() {
           otherUserName = existing?.contactName || "Unknown contact";
         }
 
-        const otherUserId =
-          message?.sender && message.sender.id !== user?.id
-            ? String(message.sender.id)
-            : existing?.contactId || roomName;
+        // Fix: Only get otherUserId from message if it's NOT the current user
+        // If message is from current user, keep existing contactId or find from other messages
+        let otherUserId = existing?.contactId;
+        
+        if (message?.sender) {
+          const senderId = String(message.sender.id);
+          const currentUserId = user?.id ? String(user.id) : null;
+          
+          // Only get ID from message if it's the recipient (not current user)
+          if (currentUserId && senderId !== currentUserId) {
+            otherUserId = senderId;
+          } else if (!currentUserId) {
+            // If user.id is not available, check by username
+            const senderUsername = message.sender.username;
+            const currentUsername = user?.username;
+            if (senderUsername && senderUsername !== currentUsername) {
+              otherUserId = senderId;
+            }
+          }
+          // If message is from current user, keep existing?.contactId
+        }
+        
+        // Fallback: If still no valid otherUserId, use roomName
+        if (!otherUserId || otherUserId === roomName) {
+          otherUserId = existing?.contactId || roomName;
+        }
 
         const updatedConversation = {
           room: roomName,
@@ -150,7 +172,7 @@ export default function ChatPage() {
           reviewCount: existing?.reviewCount ?? 0,
         };
 
-        const filtered = prev.filter((c) => c.room !== roomName);
+        const filtered = prev.filter((c) => c.room === roomName);
         const normalized = normalizeAndEnhance([
           ...filtered,
           updatedConversation,
@@ -166,7 +188,7 @@ export default function ChatPage() {
         return normalized;
       });
     },
-    [normalizeAndEnhance, selectedRoom, user?.id, resolveRoomMateName]
+    [normalizeAndEnhance, selectedRoom, user?.id, user?.username, resolveRoomMateName]
   );
 
   // Load conversations from API when component mounts

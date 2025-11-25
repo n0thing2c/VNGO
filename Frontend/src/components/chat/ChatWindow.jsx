@@ -74,8 +74,6 @@ export default function ChatWindow({
   contactName,
   contactId,
   responseTime,
-  rating,
-  reviewCount,
   onMessageUpdate,
   heightClass = "max-h-[70vh]",
 }) {
