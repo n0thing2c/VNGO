@@ -214,7 +214,6 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
     }
 
 
-
     const handleAddToTour = async () => {
         if (!onLocationAdd || !markerPosition || !markerLabel || !selectedLocation)
             return;
@@ -431,39 +430,32 @@ export function TourRoute({Stops = []}) {
 
     return (
         <div className="flex flex-col gap-4 w-full h-auto">
-            <div className="w-full h-auto aspect-[4/3] md:h-[50vh] rounded-lg shadow-md overflow-hidden">
+            <div className="w-full relative rounded-lg shadow-md overflow-hidden"
+                 style={{
+                     aspectRatio: '4/3',
+                     minHeight: '250px',          // Smallest reasonable height
+                     maxHeight: '55vh',           // Never exceed 60% of viewport height
+                 }}
+            >
                 <MapContainer
                     center={[Stops[0].lat, Stops[0].lon]}
                     zoom={13}
-                    style={{width: "100%", height: "100%"}}
+                    style={{width: '100%', height: '100%'}}
                     className="rounded-lg"
-
-                    // --- 5. Add whenCreated to get the map instance ---
                     whenCreated={setMap}
                 >
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution="&copy; OpenStreetMap contributors"
                     />
-
-                    {/* --- 6. DELETE this line --- */}
-                    {/* <FitToStops Stops={Stops}/> */}
-
-                    {/* Routing line */}
                     <RoutingMachine waypoints={Stops}/>
-
-                    {/* Fly to marker */}
                     {flyTo && <FlyToLocation position={flyTo}/>}
-
-                    {/* ... (rest of your markers) ... */}
                     {Stops.map((stop, idx) => (
                         <Marker
                             key={`${stop.lat}-${stop.lon}-${idx}`}
                             position={[stop.lat, stop.lon]}
                             icon={createNumberedIcon(idx + 1)}
-                            eventHandlers={{
-                                click: () => handleMarkerClick(stop),
-                            }}
+                            eventHandlers={{click: () => handleMarkerClick(stop)}}
                         >
                             <Popup>{stop.name_en}</Popup>
                         </Marker>
@@ -471,10 +463,9 @@ export function TourRoute({Stops = []}) {
                 </MapContainer>
             </div>
 
-            {/* Wiki Info Panel */}
-
-                <WikiPanel location={selectedLocation}/>
-
+            <WikiPanel location={selectedLocation}/>
         </div>
+
+
     );
 }

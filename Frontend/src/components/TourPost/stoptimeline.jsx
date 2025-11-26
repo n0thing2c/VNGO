@@ -96,21 +96,20 @@ export default function TourStopsTimeline({ stops = [] }) {
                 {/* --- Stop Component --- */}
                 <div
                   ref={(el) => (stopRefs.current[idx] = el)}
-                  className="relative flex flex-col items-center shrink-0 px-6 first:ml-8 last:mr-8"
+                  className="flex flex-col items-center shrink-0 first:ml-70 last:pr-45 md:last:pr-55 lg:last:pr-70"
                 >
                   {/* Label on top */}
                   {isTop && (
-                    <div className="absolute bottom-full mb-2">
+                    <div className="absolute bottom-full mb-2 max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-full truncate">
                       <span
-                        className={`font-bold text-md text-center whitespace-nowrap transition-all duration-300 ${
-                          isActive
-                            ? "text-blue-600 text-lg"
-                            : "text-neutral-600"
+                        className={`font-bold text-md text-center whitespace-nowrap truncate transition-all duration-300 ${
+                          isActive ? "text-blue-600 text-lg" : "text-neutral-600"
                         }`}
                       >
                         {stopName}
                       </span>
                     </div>
+
                   )}
 
                   {/* Circle */}
@@ -126,7 +125,7 @@ export default function TourStopsTimeline({ stops = [] }) {
 
                   {/* Label on bottom */}
                   {!isTop && (
-                    <div className="absolute top-full mt-2">
+                    <div className="absolute top-full mt-2 max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-full truncate">
                       <span
                         className={`font-bold text-md text-center whitespace-nowrap transition-all duration-300 ${
                           isActive
@@ -142,7 +141,7 @@ export default function TourStopsTimeline({ stops = [] }) {
 
                 {/* --- Line Segment --- */}
                 {idx < stops.length - 1 && (
-                  <div className="relative flex-1 h-1 bg-gray-300 min-w-24">
+                  <div className="relative flex-1 h-1 bg-gray-300 lg:min-w-50 md:min-w-40 sm:min-w-30 min-w-24">
                     {isActive && (
                       <div
                         key={activeIdx}
