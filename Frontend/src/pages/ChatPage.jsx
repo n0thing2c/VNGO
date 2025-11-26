@@ -320,7 +320,6 @@ export default function ChatPage() {
             onSelectRoom={handleSelectRoom}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            heightClass="max-h-[67vh]"
           />
         </div>
 
