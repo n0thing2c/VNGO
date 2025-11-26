@@ -75,29 +75,29 @@ export default function ChatPage() {
   const withDisplayName = useCallback(
     (conversation) => {
       if (!conversation) return conversation;
-      
+
       // Always prioritize parsing from room name to ensure getting the correct recipient
       const parsedName = resolveRoomMateName(conversation.room);
-      
+
       if (parsedName) {
         return {
           ...conversation,
           contactName: parsedName,
         };
       }
-      
+
       // If parsing from room name fails, then use contactName from backend
       const hasCustomName =
         conversation.contactName &&
         !conversation.contactName.toLowerCase().startsWith("room:");
-      
+
       if (hasCustomName) {
         return {
           ...conversation,
           contactName: conversation.contactName.trim(),
         };
       }
-      
+
       const stripped =
         conversation.contactName?.replace(/^Room:\s*/i, "").trim() || "";
       return {
@@ -122,7 +122,7 @@ export default function ChatPage() {
 
         // Always prioritize parsing from room name to find partner (recipient)
         const parsedPartnerName = resolveRoomMateName(roomName);
-        
+
         // If there is a message from another person (not the current user), use their username
         // Otherwise, use parsed name from room, or fallback to existing
         let otherUserName = parsedPartnerName;
@@ -135,11 +135,11 @@ export default function ChatPage() {
         // Fix: Only get otherUserId from message if it's NOT the current user
         // If message is from current user, keep existing contactId or find from other messages
         let otherUserId = existing?.contactId;
-        
+
         if (message?.sender) {
           const senderId = String(message.sender.id);
           const currentUserId = user?.id ? String(user.id) : null;
-          
+
           // Only get ID from message if it's the recipient (not current user)
           if (currentUserId && senderId !== currentUserId) {
             otherUserId = senderId;
@@ -153,7 +153,7 @@ export default function ChatPage() {
           }
           // If message is from current user, keep existing?.contactId
         }
-        
+
         // Fallback: If still no valid otherUserId, use roomName
         if (!otherUserId || otherUserId === roomName) {
           otherUserId = existing?.contactId || roomName;
@@ -163,6 +163,7 @@ export default function ChatPage() {
           room: roomName,
           contactName: otherUserName,
           contactId: otherUserId,
+          contactAvatar: existing?.contactAvatar,
           lastMessage:
             message?.content || existing?.lastMessage || "No message yet",
           lastMessageTime:
@@ -330,6 +331,7 @@ export default function ChatPage() {
               roomName={selectedRoom}
               contactName={selectedContact.contactName}
               contactId={selectedContact.contactId}
+              contactAvatar={selectedContact.contactAvatar}
               responseTime={selectedContact.responseTime}
               rating={selectedContact.rating}
               reviewCount={selectedContact.reviewCount}

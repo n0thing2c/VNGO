@@ -73,6 +73,7 @@ export default function ChatWindow({
   roomName,
   contactName,
   contactId,
+  contactAvatar,
   responseTime,
   onMessageUpdate,
   heightClass = "max-h-[70vh]",
@@ -105,10 +106,10 @@ export default function ChatWindow({
             0
           );
           const avg = totalRating / tours.length;
-          
+
           // Calculate total reviews across all tours
           const totalRev = tours.reduce(
-            (acc, tour) => acc + (parseInt(tour.reviews) || 0), 
+            (acc, tour) => acc + (parseInt(tour.reviews) || 0),
             0
           );
 
@@ -256,21 +257,21 @@ export default function ChatWindow({
     };
   }, [roomName]);
 
-    const handleSendMessage = (e) => {
-      e.preventDefault();
-      // Only block when WebSocket connection is lost
-      if (!websocketService.isConnected()) return;
-      // NEW LOGIC:
-      // If newMessage has content after trim() -> Keep it.
-      // If empty -> Assign icon "👍".
-      const messageToSend = newMessage.trim() || "👍";
-      websocketService.sendMessage(messageToSend);
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    // Only block when WebSocket connection is lost
+    if (!websocketService.isConnected()) return;
+    // NEW LOGIC:
+    // If newMessage has content after trim() -> Keep it.
+    // If empty -> Assign icon "👍".
+    const messageToSend = newMessage.trim() || "👍";
+    websocketService.sendMessage(messageToSend);
 
-      setNewMessage(""); // Clear input field
+    setNewMessage(""); // Clear input field
 
-      // Auto-scroll on send
-      setTimeout(() => ensureScrollBottom(true), 0);
-    };
+    // Auto-scroll on send
+    setTimeout(() => ensureScrollBottom(true), 0);
+  };
 
   const handleTyping = () => {
     if (websocketService.isConnected()) {
@@ -295,7 +296,17 @@ export default function ChatWindow({
       {/* Chat Header */}
       <div className="p-4 border-b-1 border-black rounded-b-3xl  flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">{contactName?.[0]?.toUpperCase() || "U"}</div>
+          {contactAvatar ? (
+            <img
+              src={contactAvatar}
+              alt={contactName}
+              className="h-10 w-10 rounded-full object-cover border border-gray-200"
+            />
+          ) : (
+            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+              {contactName?.[0]?.toUpperCase() || "U"}
+            </div>
+          )}
           <div>
             <h2 className="font-semibold text-gray-900">{contactName || "Unknown"}</h2>
             {user?.role === "guide" ? (
@@ -313,11 +324,10 @@ export default function ChatWindow({
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-4 h-4 ${
-                    star <= Math.round(averageRating)
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-300"
-                  }`}
+                  className={`w-4 h-4 ${star <= Math.round(averageRating)
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-300"
+                    }`}
                 />
               ))}
             </div>
@@ -368,23 +378,32 @@ export default function ChatWindow({
               const senderName = senderUsername || "Unknown";
               const senderInitial = senderName[0]?.toUpperCase() || "?";
 
+              const senderAvatar = message?.sender?.avatar;
+
               rendered.push(
                 <div
                   key={`${message.id ?? "tmp"}-${message.created_at}`}
                   className={`flex items-end gap-2 ${isOwnMessage ? "justify-end" : "justify-start"}`}
                 >
                   {!isOwnMessage && (
-                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
-                      {senderInitial}
-                    </div>
+                    senderAvatar ? (
+                      <img
+                        src={senderAvatar}
+                        alt={senderName}
+                        className="h-8 w-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
+                        {senderInitial}
+                      </div>
+                    )
                   )}
 
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      isOwnMessage
-                        ? "bg-blue-500 text-white rounded-br-none"
-                        : "bg-gray-100 text-gray-900 rounded-bl-none"
-                    }`}
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isOwnMessage
+                      ? "bg-blue-500 text-white rounded-br-none"
+                      : "bg-gray-100 text-gray-900 rounded-bl-none"
+                      }`}
                   >
                     {!isOwnMessage && (
                       <p className="text-xs font-semibold mb-1 opacity-75">
@@ -401,9 +420,17 @@ export default function ChatWindow({
                   </div>
 
                   {isOwnMessage && (
-                    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                      {user?.username?.[0]?.toUpperCase() || "U"}
-                    </div>
+                    senderAvatar ? (
+                      <img
+                        src={senderAvatar}
+                        alt={user?.username || "Me"}
+                        className="h-8 w-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                        {user?.username?.[0]?.toUpperCase() || "U"}
+                      </div>
+                    )
                   )}
                 </div>
               );
@@ -428,28 +455,28 @@ export default function ChatWindow({
             placeholder="Type your message here"
             className="flex-1 px-4 py-2 border border-black rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-            <button
-                type="submit"
-                disabled={!websocketService.isConnected()}
-                className="
+          <button
+            type="submit"
+            disabled={!websocketService.isConnected()}
+            className="
                   p-3 rounded-full shrink-0 transition-all duration-200
                   text-blue-600 hover:bg-blue-50 active:scale-95
                   disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed
                 "
+          >
+            {!newMessage.trim() ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z" />
+              </svg>) :
+              (<svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-6 h-6 ml-1"
               >
-                {!newMessage.trim() ? (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                    <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z" />
-                </svg>) :
-                (<svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-6 h-6 ml-1"
-                >
-                  <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
-                </svg>)}
-              </button>
+                <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+              </svg>)}
+          </button>
         </div>
       </form>
     </div>

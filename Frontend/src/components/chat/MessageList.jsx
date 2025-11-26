@@ -38,16 +38,23 @@ export default function MessageList({
               <div
                 key={conversation.room}
                 onClick={() => onSelectRoom(conversation.room)}
-                className={`p-4 cursor-pointer hover:bg-gray-50 transition ${
-                  selectedRoom === conversation.room ? "bg-gray-100 border border-black" : ""
-                }`}
+                className={`p-4 cursor-pointer hover:bg-gray-50 transition ${selectedRoom === conversation.room ? "bg-gray-100 border border-black" : ""
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   {/* Avatar */}
-                  <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
-                    {conversation.contactName?.[0]?.toUpperCase() || "?"}
-                  </div>
-                  
+                  {conversation.contactAvatar ? (
+                    <img
+                      src={conversation.contactAvatar}
+                      alt={conversation.contactName}
+                      className="h-12 w-12 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold flex-shrink-0">
+                      {conversation.contactName?.[0]?.toUpperCase() || "?"}
+                    </div>
+                  )}
+
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
