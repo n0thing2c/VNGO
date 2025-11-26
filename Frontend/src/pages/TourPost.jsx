@@ -450,19 +450,22 @@ export default function TourPost() {
             <Dialog>
               <DialogTitle />
               <DialogTrigger asChild>
-                <button>
+                <button className="w-full">
                   <TourStopsTimeline
                     stops={tour.tour_places?.map((tp) => tp.place) || []}
                   />
                 </button>
               </DialogTrigger>
-              <DialogContent className="w-full sm:max-w-4xl">
+
+              <DialogContent className="w-full max-w-full sm:max-w-4xl p-5 max-h-screen overflow-auto">
                 <DialogDescription />
+
                 <TourRoute
                   Stops={tour.tour_places?.map((tp) => tp.place) || []}
                 />
               </DialogContent>
             </Dialog>
+
           </div>
 
           {/*row 6*/}
@@ -542,7 +545,7 @@ export default function TourPost() {
             <div className="flex justify-between items-center p-1">
               <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
                 <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span>Max group size:</span>
+                <span>Group size:</span>
               </div>
               <FieldLabel className="text-md text-[#333333] font-medium text-right">
                 {tour.min_people} - {tour.max_people} people
