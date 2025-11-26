@@ -126,7 +126,7 @@ export default function GlobalSearchBar() {
     }, []);
 
     return (
-        <div className="bg-white rounded-full p-1 shadow-lg w-full max-w-xl mx-auto">
+        <div className="bg-white rounded-full p-1 shadow-lg w-full max-w-md mx-auto">
             <div className="flex flex-col md:flex-row items-center md:items-stretch gap-2 md:gap-0">
 
                 {/* Location Input */}
@@ -192,16 +192,11 @@ export default function GlobalSearchBar() {
                 <button
                     onClick={() => handleSearch()}
                     className="
-                      bg-gradient-to-r from-[#020765] to-[#23c491] 
-                      hover:from-[#23c491] hover:to-[#020765] 
-                      text-white 
+                      btn-vngo-gradient-primary
                       w-12 h-12
                       rounded-full 
-                      transition-all duration-300 ease-in-out 
-                      font-medium 
                       flex items-center justify-center 
                       mr-1
-                      shadow-xl hover:shadow-2xl hover:scale-[1.03]
                     "
                 >
                   {/* <span className="flex items-center justify-center gap-2">

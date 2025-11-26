@@ -1,32 +1,16 @@
-import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-
-import guideApplyImage from '@/assets/homepage/guide-apply.jpg'
+import { Link } from "react-router-dom";
+import guideApplyImage from '@/assets/homepage/guide-apply-2.jpg'
+import { Heart, Users, ShieldCheck, Smile } from 'lucide-react';
 export default function BecomeGuideSection() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    experience: "",
-    message: ""
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Application submitted:", formData);
-    setIsOpen(false);
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      experience: "",
-      message: ""
-    });
+  const themeBlue = "#020765";
+  const themeGreen = "#068F64";
+  // --- CẤU HÌNH FONT & STYLE TẠI ĐÂY ---
+  const customTextStyle = {
+    // Bạn thay đổi tên font ở đây (vd: 'Roboto', 'Open Sans', 'Merriweather'...)
+    // Lưu ý: Đảm bảo bạn đã import font này trong index.css hoặc index.html
+    fontFamily: '"Roboto", serif',
+    fontWeight: 300, // 400 là bình thường (không bold), 300 là mỏng
   };
 
   return (
@@ -45,93 +29,118 @@ export default function BecomeGuideSection() {
                   providing visitors with truly memorable experiences, we'd love to hear from you
                 </p>
 
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                  <DialogTrigger asChild>
-                    <button className="bg-[#020765] hover:bg-[#068F64] text-white px-6 py-3 rounded-full transition-colors font-medium">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                  {/* Nút Apply Now - Link tới trang Signup */}
+                  <Link to="/signup">
+                    <button className="btn-vngo-gradient-primary px-8 py-3 rounded-full">
                       Apply now
                     </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Apply to Become a Guide</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4 mt-4 text-left">
-                      <div>
-                        <Label htmlFor="name">Full Name *</Label>
-                        <Input
-                          id="name"
-                          required
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          placeholder="Enter your full name"
-                        />
-                      </div>
+                  </Link>
 
-                      <div>
-                        <Label htmlFor="email">Email *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          required
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          placeholder="your.email@example.com"
-                        />
-                      </div>
+                  {/* Nút See More - Hiện Popup nội dung */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button className="w-full sm:w-auto border-2 border-[#020765] text-[#020765] hover:bg-[#020765]/5 px-8 py-3 rounded-full transition-colors font-medium
+                        btn-vngo-hover-effect"
+                      >
+                        See more
+                      </button>
+                    </DialogTrigger>
+                    
+                    {/* Nội dung Popup */}
+                    <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto p-4 md:p-6 rounded-xl">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl md:text-2xl font-bold text-[#020765] mb-2 pr-4">
+                          Welcome to VNGo!
+                        </DialogTitle>
+                      </DialogHeader>
+                      
+                      <div className="space-y-6 text-sm md:text-base text-gray-700 leading-relaxed">
+                        <p>
+                          You've just found a network of passionate, creative, and hard-working guides who thrive on providing visitors with truly memorable travel experiences. It could be the place that brings your guide career to the next level!
+                        </p>
 
-                      <div>
-                        <Label htmlFor="phone">Phone Number *</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          required
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="+84 xxx xxx xxx"
-                        />
-                      </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-black mb-2">Being a guide on our platform means that you can…</h3>
+                          
+                          {/* BLOCK 1: Do what you love */}
+                            <div className="flex flex-col items-center">
+                              <Heart className="w-12 h-12 mb-3" style={{ color: themeBlue }} />
+                              <h4
+                                className="font-inria text-xl mb-3 text-center" 
+                                style={{ color: themeBlue, ...customTextStyle }}
+                              >
+                                Do what you love
+                              </h4>
+                              <div className="max-w-lg mx-auto text-left bg-gray-50 p-4 rounded-lg">
+                                <ul className="list-disc pl-5 space-y-2">
+                                  <li>Be creative and be yourself, as you design and deliver tours that let your unique personality and knowledge shine.</li>
+                                  <li>Be your own boss: stay flexible and independent by setting your own schedule and prices for every tour.</li>
+                                  <li>Follow your passion and do what you love every day, supported by a team whose goal is your success.</li>
+                                </ul>
+                              </div>
+                            </div>
 
-                      <div>
-                        <Label htmlFor="experience">Years of Experience</Label>
-                        <Input
-                          id="experience"
-                          type="number"
-                          value={formData.experience}
-                          onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                          placeholder="e.g., 5"
-                        />
-                      </div>
+                            {/* BLOCK 2: Meet travellers */}
+                            <div className="flex flex-col items-center">
+                              <Users className="w-12 h-12 mb-3" style={{ color: themeGreen }} />
+                              <h4 
+                                className="font-inria text-xl mb-3 text-center" 
+                                style={{ color: themeGreen, ...customTextStyle }}
+                              >
+                                Meet kind and curious travellers
+                              </h4>
+                              <div className="max-w-lg mx-auto text-left bg-gray-50 p-4 rounded-lg">
+                                <ul className="list-disc pl-5 space-y-2">
+                                  <li>The travellers who use VNGo are passionate about exploring the world and are eager to learn more about you and the places you love.</li>
+                                  <li>The travellers on our platform are value-oriented rather than price-oriented; they get energized by authentic, unique experiences.</li>
+                                </ul>
+                              </div>
+                            </div>
 
-                      <div>
-                        <Label htmlFor="message">Tell us about yourself *</Label>
-                        <Textarea
-                          id="message"
-                          required
-                          value={formData.message}
-                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                          placeholder="Share your passion for guiding and what makes you unique..."
-                          rows={4}
-                        />
-                      </div>
+                            {/* BLOCK 3: Support */}
+                            <div className="flex flex-col items-center">
+                              <ShieldCheck className="w-12 h-12 mb-3" style={{ color: themeBlue }} />
+                              <h4 
+                                className="font-inria text-xl mb-3 text-center" 
+                                style={{ color: themeBlue, ...customTextStyle }}
+                              >
+                                Be supported in all that you do
+                              </h4>
+                              <div className="max-w-lg mx-auto text-left bg-gray-50 p-4 rounded-lg">
+                                <ul className="list-disc pl-5 space-y-2">
+                                  <li>We have your back. From the moment you become a guide with VNGo, you've got a team of caring staff cheering you on. We want you to succeed!</li>
+                                  <li>From practical advice for getting started to ongoing support with every booking you make, our staff are here to help you 24/7.</li>
+                                  <li>You're protected from the pain of last minute no-shows with our guide-friendly cancellation policy.</li>
+                                </ul>
+                              </div>
+                            </div>
 
-                      <div className="flex gap-3 pt-4">
-                        <button
-                          type="button"
-                          onClick={() => setIsOpen(false)}
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="flex-1 bg-[#020765] hover:bg-[#068F64] text-white px-4 py-2 rounded-lg transition-colors"
-                        >
-                          Submit Application
-                        </button>
+                            {/* BLOCK 4: Marketing */}
+                            <div className="flex flex-col items-center">
+                              <Smile className="w-12 h-12 mb-3" style={{ color: themeGreen }} />
+                              <h4 
+                                className="font-inria text-xl mb-3 text-center" 
+                                style={{ color: themeGreen, ...customTextStyle }}
+                              >
+                                Grow your business with smart marketing
+                              </h4>
+                              <div className="max-w-lg mx-auto text-left bg-gray-50 p-4 rounded-lg">
+                                <p>Through a comprehensive program of marketing tactics, know that your tours will be discovered by the right people, motivated customers who otherwise may never have found you.</p>
+                              </div>
+                            </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-lg font-bold text-black mb-2">We'd love to hear from you</h3>
+                          <p>
+                            We respect guides' diverse areas of expertise and bodies of knowledge, and are proud to present a full range of options to our travelers. This means that whether you're a long-time tourism professional, or a novice but enthusiastic local with unique skills or stories to share, we'd love to hear from you.
+                          </p>
+                        </div>
                       </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </div>
 

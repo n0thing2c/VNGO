@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import { useAuthStore } from "@/stores/useAuthStore";
 import HeroSection from "@/components/HomePage/HeroSection";
 import PopularDestSection from "@/components/HomePage/PopularDestSection";
 import GuidesSection from "@/components/HomePage/GuidesSection";
@@ -53,6 +53,7 @@ const popularTours = [
 
 export default function HomePage() {
   const [popularDestinations, setPopularDestinations] = useState([]);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     // Fetch destinations cho mục "Popular dests"
@@ -74,7 +75,9 @@ export default function HomePage() {
         <FadeInWrapper><TravelStatsSection /></FadeInWrapper>
         <FadeInWrapper><InfoSection /></FadeInWrapper>
         <FadeInWrapper><ReviewsSection /></FadeInWrapper>
-        <FadeInWrapper><BecomeGuideSection /></FadeInWrapper>
+        {!user && (
+          <FadeInWrapper><BecomeGuideSection /></FadeInWrapper>
+        )}
       </main>
     </div>
   );
