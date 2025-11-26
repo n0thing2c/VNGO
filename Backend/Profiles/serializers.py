@@ -72,3 +72,28 @@ class GuideRatingSerializer(serializers.ModelSerializer):
                 "avatar": obj.tourist.face_image,
             }
         return None
+class GuidePublicProfileSerializer(serializers.ModelSerializer):
+    # Lấy username từ bảng User liên kết qua khóa ngoại
+    username = serializers.CharField(source='user.username', read_only=True)
+    
+    # Tính toán rating trung bình (gọi method từ model)
+    average_rating = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Guide
+        fields = [
+            'user_id',      # ID của guide (quan trọng để React dùng làm key hoặc gọi API khác)
+            'username', 
+            'name', 
+            'age', 
+            'gender', 
+            'location', 
+            'languages', 
+            'face_image', 
+            'average_rating', 
+            'rating_count',
+            'bio',
+        ]
+
+    def get_average_rating(self, obj):
+        return obj.average_rating()

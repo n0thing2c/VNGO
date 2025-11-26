@@ -10,7 +10,7 @@ from django.conf import settings
 import os
 import uuid
 from .models import Tourist, Guide, GuideRating, GuideRatingImage
-from .serializers import TouristProfileSerializer, GuideProfileSerializer, GuideRatingSerializer, GuideRatingImageSerializer
+from .serializers import TouristProfileSerializer, GuideProfileSerializer, GuideRatingSerializer,  GuideRatingImageSerializer, GuidePublicProfileSerializer
 
 User = get_user_model()
 
@@ -146,3 +146,12 @@ class GuideRatingsView(generics.ListAPIView):
         guide_id = self.kwargs.get("guide_id")
         guide = get_object_or_404(Guide, pk=guide_id)
         return guide.ratings.all()
+class GuidePublicDetailView(generics.RetrieveAPIView):
+    """
+    API để lấy thông tin public của một Guide cụ thể dựa trên ID.
+    Cho phép bất kỳ ai (kể cả chưa login) cũng xem được.
+    """
+    queryset = Guide.objects.all()
+    serializer_class = GuidePublicProfileSerializer
+    permission_classes = [permissions.AllowAny] # Quan trọng: Public profile ai cũng xem được
+    lookup_field = 'pk' # Tìm theo khóa chính (User ID)

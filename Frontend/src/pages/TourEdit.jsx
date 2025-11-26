@@ -1,5 +1,5 @@
-import {useState, useEffect} from "react";
-import {useParams} from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
     Card,
     CardContent,
@@ -7,8 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import {FieldLabel, FieldSeparator} from "@/components/ui/field";
-import {Input} from "@/components/ui/input";
+import { FieldLabel, FieldSeparator } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
     IdCard,
     MotorbikeIcon,
@@ -32,22 +32,22 @@ import {
 } from "@/components/ui/select";
 import TagSelector from "@/components/tagsselector.jsx";
 import VNDInput from "@/components/priceinput.jsx";
-import {Textarea} from "@/components/ui/textarea.jsx";
+import { Textarea } from "@/components/ui/textarea.jsx";
 import ImageUploader from "@/components/imageuploader.jsx";
 import DragList from "@/components/drag_list.jsx";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
 import Map from "../components/APIs/Map.jsx";
-import {Links, Link} from "react-router-dom";
-import {useAuthStore} from "@/stores/useAuthStore.js";
-import {useNavigate} from "react-router-dom";
-import {tourService} from "@/services/tourService.js";
+import { Links, Link } from "react-router-dom";
+import { useAuthStore } from "@/stores/useAuthStore.js";
+import { useNavigate } from "react-router-dom";
+import { tourService } from "@/services/tourService.js";
 
 export default function TourEdit() {
     const navigate = useNavigate();
     const user_name = useAuthStore((state) => state.user.username)
-    const {tour_id} = useParams();
+    const { tour_id } = useParams();
     const [loading, setLoading] = useState(true);
     const [tourData, setTourData] = useState(null);
 
@@ -62,7 +62,7 @@ export default function TourEdit() {
     const [selectedTags, setSelectedTags] = useState([]);
     const [description, setdescription] = useState("");
     const [addedStops, setAddedStops] = useState([]);
-    const [imageData, setImageData] = useState({images: [], thumbnailIdx: 0});
+    const [imageData, setImageData] = useState({ images: [], thumbnailIdx: 0 });
 
     // ✅ STEP 1: Add new state to track removed images
     const [removedImageUrls, setRemovedImageUrls] = useState([]);
@@ -115,13 +115,13 @@ export default function TourEdit() {
     const getTransportationIcon = (value) => {
         switch (value) {
             case "private":
-                return <MotorbikeIcon/>;
+                return <MotorbikeIcon />;
             case "public":
-                return <BusFront/>;
+                return <BusFront />;
             case "walk":
-                return <Footprints/>;
+                return <Footprints />;
             default:
-                return <CarFront/>;
+                return <CarFront />;
         }
     };
 
@@ -153,7 +153,7 @@ export default function TourEdit() {
             }
         }
 
-        setImageData({images: newImages, thumbnailIdx: thumbnailIndex});
+        setImageData({ images: newImages, thumbnailIdx: thumbnailIndex });
     };
 
 
@@ -165,7 +165,7 @@ export default function TourEdit() {
 
             if (existingIndex !== -1) {
                 const updatedStops = [...prevStops];
-                updatedStops[existingIndex] = {...prevStops[existingIndex], ...newStop};
+                updatedStops[existingIndex] = { ...prevStops[existingIndex], ...newStop };
                 return updatedStops;
             }
             return [...prevStops, newStop];
@@ -202,7 +202,7 @@ export default function TourEdit() {
         setAddedStops((prevStops) =>
             prevStops.map((stop, i) =>
                 i === index
-                    ? {...stop, name: trimmedName, name_en: englishName}
+                    ? { ...stop, name: trimmedName, name_en: englishName }
                     : stop
             )
         );
@@ -317,7 +317,7 @@ export default function TourEdit() {
                             </h1>
                         </CardTitle>
                     </CardHeader>
-                    <FieldSeparator/>
+                    <FieldSeparator />
                     <CardContent className="flex flex-col gap-6 xl:gap-8">
                         <div>
                             <Map
@@ -326,7 +326,7 @@ export default function TourEdit() {
                                 addedStops={addedStops}
                             />
                         </div>
-                        <FieldSeparator/>
+                        <FieldSeparator />
                         <div className="space-y-4 w-full">
                             <div className="rounded-2xl border-[#23C491] border-2 p-4">
                                 <FieldLabel className="text-base xl:text-lg text-[#23C491] font-bold">
@@ -353,12 +353,12 @@ export default function TourEdit() {
                             </h1>
                         </CardTitle>
                     </CardHeader>
-                    <FieldSeparator/>
+                    <FieldSeparator />
                     <CardContent className="flex flex-col gap-6 xl:gap-8 text-base xl:text-lg">
                         {/* ROW 1: TOUR NAME */}
                         <div className="flex justify-between gap-5">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <IdCard/> Tour name:
+                                <IdCard /> Tour name:
                             </FieldLabel>
                             <Input
                                 className="flex-1 py-2 xl:py-3 text-base xl:text-lg"
@@ -367,12 +367,12 @@ export default function TourEdit() {
                             />
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* ROW 2: DURATION */}
                         <div className="flex justify-between gap-5">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Clock/> Duration:
+                                <Clock /> Duration:
                             </FieldLabel>
                             <div className="flex justify-end gap-3 items-center">
                                 <FieldLabel className="hidden md:inline">Up to</FieldLabel>
@@ -395,12 +395,12 @@ export default function TourEdit() {
                             </div>
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* ROW 3: GROUP SIZE */}
                         <div className="flex justify-between gap-5">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <UserPlus/> Group size:
+                                <UserPlus /> Group size:
                             </FieldLabel>
                             <div className="flex justify-end gap-3 items-center">
                                 <Input
@@ -444,7 +444,7 @@ export default function TourEdit() {
                             </div>
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* TRANSPORTATION */}
                         <div className="flex justify-between gap-5">
@@ -453,7 +453,7 @@ export default function TourEdit() {
                             </FieldLabel>
                             <Select value={transportation} onValueChange={setTransportation}>
                                 <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
-                                    <SelectValue placeholder="Select transportation"/>
+                                    <SelectValue placeholder="Select transportation" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="private">Private</SelectItem>
@@ -463,16 +463,16 @@ export default function TourEdit() {
                             </Select>
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* MEETING PLACE */}
                         <div className="flex justify-between gap-5">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Pin/> Meeting place:
+                                <Pin /> Meeting place:
                             </FieldLabel>
                             <Select value={meeting} onValueChange={setMeeting}>
                                 <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
-                                    <SelectValue placeholder="Select location"/>
+                                    <SelectValue placeholder="Select location" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="mine">My Place</SelectItem>
@@ -482,12 +482,12 @@ export default function TourEdit() {
                             </Select>
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* PRICE */}
                         <div className="flex justify-between gap-3 items-center">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <CircleDollarSignIcon/> Price:
+                                <CircleDollarSignIcon /> Price:
                             </FieldLabel>
                             <VNDInput
                                 className="flex-1 text-[#23C491] text-xl xl:text-2xl font-semibold"
@@ -500,12 +500,12 @@ export default function TourEdit() {
                             </FieldLabel>
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* PHOTOS */}
                         <div className="flex justify-between gap-5">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <PictureInPicture2Icon/> Photos:
+                                <PictureInPicture2Icon /> Photos:
                             </FieldLabel>
                             {/* ✅ STEP 4: Point to the new handler */}
                             <ImageUploader
@@ -516,12 +516,12 @@ export default function TourEdit() {
                             />
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* DESCRIPTION */}
                         <div className="flex flex-col w-full gap-2 relative">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Edit2/> Description:
+                                <Edit2 /> Description:
                             </FieldLabel>
                             <Textarea
                                 value={description}
@@ -537,15 +537,15 @@ export default function TourEdit() {
                             />
                             <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
                                 {description.length}/500
-                              </span>
+                            </span>
                         </div>
 
-                        <FieldSeparator/>
+                        <FieldSeparator />
 
                         {/* TAGS */}
                         <div className="flex justify-between gap-5">
                             <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Tag/> Tags:
+                                <Tag /> Tags:
                             </FieldLabel>
                             <TagSelector
                                 tags={TagList}
@@ -556,11 +556,11 @@ export default function TourEdit() {
                         </div>
                     </CardContent>
 
-                    <FieldSeparator/>
+                    <FieldSeparator />
 
                     <CardFooter className="flex justify-end gap-4">
                         <Link to={`/tour/post/${tour_id}`}
-                              className="
+                            className="
                 bg-red-500 text-white px-4 py-2
                 rounded-2xl font-semibold text-base xl:text-lg
                 hover:bg-white hover:border-1 hover:border-black hover:text-black

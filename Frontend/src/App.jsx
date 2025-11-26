@@ -16,6 +16,7 @@ import TouristProfilePage from "./pages/TouristProfilePage";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
 
+
 function App() {
   return (
     <>
@@ -36,6 +37,7 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="/tours" element={<ToursShowPage />} />
             <Route path="/chat" element={<ChatPage />} />
+
             <Route
               path="/public-profile"
               element={<GuidePublicProfilePage />}
