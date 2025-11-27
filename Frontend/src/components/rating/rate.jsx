@@ -10,7 +10,7 @@ import { tourService } from "@/services/tourService.js";
 import { profileService } from "@/services/profileService.js";
 import { TOUR_TAG_VARIANTS, GUIDE_TAG_VARIANTS } from "@/components/rating/tag_variants.js";
 
-export function Rate({ id, type = "tour", onRated }) {
+export default function Rate({ id, type = "tour", onRated }) {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [reviewTags, setReviewTags] = useState([]);
