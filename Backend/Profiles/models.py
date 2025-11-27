@@ -63,6 +63,7 @@ class Guide(models.Model):
     languages = models.JSONField(default=list, blank=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     face_image = models.URLField(max_length=2055, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True, help_text="About me section")
 
     def average_rating(self):
         """Return average rating, or 0 if no ratings"""

@@ -2,7 +2,7 @@ import {Button} from "@/components/ui/button.jsx";
 import {Card, CardContent} from "@/components/ui/card.jsx";
 import {Input} from "@/components/ui/input.jsx";
 import {toast} from "sonner";
-import {useNavigate} from "react-router";
+// import {useNavigate} from "react-router";
 import {useEffect, useMemo, useState} from "react";
 import ImageUploader from "@/components/imageuploader.jsx";
 import {useAuthStore} from "@/stores/useAuthStore.js";
@@ -10,6 +10,8 @@ import {profileService} from "@/services/profileService.js";
 import {Combobox} from "@/components/ui/combobox.jsx";
 import {LanguageSelector} from "@/components/lang_selector.jsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.jsx";
+import { Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Updated: Initial data is mostly cleared for a fresh guide entry
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
@@ -67,11 +69,12 @@ const FormField = ({label, children}) => (
 );
 
 export function GuideProfile({className}) {
+    const [profileId, setProfileId] = useState(null);
     const [profile, setProfile] = useState(initialProfile);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [avatarImages, setAvatarImages] = useState([]);
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const refreshUser = useAuthStore((state) => state.refreshUser);
 
     const fullName = useMemo(() => {
@@ -85,6 +88,7 @@ export function GuideProfile({className}) {
         const loadProfile = async () => {
             try {
                 const data = await profileService.getMyProfile();
+                setProfileId(data.id);
                 const [first = "", ...rest] = (data.name || "").split(" ");
                 setProfile({
                     firstName: first,
@@ -93,7 +97,7 @@ export function GuideProfile({className}) {
                     gender: data.gender || "Female",
                     languages: Array.isArray(data.languages) ? data.languages : [],
                     location: data.location || "",
-                    bio: "",
+                    bio: data.bio || "",
                     profilePictureUrl: data.face_image || DEFAULT_AVATAR,
                 });
                 setAvatarImages(
@@ -166,10 +170,11 @@ export function GuideProfile({className}) {
                 languages: profile.languages.filter(Boolean),
                 location: profile.location,
                 face_image: faceImageUrl,
+                bio: profile.bio,
             });
             await refreshUser();
             toast.success("Profile saved successfully!");
-            navigate("/", {replace: true});
+            // navigate("/", {replace: true});
         } catch (error) {
             toast.error(
                 error?.response?.data?.detail || "Failed to save profile. Please try again."
@@ -202,7 +207,7 @@ export function GuideProfile({className}) {
                                 Profile picture
                             </h2>
                             <div
-                                className="relative h-28 w-28 rounded-full overflow-hidden border-4 border-white ring-2 ring-gray-300 shadow-md">
+                                className="relative h-40 w-40 rounded-full overflow-hidden border-3 border-white ring-2 ring-gray-300 shadow-md">
                                 <img
                                     src={profile.profilePictureUrl}
                                     alt="Profile"
@@ -218,6 +223,7 @@ export function GuideProfile({className}) {
                                 images={avatarImages}
                                 allowThumbnail={false}
                                 onImagesChange={handleAvatarChange}
+                                showPreview={false}
                             />
                         </div>
 
@@ -356,8 +362,22 @@ export function GuideProfile({className}) {
 
                         {/* Action Buttons are kept outside the rounded border for clarity */}
                         <div className="flex justify-end gap-3 pt-4">
+                            <Link
+                              to={profileId ? `/public-profile/${profileId}` : "#"}
+                              className={`inline-block ${!profileId ? 'pointer-events-none opacity-50' : ''}`}
+                            >
+                                <Button 
+                                    type="button" 
+                                    variant="outline"
+                                    className="h-10 px-4 text-sm rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                    <Eye size={16} />
+                                    View Public Profile
+                                </Button>
+                            </Link>
+                            
                             <Button
-                                className="h-10 px-6 text-sm bg-blue-600 hover:bg-blue-700 shadow-lg transition duration-150 ease-in-out"
+                                className="h-10 px-6 text-sm rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg transition duration-150 ease-in-out"
                                 type="submit"
                                 disabled={isSaving || isLoading}
                             >

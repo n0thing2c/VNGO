@@ -9,6 +9,7 @@ export default function ImageUploader({
   onImagesChange,
   allowThumbnail = true, // NEW PROP
   thumbnailIdx: initialThumbnailIdx = 0,
+  showPreview = true,
 }) {
   const [thumbnailIndex, setThumbnailIndex] = useState(
     allowThumbnail ? initialThumbnailIdx : null
@@ -78,13 +79,13 @@ export default function ImageUploader({
         type="button"
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
-        className="flex items-center gap-2 bg-[#23C491] hover:bg-white hover:border-black hover:text-black hover:border-1 text-white"
+        className="flex items-center gap-2 bg-[#068F64] rounded-full hover:bg-white hover:border-black hover:text-black hover:border-1 text-white"
       >
         <Upload className="w-4 h-4" />
-        Upload Images
+        Upload Image
       </Button>
 
-      {images.length > 0 && (
+      {showPreview && images.length > 0 && (
         <div className="flex flex-wrap justify-center gap-2">
           {images.map((img, idx) => (
             <div

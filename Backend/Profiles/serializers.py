@@ -29,6 +29,7 @@ class GuideProfileSerializer(serializers.ModelSerializer):
             "location",
             "face_image",
             "is_completed",
+            "bio",
         ]
 
     def get_is_completed(self, obj):
