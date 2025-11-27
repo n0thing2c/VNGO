@@ -53,7 +53,10 @@ export function SignupForm({ className, ...props }) {
     const password = formData.get("password");
     const confirmPassword = formData.get("confirm-password");
     let role = formData.get("role");
-
+    if (username.toLowerCase == 'chatbot') {
+      toast.error("The username 'chatbot' is reserved. Please choose a different username.");
+      return;
+    }
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
