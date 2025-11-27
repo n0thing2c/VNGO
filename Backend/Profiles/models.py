@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Sum
 from django.conf import settings
 
 
@@ -11,7 +10,8 @@ class Gender(models.TextChoices):
 
 
 class Tourist(models.Model):
-    # primary_key=True makes this the PK
+    # This is the link to your User model.
+    # primary_key=True makes this the PK, just like 'GuestID' in your diagram.
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -53,7 +53,6 @@ class Guide(models.Model):
     gender = models.CharField(
         max_length=10, choices=Gender.choices, blank=True, null=True
     )
-    bio = models.TextField(blank=True, null=True, help_text="About me / Biography")
     rating_total = models.PositiveIntegerField(
         default=0, help_text="Sum of all ratings received"
     )
@@ -64,35 +63,13 @@ class Guide(models.Model):
     languages = models.JSONField(default=list, blank=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     face_image = models.URLField(max_length=2055, blank=True, null=True)
-
-    def _tour_rating_stats(self):
-        """
-        Aggregate rating totals/counts from all tours.
-        Cached per instance to avoid duplicated queries per request.
-        """
-        if hasattr(self, "_tour_rating_cache"):
-            return self._tour_rating_cache
-
-        stats = self.tours.aggregate(
-            total=Sum("rating_total"),
-            count=Sum("rating_count"),
-        )
-        total = stats.get("total") or 0
-        count = stats.get("count") or 0
-        self._tour_rating_cache = (total, count)
-        return self._tour_rating_cache
+    bio = models.TextField(blank=True, null=True, help_text="About me section")
 
     def average_rating(self):
-        """Return tour-based average rating, or 0 if no ratings"""
-        total, count = self._tour_rating_stats()
-        if count > 0:
-            return total / count
+        """Return average rating, or 0 if no ratings"""
+        if self.rating_count > 0:
+            return self.rating_total / self.rating_count
         return 0
-
-    def tour_rating_count(self):
-        """Number of tour ratings received across all tours"""
-        _, count = self._tour_rating_stats()
-        return count
 
     def add_rating(self, value: int):
         """Add a new rating"""

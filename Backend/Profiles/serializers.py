@@ -42,6 +42,8 @@ class GuideProfileSerializer(serializers.ModelSerializer):
         return obj.rating_count
 
 
+
+
 class GuideRatingImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -57,12 +59,18 @@ class GuideRatingImageSerializer(serializers.ModelSerializer):
 
 
 class GuideRatingSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
     tourist = serializers.SerializerMethodField()
-    images = GuideRatingImageSerializer(many=True, read_only=True)
-
     class Meta:
         model = GuideRating
         fields = ['tourist', 'rating', 'review', 'review_tags', 'images', 'created_at']
+
+    def get_images(self, obj):
+        request = self.context.get('request')
+        return [
+            request.build_absolute_uri(img.image.url) if request else img.image.url
+            for img in obj.images.all()
+        ]
 
     def get_tourist(self, obj):
         if obj.tourist:
@@ -73,6 +81,7 @@ class GuideRatingSerializer(serializers.ModelSerializer):
                 "avatar": obj.tourist.face_image,
             }
         return None
+
 
 
 class GuidePublicProfileSerializer(serializers.ModelSerializer):
@@ -106,7 +115,7 @@ class GuidePublicProfileSerializer(serializers.ModelSerializer):
         return obj.average_rating()
 
     def get_rating_count(self, obj):
-        return obj.tour_rating_count()
+        return obj.rating_count
 
     def get_tours_count(self, obj):
         return obj.tours.count()

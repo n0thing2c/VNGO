@@ -1,6 +1,6 @@
-import { TourRoute } from "@/components/APIs/Map.jsx";
-import React, { use, useState } from "react";
-import { useEffect } from "react";
+import {TourRoute} from "@/components/APIs/Map.jsx";
+import React, {use, useState} from "react";
+import {useEffect} from "react";
 import {
     Card,
     CardAction,
@@ -22,7 +22,7 @@ import {
     FieldSet,
     FieldTitle,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {Input} from "@/components/ui/input";
 import {
     IdCard,
     MotorbikeIcon,
@@ -73,7 +73,7 @@ import {
     Building,
     Telescope,
     Kayak,
-    FerrisWheel,
+    FerrisWheel, Map, List
 } from "lucide-react";
 import {
     Select,
@@ -84,10 +84,10 @@ import {
 } from "@/components/ui/select";
 import TagSelector from "@/components/tagsselector.jsx";
 import VNDInput from "@/components/priceinput.jsx";
-import { Textarea } from "@/components/ui/textarea.jsx";
+import {Textarea} from "@/components/ui/textarea.jsx";
 import ImageUploader from "@/components/imageuploader.jsx";
 import DragList from "@/components/drag_list.jsx";
-import { toast } from "sonner";
+import {toast} from "sonner";
 import {
     Carousel,
     CarouselContent,
@@ -103,51 +103,51 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button.jsx";
+import {Button} from "@/components/ui/button.jsx";
 import {
     Rating,
     RatingButton,
 } from "@/components/ui/shadcn-io/rating/index.jsx";
 import TourCarousel from "@/components/TourPost/tourcarousel.jsx";
-import { Calendar22 } from "@/components/ui/datepicker.jsx";
+import {Calendar22} from "@/components/ui/datepicker.jsx";
 import TourStopsTimeline from "@/components/TourPost/stoptimeline.jsx";
-import { useParams } from "react-router-dom";
+import {useParams} from "react-router-dom";
 import Header from "@/components/layout/Header.jsx";
 import Footer from "@/components/layout/Footer.jsx";
-import { Badge } from "@/components/ui/badge.jsx";
-import { AchievementBadge } from "@/components/TourPost/tour_achievements.jsx";
-import { cn } from "@/lib/utils";
+import {Badge} from "@/components/ui/badge.jsx";
+import {AchievementBadge} from "@/components/TourPost/tour_achievements.jsx";
+import {cn} from "@/lib/utils";
 import RatingList from "@/components/rating/ratings.jsx";
 import Rate from "@/components/rating/rate.jsx";
-import { useAuthStore } from "@/stores/useAuthStore.js";
+import {useAuthStore} from "@/stores/useAuthStore.js";
 import GuideSection from "@/components/TourPost/guidesection.jsx";
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 // API
-import { API_ENDPOINTS } from "@/constant";
-import { tourService } from "@/services/tourService.js";
+import {API_ENDPOINTS} from "@/constant";
+import {tourService} from "@/services/tourService.js";
 import TimeInput from "@/components/timeinput.jsx";
 import MoreTourByGuide from "@/components/TourPost/more_tour_section.jsx";
-import { managementService } from "@/services/managementService.js";
-import { useNavigate } from "react-router-dom";
+import {managementService} from "@/services/managementService.js";
+import {useNavigate} from "react-router-dom";
 
 const TOUR_TAG_ICONS = {
-    Nature: <Binoculars className="w-3 h-3" />,
-    Beach: <Palmtree className="w-3 h-3" />,
-    Trekking: <Mountain className="w-3 h-3" />,
-    Culture: <BookOpen className="w-3 h-3" />,
-    History: <Landmark className="w-3 h-3" />,
-    "Local Experience": <Users className="w-3 h-3" />,
-    Sightseeing: <Telescope className="w-3 h-3" />,
-    Adventure: <Pickaxe className="w-3 h-3" />,
-    "Food & Drink": <Coffee className="w-3 h-3" />,
-    Nightlife: <MoonStar className="w-3 h-3" />,
-    "City Life": <Building className="w-3 h-3" />,
-    Shopping: <ShoppingCart className="w-3 h-3" />,
-    Photography: <Camera className="w-3 h-3" />,
-    Relaxation: <Smile className="w-3 h-3" />,
-    "Water Sports": <Kayak className="w-3 h-3" />,
-    Countryside: <Leaf className="w-3 h-3" />,
-    Recreational: <FerrisWheel className="w-3 h-3" />,
+    Nature: <Binoculars className="w-3 h-3"/>,
+    Beach: <Palmtree className="w-3 h-3"/>,
+    Trekking: <Mountain className="w-3 h-3"/>,
+    Culture: <BookOpen className="w-3 h-3"/>,
+    History: <Landmark className="w-3 h-3"/>,
+    "Local Experience": <Users className="w-3 h-3"/>,
+    Sightseeing: <Telescope className="w-3 h-3"/>,
+    Adventure: <Pickaxe className="w-3 h-3"/>,
+    "Food & Drink": <Coffee className="w-3 h-3"/>,
+    Nightlife: <MoonStar className="w-3 h-3"/>,
+    "City Life": <Building className="w-3 h-3"/>,
+    Shopping: <ShoppingCart className="w-3 h-3"/>,
+    Photography: <Camera className="w-3 h-3"/>,
+    Relaxation: <Smile className="w-3 h-3"/>,
+    "Water Sports": <Kayak className="w-3 h-3"/>,
+    Countryside: <Leaf className="w-3 h-3"/>,
+    Recreational: <FerrisWheel className="w-3 h-3"/>,
 };
 const TOUR_TAG_VARIANTS = {
     Nature: "brightgreen",
@@ -183,7 +183,7 @@ export default function TourPost() {
     const user = useAuthStore((state) => state.user);
     const userRole = user?.role;
     const isLoggedIn = !!user;
-    const { tour_id } = useParams();
+    const {tour_id} = useParams();
     const [tourData, setTourData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currency, setCurrency] = useState("USD");
@@ -244,7 +244,11 @@ export default function TourPost() {
 
         fetchRatings();
     }, [tour_id]);
+    const [viewMode, setViewMode] = useState("timeline"); // "timeline" or "map"
 
+    const toggleView = () => {
+        setViewMode((prev) => (prev === "timeline" ? "map" : "timeline"));
+    };
     const handleBookingRequest = async () => {
         // Ensure groupsize is set to minimum if somehow it's still null
         const finalGroupSize = groupsize || tour.min_people;
@@ -330,7 +334,7 @@ export default function TourPost() {
     if (loading) return <p className="text-center p-4">Loading tour...</p>;
     if (!tourData) return <p className="text-center p-4">Tour not found.</p>;
 
-    const { tour } = tourData;
+    const {tour} = tourData;
     const averageRating =
         tour.rating_count > 0
             ? (tour.rating_total / tour.rating_count).toFixed(1)
@@ -339,7 +343,8 @@ export default function TourPost() {
     return (
         <div className="items-center">
             {/* CHANGED: Tighter container and less vertical margin */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-y-6 md:gap-x-8 lg:gap-x-24 max-w-6xl mx-auto px-4 my-24">
+            <div
+                className="grid grid-cols-1 md:grid-cols-5 gap-y-6 md:gap-x-8 lg:gap-x-24 max-w-6xl mx-auto px-4 my-24">
                 {/* Main Content Area */}
                 {/* (No changes in this section) */}
                 <div className="flex w-full flex-col gap-6 md:col-span-3">
@@ -393,7 +398,7 @@ export default function TourPost() {
                     <div className="flex items-center gap-2 sm:gap-3 mb-3">
                         {/* Star / Custom Icon Rating */}
                         <div className="flex gap-1">
-                            {Array.from({ length: 5 }).map((_, index) =>
+                            {Array.from({length: 5}).map((_, index) =>
                                 // If tour is highly rated, show emerald UserStar, otherwise yellow stars
                                 achievements.includes("Highly Rated") ? (
                                     <Star
@@ -435,12 +440,12 @@ export default function TourPost() {
 
                     {/*row 3*/}
                     <div className="flex justify-start">
-                        <TourCarousel images={tour.tour_images} />
+                        <TourCarousel images={tour.tour_images}/>
                     </div>
 
                     {/*row 4*/}
                     <div className="mt-4">
-                        <GuideSection guide={tour.guide} />
+                        <GuideSection guide={tour.guide}/>
                     </div>
 
                     {/*row 5*/}
@@ -448,25 +453,42 @@ export default function TourPost() {
                         <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">
                             Tour Schedule
                         </FieldLabel>
+                        <div className="flex mt-5 mb-10">
+                            {/* Timeline Tab */}
+                            <button
+                                className={`flex-1 py-2 text-center transition ${
+                                    viewMode === "timeline"
+                                        ? "border-b-2 border-gray-500 bg-white"
+                                        : "text-gray-500 hover:text-gray-700 border-gray-200 border-b-2"
+                                }`}
+                                onClick={() => setViewMode("timeline")}
+                            >
+                                <List className="inline mr-1"/> Timeline
+                            </button>
 
-                        <Dialog>
-                            <DialogTitle />
-                            <DialogTrigger asChild>
-                                <button className="w-full">
-                                    <TourStopsTimeline
-                                        stops={tour.tour_places?.map((tp) => tp.place) || []}
-                                    />
-                                </button>
-                            </DialogTrigger>
+                            {/* Map Tab */}
+                            <button
+                                className={`flex-1 py-2 text-center transition ${
+                                    viewMode === "map"
+                                        ? "border-b-2 border-gray-500 bg-white"
+                                        : "text-gray-500 hover:text-gray-700 border-gray-200 border-b-2"
+                                }`}
+                                onClick={() => setViewMode("map")}
+                            >
+                                <Map className="inline mr-1"/> Map
+                            </button>
+                        </div>
 
-                            <DialogContent className="w-full max-w-full sm:max-w-4xl p-5 max-h-screen overflow-auto">
-                                <DialogDescription />
+                        {/* Content */}
+                        <div className="bg-white">
+                            {viewMode === "timeline" ? (
+                                <TourStopsTimeline stops={tour.tour_places?.map((tp) => tp.place) || []}/>
+                            ) : (
+                                <TourRoute Stops={tour.tour_places?.map((tp) => tp.place) || []}/>
+                            )}
+                        </div>
 
-                                <TourRoute
-                                    Stops={tour.tour_places?.map((tp) => tp.place) || []}
-                                />
-                            </DialogContent>
-                        </Dialog>
+
                     </div>
 
                     {/*row 6*/}
@@ -531,7 +553,7 @@ export default function TourPost() {
                                     }
                                     className="-mb-1 scale-80 transition-transform border-0 bg-white rounded-full hover:scale-85 hover:bg-neutral-200"
                                 >
-                                    <ArrowRightLeft color="black" className="w-full h-full" />
+                                    <ArrowRightLeft color="black" className="w-full h-full"/>
                                 </Button>
                             </div>
 
@@ -540,12 +562,12 @@ export default function TourPost() {
                             </FieldLabel>
                         </CardTitle>
                     </CardHeader>
-                    <FieldSeparator className="h-0" />
+                    <FieldSeparator className="h-0"/>
                     {/* Using the more compact layout from the previous step */}
                     <CardContent className="flex flex-col">
                         <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
-                                <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 <span>Group size:</span>
                             </div>
                             <FieldLabel className="text-md text-[#333333] font-medium text-right">
@@ -555,7 +577,7 @@ export default function TourPost() {
 
                         <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
-                                <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 <span>Duration:</span>
                             </div>
                             <FieldLabel className="text-md text-[#333333] font-medium text-right">
@@ -566,13 +588,13 @@ export default function TourPost() {
                         <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
                                 {tour.transportation === "walk" && (
-                                    <Footprints className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <Footprints className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 )}
                                 {tour.transportation === "private" && (
-                                    <MotorbikeIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <MotorbikeIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 )}
                                 {tour.transportation === "public" && (
-                                    <BusFront className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <BusFront className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 )}
                                 <span>Transportation:</span>
                             </div>
@@ -585,7 +607,7 @@ export default function TourPost() {
 
                         <div className="flex justify-between items-center p-1">
                             <div className="flex items-center gap-2 text-md text-neutral-600 sm:text-lg">
-                                <Pin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                <Pin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0"/>
                                 <span>Meeting location:</span>
                             </div>
                             <FieldLabel className="text-md text-[#333333] font-medium text-right">
@@ -598,7 +620,8 @@ export default function TourPost() {
                         {/* CHANGED: Made input rows more compact (p-3 to p-2) */}
                         {userRole !== "guide" && (
                             <div className="flex flex-col gap-2 p-1 mt-3 mb-3">
-                                <div className="bg-white flex justify-between items-center border-neutral-300 border-1 width rounded-4xl p-1">
+                                <div
+                                    className="bg-white flex justify-between items-center border-neutral-300 border-1 width rounded-4xl p-1">
                                     <FieldLabel className="text-md sm:text-lg text-black px-2">
                                         Group Size:
                                     </FieldLabel>
@@ -640,7 +663,8 @@ export default function TourPost() {
                                     />
                                 </div>
 
-                                <div className="bg-white flex justify-between items-center border-neutral-300 border-1 width rounded-4xl p-1">
+                                <div
+                                    className="bg-white flex justify-between items-center border-neutral-300 border-1 width rounded-4xl p-1">
                                     <FieldLabel className="text-md sm:text-lg text-black px-2">
                                         Tour Date:
                                     </FieldLabel>
@@ -651,7 +675,8 @@ export default function TourPost() {
                                     />
                                 </div>
 
-                                <div className="bg-white flex justify-between items-center border-neutral-300 border-1 width rounded-4xl p-1">
+                                <div
+                                    className="bg-white flex justify-between items-center border-neutral-300 border-1 width rounded-4xl p-1">
                                     <FieldLabel className="text-md sm:text-lg text-black px-2">
                                         Start Time:
                                     </FieldLabel>
@@ -674,9 +699,10 @@ export default function TourPost() {
                             <div className="relative w-full mt-2">
                                 {/* 2. Conditionally render the "Popular" badge */}
                                 {achievements.includes("Popular") && (
-                                    <span className="absolute -top-2.5 left-4 z-10 rounded-full bg-yellow-400 px-3 py-0.5 text-xs font-semibold text-black shadow">
+                                    <span
+                                        className="absolute -top-2.5 left-4 z-10 rounded-full bg-yellow-400 px-3 py-0.5 text-xs font-semibold text-black shadow">
                                         <div className="flex justify-center gap-1 items-center">
-                                            <Flame fill="black" stroke="black" className="w-3 h-3" />
+                                            <Flame fill="black" stroke="black" className="w-3 h-3"/>
                                             Popular
                                         </div>
                                     </span>
@@ -779,7 +805,8 @@ export default function TourPost() {
                                                         {time || "Not selected"}
                                                     </span>
                                                 </div>
-                                                <div className="flex justify-between items-center pt-2 border-t border-gray-300">
+                                                <div
+                                                    className="flex justify-between items-center pt-2 border-t border-gray-300">
                                                     <span className="text-gray-600 font-semibold">
                                                         Total Price:
                                                     </span>
@@ -847,15 +874,16 @@ export default function TourPost() {
                         {!hasRated && userRole !== "guide" ? (
                             userRole ? ( // Logged in user
                                 <Dialog>
-                                    <DialogTitle />
+                                    <DialogTitle/>
                                     <DialogTrigger asChild>
-                                        <Button className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
+                                        <Button
+                                            className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
                                             Write your review here
                                         </Button>
                                     </DialogTrigger>
 
                                     <DialogContent className="w-full sm:max-w-[45rem] shadow-xl rounded-xl break-words">
-                                        <DialogDescription />
+                                        <DialogDescription/>
                                         <Rate
                                             id={tourData.tour.id}
                                             type="tour"
@@ -869,7 +897,8 @@ export default function TourPost() {
                             ) : (
                                 // Guest → Link to login
                                 <Link to="/login" className="w-full">
-                                    <Button className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
+                                    <Button
+                                        className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
                                         Write your review here
                                     </Button>
                                 </Link>
@@ -885,7 +914,7 @@ export default function TourPost() {
                             </div>
                         ) : null}
                     </div>
-                    <FieldSeparator className="p-10" />
+                    <FieldSeparator className="p-10"/>
                     <FieldLabel className="text-xl sm:text-2xl lg:text-3xl text-[#020765]">
                         Reviews
                     </FieldLabel>
@@ -893,7 +922,7 @@ export default function TourPost() {
                     {/* Display fetched ratings */}
                     {ratings.length > 0 ? (
                         <div className="break-words whitespace-normal max-w-full">
-                            <RatingList ratings={ratings} type="tour" />
+                            <RatingList ratings={ratings} type="tour"/>
                         </div>
                     ) : (
                         <p className="text-gray-500 mt-4">
@@ -903,7 +932,7 @@ export default function TourPost() {
                 </div>
             </div>
             <div className="mb-10">
-                <MoreTourByGuide guide={tour.guide} currentTourId={tour.id} />
+                <MoreTourByGuide guide={tour.guide} currentTourId={tour.id}/>
             </div>
         </div>
     );

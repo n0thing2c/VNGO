@@ -4,7 +4,7 @@ const AlbumPhotoFrame = ({ images = [] }) => {
   if (!images.length) return null;
 
   return (
-    <div className="w-full max-w-lg rounded-2xl">
+    <div className="w-full rounded-2xl">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
         {images.map((img, idx) => (
           <div

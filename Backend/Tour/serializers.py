@@ -30,30 +30,13 @@ class TourPlaceSerializer(serializers.ModelSerializer):
         model = TourPlace
         fields = ['place', 'order']
 
-class TourRatingImageSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
-
-    class Meta:
-        model = TourRatingImage
-        fields = ['id', 'image']
-
-    def get_image(self, obj):
-        request = self.context.get('request')
-        if obj.image:
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return settings.MEDIA_URL + obj.image.name
-        return None
-
-
 class TourRatingSerializer(serializers.ModelSerializer):
-    images = TourRatingImageSerializer(many=True, read_only=True)
+    images = TourImageSerializer(many=True, read_only=True)
     tourist = serializers.SerializerMethodField()
-    tour = serializers.SerializerMethodField()
 
     class Meta:
         model = TourRating
-        fields = ['tourist', 'tour', 'rating', 'review', 'review_tags', 'images', 'created_at']
+        fields = ['tourist', 'rating', 'review', 'review_tags', 'images', 'created_at']
 
     def get_tourist(self, obj):
         if obj.tourist:
@@ -62,14 +45,6 @@ class TourRatingSerializer(serializers.ModelSerializer):
                 "username": obj.tourist.user.username,
                 "email": obj.tourist.user.email,
                 "avatar": obj.tourist.face_image,
-            }
-        return None
-
-    def get_tour(self, obj):
-        if obj.tour:
-            return {
-                "id": obj.tour.id,
-                "name": obj.tour.name,
             }
         return None
 
@@ -111,5 +86,3 @@ class TourSerializer(serializers.ModelSerializer):
                 "username": guide.user.username,
             }
         return None
-
-

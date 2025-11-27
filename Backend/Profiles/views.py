@@ -19,7 +19,7 @@ from .serializers import (
 )
 from Tour.models import TourRating
 from Tour.serializers import TourRatingSerializer
-
+import json
 User = get_user_model()
 
 
@@ -100,7 +100,7 @@ class GuideRateView(APIView):
         user = request.user
         rating_value = request.data.get("rating")
         review = request.data.get("review", "")
-        review_tags = request.data.get("review_tags", [])
+        review_tags = request.data.get("review_tags", "[]")  # default to empty list
         images = request.FILES.getlist("images")
 
         # Validate rating
@@ -113,40 +113,54 @@ class GuideRateView(APIView):
         except ValueError:
             return Response({"detail": "Rating must be an integer between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Parse review_tags from JSON string to Python list
+        if isinstance(review_tags, str):
+            try:
+                review_tags = json.loads(review_tags)
+                if not isinstance(review_tags, list):
+                    review_tags = []
+            except json.JSONDecodeError:
+                review_tags = []
+
         # Get guide
         guide = get_object_or_404(Guide, pk=guide_id)
 
         # Get or create tourist profile
         tourist_profile, _ = Tourist.objects.get_or_create(user=user)
 
-        # Ensure unique rating per tourist per guide
-        rating_obj, created = GuideRating.objects.update_or_create(
+        # Check if the tourist already rated this guide
+        if GuideRating.objects.filter(tourist=tourist_profile, guide=guide).exists():
+            return Response(
+                {"detail": "You have already rated this guide."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Create the rating
+        rating_obj = GuideRating.objects.create(
             tourist=tourist_profile,
             guide=guide,
-            defaults={"rating": rating_value, "review": review, "review_tags": review_tags}
+            rating=rating_value,
+            review=review,
+            review_tags=review_tags
         )
 
         # Handle images
-        if images:
-            # Optional: clear existing images if updating
-            if not created:
-                rating_obj.images.all().delete()
-
-            for img in images:
-                GuideRatingImage.objects.create(rating=rating_obj, image=img)
+        for img in images:
+            GuideRatingImage.objects.create(rating=rating_obj, image=img)
 
         # Update guide average rating
-        guide.rating_total = sum(r.rating for r in guide.ratings.all())
-        guide.rating_count = guide.ratings.count()
+        all_ratings = guide.ratings.all()
+        guide.rating_total = sum(r.rating for r in all_ratings)
+        guide.rating_count = all_ratings.count()
         guide.save()
 
-        return Response({"success": True, "data": GuideRatingSerializer(rating_obj, context={"request": request}).data})
+        return Response(
+            {"success": True, "data": GuideRatingSerializer(rating_obj, context={"request": request}).data}
+        )
+
 
 
 class GuideRatingsView(generics.ListAPIView):
-    """
-    Get all ratings for a specific guide.
-    """
     permission_classes = [permissions.AllowAny]
     serializer_class = GuideRatingSerializer
 
@@ -154,6 +168,7 @@ class GuideRatingsView(generics.ListAPIView):
         guide_id = self.kwargs.get("guide_id")
         guide = get_object_or_404(Guide, pk=guide_id)
         return guide.ratings.all()
+
 
 
 class GuidePublicProfileView(generics.RetrieveAPIView):
@@ -169,20 +184,4 @@ class GuidePublicProfileView(generics.RetrieveAPIView):
         return get_object_or_404(Guide, pk=guide_id)
 
 
-class GuideTourReviewsView(generics.ListAPIView):
-    """
-    Returns all tour reviews (TourRating) written for tours hosted by the guide.
-    """
 
-    permission_classes = [permissions.AllowAny]
-    serializer_class = TourRatingSerializer
-
-    def get_queryset(self):
-        guide_id = self.kwargs.get("guide_id")
-        guide = get_object_or_404(Guide, pk=guide_id)
-        return (
-            TourRating.objects.filter(tour__guide=guide)
-            .select_related("tour", "tourist", "tourist__user")
-            .prefetch_related("images")
-            .order_by("-created_at")
-        )

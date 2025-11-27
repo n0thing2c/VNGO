@@ -429,18 +429,13 @@ export function TourRoute({Stops = []}) {
         );
 
     return (
-        <div className="flex flex-col gap-4 w-full h-auto">
-            <div className="w-full relative rounded-lg shadow-md overflow-hidden"
-                 style={{
-                     aspectRatio: '4/3',
-                     minHeight: '250px',          // Smallest reasonable height
-                     maxHeight: '55vh',           // Never exceed 60% of viewport height
-                 }}
-            >
+        <div className="flex flex-col gap-2 w-full">
+            {/* Map container trimmed to preview height */}
+            <div className="w-full h-90 rounded-lg shadow-md overflow-hidden z-0">
                 <MapContainer
                     center={[Stops[0].lat, Stops[0].lon]}
                     zoom={13}
-                    style={{width: '100%', height: '100%'}}
+                    style={{width: "100%", height: "100%"}} // fill parent
                     className="rounded-lg"
                     whenCreated={setMap}
                 >
@@ -463,6 +458,7 @@ export function TourRoute({Stops = []}) {
                 </MapContainer>
             </div>
 
+            {/* Wiki panel */}
             <WikiPanel location={selectedLocation}/>
         </div>
 

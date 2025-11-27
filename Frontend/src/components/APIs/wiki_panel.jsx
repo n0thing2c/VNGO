@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 
 export default function WikiPanel({ location }) {
   const [wikiData, setWikiData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!location) {
@@ -13,21 +12,31 @@ export default function WikiPanel({ location }) {
     }
 
     const fetchWikiData = async () => {
-      setIsLoading(true);
       setWikiData(null);
 
       try {
-        const lookupUrl = `https://nominatim.openstreetmap.org/lookup?format=jsonv2&osm_ids=${location.osm_type.charAt(0).toUpperCase()}${location.osm_id}&extratags=1`;
-        const lookupRes = await fetch(lookupUrl);
-        if (!lookupRes.ok) throw new Error("Nominatim lookup failed");
+        let wikiTag;
 
-        const lookupData = await lookupRes.json();
-        const wikiTag = lookupData[0]?.extratags?.wikipedia;
-        if (!wikiTag) throw new Error("No Wikipedia article found");
+        // First, try Nominatim lookup
+        if (location.osm_id && location.osm_type) {
+          const lookupUrl = `https://nominatim.openstreetmap.org/lookup?format=jsonv2&osm_ids=${location.osm_type.charAt(0).toUpperCase()}${location.osm_id}&extratags=1`;
+          const lookupRes = await fetch(lookupUrl);
+          if (lookupRes.ok) {
+            const lookupData = await lookupRes.json();
+            wikiTag = lookupData[0]?.extratags?.wikipedia;
+          }
+        }
 
-        const [lang, title] = wikiTag.split(":");
-        const wikiApiUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts|pageimages&exintro=true&explaintext=true&pithumbsize=300&titles=${encodeURIComponent(title)}&origin=*`;
+        // Determine the initial search
+        let lang = "vi"; // Vietnamese first
+        let title = location.name;
 
+        if (wikiTag) {
+          [lang, title] = wikiTag.split(":");
+        }
+
+        // Fetch Vietnamese Wikipedia page
+        const wikiApiUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts|pageimages|langlinks&exintro=true&explaintext=true&pithumbsize=300&titles=${encodeURIComponent(title)}&lllimit=1&origin=*`;
         const wikiRes = await fetch(wikiApiUrl);
         if (!wikiRes.ok) throw new Error("Wikipedia API fetch failed");
 
@@ -35,47 +44,27 @@ export default function WikiPanel({ location }) {
         const page = Object.values(wikiApiData.query.pages)[0];
 
         if (page?.extract) {
+          // Try to get English version if exists
+          const enLink = page.langlinks?.find(link => link.lang === "en")?.["*"];
+          const finalTitle = enLink || page.title;
+          const finalLang = enLink ? "en" : lang;
+
           setWikiData({
-            title: page.title,
+            title: finalTitle,
             extract: page.extract,
             imageUrl: page.thumbnail?.source,
-            url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title)}`,
+            url: `https://${finalLang}.wikipedia.org/wiki/${encodeURIComponent(finalTitle)}`,
           });
-        } else {
-          throw new Error("No summary found for Wikipedia page.");
         }
       } catch (err) {
         console.error("Error fetching Wiki data:", err);
-        setWikiData({ error: err.message });
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchWikiData();
   }, [location]);
 
-  if (isLoading) {
-    return (
-      <div className="w-full p-4 bg-white border border-gray-200 rounded-lg shadow-md">
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-700">Loading info...</span>
-        </div>
-      </div>
-    );
-  }
-
   if (!wikiData) return null;
-
-  if (wikiData.error) {
-    return (
-      <div className="w-full p-4 bg-white border border-gray-200 rounded-lg shadow-md">
-        <p className="text-red-500 text-center">Could not load information.</p>
-        <p className="text-xs text-gray-500 text-center mt-1">{wikiData.error}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex w-full p-2 bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">

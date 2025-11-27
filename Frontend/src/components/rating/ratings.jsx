@@ -60,15 +60,10 @@ const RatingList = ({ ratings = [], type = "tour" }) => {
               </div>
             </div>
 
-            <div className="flex flex-col justify-center gap-1">
+            <div className="flex flex-col justify-center">
               <FieldLabel className="text-base font-semibold">
                 {rating.tourist?.username || "Anonymous"}
               </FieldLabel>
-              {rating.tour?.name && (
-                <span className="text-xs text-gray-500">
-                  Tour: {rating.tour.name}
-                </span>
-              )}
 
               <div className="flex flex-row space-x-1 mt-1">
                 {Array.from({ length: 5 }).map((_, i) => {

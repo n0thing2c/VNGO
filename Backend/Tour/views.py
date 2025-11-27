@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny
 
+from Management.models import Booking
 from Profiles.models import Guide
 from .models import Tour, Place, TourImage
 from .serializers import TourSerializer
@@ -320,9 +321,11 @@ def tour_achievements(request, tour_id):
     achievements = []
 
     # Popular: 50+ bookings
-    # booking_count = Booking.objects.filter(tour=tour).count()
-    # if booking_count >= 50:
-    #     achievements.append("Popular")
+    total_bookings= Booking.objects.filter(tour=tour).count()
+    accepted_bookings = Booking.objects.filter(tour=tour,status='accepted').count()
+
+    if total_bookings > 0 and(accepted_bookings/total_bookings >= 0.7):
+        achievements.append("Popular")
 
     # Highly Rated: 4+ stars
     avg_rating = tour.average_rating()  # uses your model method
@@ -547,7 +550,7 @@ def get_all_tours(request):
             q_filter = Q()
             for tag in tags_list:
                 # Use icontains for case-insensitive match in JSON array
-                q_filter |= Q(tags__icontains=tag)
+                tours_queryset = tours_queryset.filter(tags__icontains=tag)
             tours_queryset = tours_queryset.filter(q_filter).distinct()
 
         # -------------------

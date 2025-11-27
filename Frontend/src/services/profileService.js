@@ -18,7 +18,7 @@ export const profileService = {
         });
         return response.data;
     },
-    submitGuideRating: async ({ profileId, rating, review, reviewTags = [], images = [] }) => {
+    submitGuideRating: async ({ guideId, rating, review, reviewTags = [], images = [] }) => {
         if (!rating) {
             toast.error("Please select a rating.");
             return { success: false };
@@ -31,7 +31,7 @@ export const profileService = {
             formData.append("review_tags", JSON.stringify(reviewTags));
             images.forEach((img) => formData.append("images", img.file || img));
 
-            const res = await api.post(`/profiles/guide/rate/${profileId}/`, formData, {
+            const res = await api.post(`/profiles/guide/rate/${guideId}/`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
@@ -52,9 +52,9 @@ export const profileService = {
         }
     },
 
-    getGuideRatings: async (profileId) => {
+    getGuideRatings: async (guideId) => {
         try {
-            const res = await api.get(`/profiles/guide/ratings/${profileId}/`);
+            const res = await api.get(`/profiles/guide/ratings/${guideId}/`);
             return { success: true, data: res.data };
         } catch (err) {
             console.error("Error fetching profile ratings:", err);
@@ -92,26 +92,6 @@ export const profileService = {
         }
     },
 
-    getGuideTourReviews: async (guideId) => {
-        if (!guideId) {
-            return { success: false, error: new Error("Guide ID is required") };
-        }
-
-        try {
-            const res = await api.get(`/profiles/guide/${guideId}/tour-reviews/`);
-            return { success: true, data: res.data };
-        } catch (err) {
-            console.error("Error fetching guide tour reviews:", err);
-            if (err.response?.data) {
-                toast.error("Failed to load guide reviews", {
-                    description: err.response.data.detail || err.response.data.error || "Unknown error",
-                });
-            } else {
-                toast.error("Unable to connect to the server.");
-            }
-            return { success: false, error: err };
-        }
-    },
 };
 
 
