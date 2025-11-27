@@ -75,15 +75,25 @@ class ConversationListView(generics.GenericAPIView):
             
             contact_name = f"Room: {room_name}"
             contact_id = room_name
+            contact_avatar = None
+
             if other_user_message and other_user_message.sender:
                 contact_name = other_user_message.sender.username or contact_name
                 contact_id = str(other_user_message.sender.id)
+                
+                # Fetch avatar
+                sender_user = other_user_message.sender
+                if hasattr(sender_user, "tourist_profile") and sender_user.tourist_profile.face_image:
+                    contact_avatar = sender_user.tourist_profile.face_image
+                elif hasattr(sender_user, "guide_profile") and sender_user.guide_profile.face_image:
+                    contact_avatar = sender_user.guide_profile.face_image
             
             conversations.append(
                 {
                     "room": room_name,
                     "contactName": contact_name,
                     "contactId": contact_id,
+                    "contactAvatar": contact_avatar,
                     "lastMessage": last_message.content if last_message else "No message yet",
                     "lastMessageTime": last_message.created_at.isoformat() if last_message else None,
                     "responseTime": "30 minutes",
