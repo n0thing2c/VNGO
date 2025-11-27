@@ -39,7 +39,7 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="/tours" element={<ToursShowPage />} />
             <Route
-              path="/public-profile"
+              path="/public-profile/:guideId"
               element={<GuidePublicProfilePage />}
             />
 

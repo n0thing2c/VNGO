@@ -29,6 +29,7 @@ class GuideProfileSerializer(serializers.ModelSerializer):
             "location",
             "face_image",
             "is_completed",
+            "bio",
         ]
 
     def get_is_completed(self, obj):
@@ -72,3 +73,40 @@ class GuideRatingSerializer(serializers.ModelSerializer):
                 "avatar": obj.tourist.face_image,
             }
         return None
+
+
+class GuidePublicProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer exposed to tourists when viewing a guide public profile.
+    Uses tour-based rating aggregates to stay consistent with the product spec.
+    """
+
+    id = serializers.IntegerField(source="pk", read_only=True)
+    average_rating = serializers.SerializerMethodField(read_only=True)
+    rating_count = serializers.SerializerMethodField(read_only=True)
+    tours_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Guide
+        fields = [
+            "id",
+            "name",
+            "age",
+            "gender",
+            "languages",
+            "location",
+            "face_image",
+            "average_rating",
+            "rating_count",
+            "tours_count",
+            "bio",
+        ]
+
+    def get_average_rating(self, obj):
+        return obj.average_rating()
+
+    def get_rating_count(self, obj):
+        return obj.tour_rating_count()
+
+    def get_tours_count(self, obj):
+        return obj.tours.count()

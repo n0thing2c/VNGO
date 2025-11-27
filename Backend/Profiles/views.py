@@ -10,7 +10,15 @@ from django.conf import settings
 import os
 import uuid
 from .models import Tourist, Guide, GuideRating, GuideRatingImage
-from .serializers import TouristProfileSerializer, GuideProfileSerializer, GuideRatingSerializer, GuideRatingImageSerializer
+from .serializers import (
+    TouristProfileSerializer,
+    GuideProfileSerializer,
+    GuideRatingSerializer,
+    GuideRatingImageSerializer,
+    GuidePublicProfileSerializer,
+)
+from Tour.models import TourRating
+from Tour.serializers import TourRatingSerializer
 
 User = get_user_model()
 
@@ -146,3 +154,35 @@ class GuideRatingsView(generics.ListAPIView):
         guide_id = self.kwargs.get("guide_id")
         guide = get_object_or_404(Guide, pk=guide_id)
         return guide.ratings.all()
+
+
+class GuidePublicProfileView(generics.RetrieveAPIView):
+    """
+    Public view for tourists to get a guide profile summary.
+    """
+
+    permission_classes = [permissions.AllowAny]
+    serializer_class = GuidePublicProfileSerializer
+
+    def get_object(self):
+        guide_id = self.kwargs.get("guide_id")
+        return get_object_or_404(Guide, pk=guide_id)
+
+
+class GuideTourReviewsView(generics.ListAPIView):
+    """
+    Returns all tour reviews (TourRating) written for tours hosted by the guide.
+    """
+
+    permission_classes = [permissions.AllowAny]
+    serializer_class = TourRatingSerializer
+
+    def get_queryset(self):
+        guide_id = self.kwargs.get("guide_id")
+        guide = get_object_or_404(Guide, pk=guide_id)
+        return (
+            TourRating.objects.filter(tour__guide=guide)
+            .select_related("tour", "tourist", "tourist__user")
+            .prefetch_related("images")
+            .order_by("-created_at")
+        )

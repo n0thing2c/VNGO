@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button.jsx";
 import { useAuthStore } from "@/stores/useAuthStore.js";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constant.js";
 
 const buildRoomName = (touristUsername, guideUsername) => {
   if (!touristUsername || !guideUsername) return null;
@@ -32,6 +33,11 @@ const GuideSection = ({ guide }) => {
   }, [guide, user]);
 
   if (!guide) return null; // no guide, render nothing
+
+  const handleViewProfile = () => {
+    if (!guide?.id) return;
+    navigate(ROUTES.PUBLIC_PROFILE(guide.id));
+  };
 
   const handleMessageClick = () => {
     if (!user) {
@@ -91,6 +97,14 @@ const GuideSection = ({ guide }) => {
             />
           ))}
           <span className="text-sm ml-1"> {guide.rating.toFixed(1)} ({guide.rating_count} votes)</span>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Button
+            className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-2xl px-3 py-1 text-xs"
+            onClick={handleViewProfile}
+          >
+            View profile
+          </Button>
         </div>
       </div>
     </Card>
