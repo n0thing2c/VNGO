@@ -3,7 +3,7 @@ import { MapPin } from "lucide-react";
 
 export default function PopularDestSection({ popularDestinations = [] }) {
   return (
-    <section id="destinations" className="py-16 md:py-20 lg:py-24 bg-white">
+    <section id="destinations" className="py-16 md:py-16 lg:py-20 bg-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Icon and text */}

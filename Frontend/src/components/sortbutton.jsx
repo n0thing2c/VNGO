@@ -57,7 +57,7 @@ const SortSelect = ({ sort, setSort, options }) => {
     <div className="relative w-35" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full py-2 px-3  text-md flex justify-between items-center font-medium"
+        className="w-full py-2 px-3 bg-[#F2F2F2] rounded-full text-md flex justify-between items-center font-medium"
       >
         {getLabel()}
       </button>
