@@ -173,6 +173,11 @@ export default function ChatPage() {
           contactName: otherUserName,
           contactId: otherUserId,
           contactAvatar: existing?.contactAvatar,
+          nationality:
+            existing?.nationality ||
+            (message?.sender && message.sender.id !== user?.id
+              ? message.sender.nationality
+              : null),
           lastMessage:
             message?.content || existing?.lastMessage || "No message yet",
           lastMessageTime:
@@ -331,6 +336,7 @@ export default function ChatPage() {
       targetUser?.id != null
         ? String(targetUser.id)
         : targetUser?.username || targetRoom;
+    const nationality = targetUser?.nationality || targetUser?.country || "";
 
     setSelectedRoom(targetRoom);
     setConversations((prev) => {
@@ -339,6 +345,7 @@ export default function ChatPage() {
         room: targetRoom,
         contactName,
         contactId,
+        nationality: nationality || existing?.nationality || "",
         lastMessage: existing?.lastMessage || "No message yet",
         lastMessageTime: existing?.lastMessageTime || null,
         responseTime: existing?.responseTime || "30 minutes",
@@ -380,6 +387,7 @@ export default function ChatPage() {
               contactName={selectedContact.contactName}
               contactId={selectedContact.contactId}
               contactAvatar={selectedContact.contactAvatar}
+              contactNationality={selectedContact.nationality}
               responseTime={selectedContact.responseTime}
               rating={selectedContact.rating}
               reviewCount={selectedContact.reviewCount}
