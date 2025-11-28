@@ -86,5 +86,3 @@ class TourSerializer(serializers.ModelSerializer):
                 "username": guide.user.username,
             }
         return None
-
-

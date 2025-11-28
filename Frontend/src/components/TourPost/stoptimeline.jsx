@@ -1,160 +1,180 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useRef} from "react";
 
-const ANIMATION_DURATION_MS = 1800;
+export default function TourStopsTimeline({stops = []}) {
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const containerRef = useRef(null);
+    const stopRefs = useRef([]);
+    const segmentRefs = useRef([]);
+    const isDragging = useRef(false);
+    const startX = useRef(0);
+    const scrollStart = useRef(0);
 
-export default function TourStopsTimeline({ stops = [] }) {
-  const [activeIdx, setActiveIdx] = useState(0);
-  const containerRef = useRef(null);
-  const stopRefs = useRef([]);
-
-  // Auto-advance active stop
-  useEffect(() => {
-    if (!stops || stops.length === 0) return;
-
-    const interval = setInterval(() => {
-      setActiveIdx((prev) => (prev + 1) % stops.length);
-    }, ANIMATION_DURATION_MS);
-
-    return () => clearInterval(interval);
-  }, [stops.length]);
-
-  // Scroll active stop into view horizontally only
-  useEffect(() => {
-    if (!stops || stops.length === 0) return;
-
-    const activeStop = stopRefs.current[activeIdx];
-    const container = containerRef.current;
-
-    if (activeStop && container) {
-      const containerRect = container.getBoundingClientRect();
-      const stopRect = activeStop.getBoundingClientRect();
-
-      // Calculate horizontal center position
-      const offsetLeft =
-        stopRect.left - containerRect.left + container.scrollLeft;
-      const offsetCenter =
-        offsetLeft - container.clientWidth / 2 + stopRect.width / 2;
-
-      container.scrollTo({
-        left: offsetCenter,
-        behavior: "smooth",
-      });
-    }
-  }, [activeIdx, stops]);
-
-  if (!stops || stops.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-24">
-        <p className="text-gray-500">No stops added yet.</p>
-      </div>
+    const mockDescriptions = stops.map(
+        (s, i) => s.description || `This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}.`
     );
-  }
 
-  return (
-    <>
-      <style>
-        {`
-          @keyframes fill-line {
-            from { width: 0%; }
-            to { width: 100%; }
-          }
-          .animate-fill-line {
-            animation: fill-line ${
-              ANIMATION_DURATION_MS / 900
-            }s linear forwards;
-          }
-          .subtle-scrollbar::-webkit-scrollbar {
-            height: 6px; /* Height for horizontal scrollbar */
-            width: 6px;
-          }
-          .subtle-scrollbar::-webkit-scrollbar-track {
-            background: transparent; 
-          }
-          .subtle-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #e2e8f0; /* Light gray (Tailwind slate-200) */
-            border-radius: 20px;       /* Rounded pill shape */
-          }
-          .subtle-scrollbar::-webkit-scrollbar-thumb:hover {
-            background-color: #cbd5e1; /* Darker on hover */
-          }
+    const totalSegments = stops.length - 1;
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container || stops.length === 0) return;
+
+        const handleScroll = () => {
+            const scrollLeft = container.scrollLeft;
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            const progress = maxScroll > 0 ? scrollLeft / maxScroll : 0;
+            setScrollProgress(progress);
+
+            // Update line segments immediately for smooth flow
+            segmentRefs.current.forEach((seg, idx) => {
+                if (!seg) return;
+                const startProgress = idx / totalSegments;
+                const endProgress = (idx + 1) / totalSegments;
+                let fill = 0;
+                if (progress >= endProgress) fill = 100;
+                else if (progress > startProgress)
+                    fill = ((progress - startProgress) / (1 / totalSegments)) * 100;
+                seg.style.width = `${fill}%`;
+            });
+        };
+
+        container.addEventListener("scroll", handleScroll);
+        return () => container.removeEventListener("scroll", handleScroll);
+    }, [stops, totalSegments]);
+
+    // Drag handlers
+    const onMouseDown = (e) => {
+        isDragging.current = false;
+        startX.current = e.clientX;
+        scrollStart.current = containerRef.current.scrollLeft;
+        containerRef.current.style.cursor = "grabbing";
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+    };
+
+    const onMouseMove = (e) => {
+        const dx = e.clientX - startX.current;
+        if (Math.abs(dx) > 3) isDragging.current = true;
+        containerRef.current.scrollLeft = scrollStart.current - dx;
+    };
+
+    const onMouseUp = () => {
+        containerRef.current.style.cursor = "grab";
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    if (!stops.length) {
+        return (
+            <div className="flex items-center justify-center h-24">
+                <p className="text-gray-500">No stops added yet.</p>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <style>
+                {`
+          .subtle-scrollbar::-webkit-scrollbar { display: none; }
+          .subtle-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         `}
-      </style>
+            </style>
 
-      <div
-        className="w-full overflow-x-auto py-16 px-4 subtle-scrollbar"
-        ref={containerRef}
-      >
-        <div className="relative flex items-center w-full">
-          {stops.map((stop, idx) => {
-            const isTop = idx % 2 === 0;
-            const stopName =
-              stop.name_en?.split(",")[0] || stop.name || "Unknown stop";
-            const isActive = idx === activeIdx;
+            <div
+                className="w-full overflow-x-auto py-16 px-4 subtle-scrollbar cursor-grab"
+                ref={containerRef}
+                onMouseDown={onMouseDown}
+                onClick={(e) => {
+                    if (isDragging.current) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }}
+            >
+                <div className="relative flex items-center w-max">
+                    {stops.map((stop, idx) => {
+                        const isTop = idx % 2 === 0;
+                        const stopName = stop.name_en?.split(",")[0] || stop.name || "Unknown stop";
 
-            return (
-              <React.Fragment key={stop.id || idx}>
-                {/* --- Stop Component --- */}
-                <div
-                  ref={(el) => (stopRefs.current[idx] = el)}
-                  className="flex flex-col items-center shrink-0 first:ml-70 last:pr-45 md:last:pr-55 lg:last:pr-70"
-                >
-                  {/* Label on top */}
-                  {isTop && (
-                    <div className="absolute bottom-full mb-2 max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-full truncate">
-                      <span
-                        className={`font-bold text-md text-center whitespace-nowrap truncate transition-all duration-300 ${
-                          isActive ? "text-blue-600 text-lg" : "text-neutral-600"
-                        }`}
-                      >
-                        {stopName}
-                      </span>
-                    </div>
+                        const circleOffset = 0.003;
+                        const isActive = idx === 0 || scrollProgress >= idx / totalSegments - circleOffset;
 
-                  )}
+                        const handleClickStop = () => {
+                            // Only scroll if not dragging
+                            if (!isDragging.current && stopRefs.current[idx]) {
+                                stopRefs.current[idx].scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "nearest",   // prevents vertical scrolling
+                                    inline: "center",   // scrolls horizontally to center
+                                });
 
-                  {/* Circle */}
-                  <div
-                    className={`w-9 h-9 rounded-full text-white font-bold flex items-center justify-center z-10 shrink-0 border-4 border-white transition-all duration-300 ${
-                      isActive
-                        ? "bg-blue-500 scale-120 shadow-lg"
-                        : "bg-neutral-400"
-                    }`}
-                  >
-                    {idx + 1}
-                  </div>
+                            }
+                        };
 
-                  {/* Label on bottom */}
-                  {!isTop && (
-                    <div className="absolute top-full mt-2 max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-full truncate">
-                      <span
-                        className={`font-bold text-md text-center whitespace-nowrap transition-all duration-300 ${
-                          isActive
-                            ? "text-blue-600 text-lg"
-                            : "text-neutral-600"
-                        }`}
-                      >
-                        {stopName}
-                      </span>
-                    </div>
-                  )}
+                        return (
+                            <React.Fragment key={stop.id || idx}>
+                                <div
+                                    ref={(el) => (stopRefs.current[idx] = el)}
+                                    className={`flex flex-col items-center shrink-0 relative first:ml-40 md:first:ml-55 lg:first:ml-70 last:pr-40 md:last:pr-55 lg:last:pr-70 cursor-pointer`}
+                                    onClick={handleClickStop}
+                                >
+                                    {isTop && (
+                                        <div className="absolute bottom-full mb-2 max-w-[300px] truncate">
+                                            <span
+                                                className={`font-bold whitespace-nowrap transition-all duration-300 ${
+                                                    isActive ? "text-[#00c295] text-lg" : "text-neutral-600"
+                                                }`}
+                                            >
+                                              {stopName}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <div
+                                        className={`w-9 h-9 z-10 rounded-full flex items-center justify-center border-4 border-white font-bold text-white transition-all duration-300 ${
+                                            isActive ? "bg-[#00c295] scale-125 shadow-lg" : "bg-neutral-400"
+                                        }`}
+                                    >
+                                        {idx + 1}
+                                    </div>
+
+                                    {!isTop && (
+                                        <div className="absolute top-full mt-2 max-w-[300px] truncate">
+                                            <span
+                                                className={`font-bold whitespace-nowrap transition-all duration-300 ${
+                                                    isActive ? "text-[#00c295] text-lg" : "text-neutral-600"
+                                                }`}
+                                            >
+                                              {stopName}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Line segment */}
+                                {idx < stops.length - 1 && (
+                                    <div
+                                        className="relative flex-1 h-1 bg-gray-300 min-w-24 sm:min-w-32 md:min-w-40 lg:min-w-48">
+                                        <div
+                                            ref={(el) => (segmentRefs.current[idx] = el)}
+                                            className="absolute top-0 left-0 h-full bg-[#00c295] transition-[width] duration-75"
+                                            style={{width: "0%"}}
+                                        />
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+
                 </div>
+            </div>
 
-                {/* --- Line Segment --- */}
-                {idx < stops.length - 1 && (
-                  <div className="relative flex-1 h-1 bg-gray-300 lg:min-w-50 md:min-w-40 sm:min-w-30 min-w-24">
-                    {isActive && (
-                      <div
-                        key={activeIdx}
-                        className="absolute top-0 left-0 h-full bg-blue-500 animate-fill-line"
-                      />
-                    )}
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-    </>
-  );
+            <div className="mt-8 px-4">
+                <p className="text-neutral-700 text-md max-w-3xl mx-auto leading-relaxed text-start">
+                    {mockDescriptions[Math.floor(scrollProgress * totalSegments)]}
+                </p>
+            </div>
+        </>
+    );
 }

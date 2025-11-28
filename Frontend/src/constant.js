@@ -10,8 +10,8 @@ export const API_ENDPOINTS = {
     GET_FILTER_OPTIONS: `${API_BASE_URL}/filter-options/`,
     GET_POPULAR_DESTINATIONS: `${API_BASE_URL}/places/popular/`,
     GET_ALL_PROVINCES: `${API_BASE_URL}/provinces/all/`,
-    GET_TOUR_ACHIEVEMENTS: (id)=>`${API_BASE_URL}/tour/achievements/${id}/`,
-    GET_TOUR_RATINGS: (id)=>`${API_BASE_URL}/tour/ratings/${id}/`,
+    GET_TOUR_ACHIEVEMENTS: (id) => `${API_BASE_URL}/tour/achievements/${id}/`,
+    GET_TOUR_RATINGS: (id) => `${API_BASE_URL}/tour/ratings/${id}/`,
 };
 
 // App routes
@@ -28,5 +28,5 @@ export const ROUTES = {
     MANAGEMENT: '/management',
     TOURIST_PROFILE: '/tourist-profile',
     GUIDE_PROFILE: '/guide-profile',
-    PUBLIC_PROFILE: '/public-profile',
+    PUBLIC_PROFILE: (guideId = ":guideId") => `/public-profile/${guideId}`,
 };

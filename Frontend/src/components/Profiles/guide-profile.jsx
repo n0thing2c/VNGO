@@ -56,7 +56,7 @@ const province = [
 
 
 // Simple reusable Field component using standard HTML/Tailwind styling
-const FormField = ({label, children}) => (
+const FormField = ({ label, children }) => (
     <div className="flex flex-col space-y-1.5">
         <label
             htmlFor={children.props.id}
@@ -101,7 +101,7 @@ export function GuideProfile({className}) {
                     profilePictureUrl: data.face_image || DEFAULT_AVATAR,
                 });
                 setAvatarImages(
-                    data.face_image ? [{file: null, url: data.face_image}] : []
+                    data.face_image ? [{ file: null, url: data.face_image }] : []
                 );
             } catch (error) {
                 toast.error(
@@ -126,8 +126,8 @@ export function GuideProfile({className}) {
 
     // Handler for all input changes
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setProfile((prev) => ({...prev, [name]: value}));
+        const { name, value } = e.target;
+        setProfile((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSave = async (event) => {
@@ -271,7 +271,7 @@ export function GuideProfile({className}) {
                                         max={120}
                                         value={profile.age}
                                         onChange={(e) => {
-                                            setProfile((prev) => ({...prev, age: e.target.value}));
+                                            setProfile((prev) => ({ ...prev, age: e.target.value }));
                                         }}
                                         onBlur={() => {
                                             let val = Number(profile.age);
@@ -280,7 +280,7 @@ export function GuideProfile({className}) {
                                             if (!val || val < 1) val = 1;
                                             if (val > 120) val = 120;
 
-                                            setProfile((prev) => ({...prev, age: val.toString()}));
+                                            setProfile((prev) => ({ ...prev, age: val.toString() }));
                                         }}
                                         className="h-10 text-base"
                                         disabled={isLoading}
@@ -293,11 +293,11 @@ export function GuideProfile({className}) {
                                 <FormField label="Gender">
                                     <Select
                                         value={profile.gender}
-                                        onValueChange={(val) => setProfile((prev) => ({...prev, gender: val}))}
+                                        onValueChange={(val) => setProfile((prev) => ({ ...prev, gender: val }))}
                                         disabled={isLoading}
                                     >
                                         <SelectTrigger className="flex h-10 py-2 appearance-none w-auto">
-                                            <SelectValue placeholder="Select gender"/>
+                                            <SelectValue placeholder="Select gender" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Female">Female</SelectItem>
@@ -314,7 +314,7 @@ export function GuideProfile({className}) {
                                     <LanguageSelector
                                         value={profile.languages} // already an array
                                         onChange={(langs) =>
-                                            setProfile((prev) => ({...prev, languages: langs}))
+                                            setProfile((prev) => ({ ...prev, languages: langs }))
                                         }
                                     />
                                 </FormField>
@@ -338,7 +338,7 @@ export function GuideProfile({className}) {
                                         // name="location"
                                         value={profile.location}
                                         setValue={(newValue) =>
-                                            setProfile((prev) => ({...prev, location: newValue}))
+                                            setProfile((prev) => ({ ...prev, location: newValue }))
                                         }
                                         className="flex"
                                         required={true}

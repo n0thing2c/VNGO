@@ -42,6 +42,8 @@ class GuideProfileSerializer(serializers.ModelSerializer):
         return obj.rating_count
 
 
+
+
 class GuideRatingImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -57,12 +59,18 @@ class GuideRatingImageSerializer(serializers.ModelSerializer):
 
 
 class GuideRatingSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
     tourist = serializers.SerializerMethodField()
-    images = GuideRatingImageSerializer(many=True, read_only=True)
-
     class Meta:
         model = GuideRating
         fields = ['tourist', 'rating', 'review', 'review_tags', 'images', 'created_at']
+
+    def get_images(self, obj):
+        request = self.context.get('request')
+        return [
+            request.build_absolute_uri(img.image.url) if request else img.image.url
+            for img in obj.images.all()
+        ]
 
     def get_tourist(self, obj):
         if obj.tourist:
@@ -73,3 +81,41 @@ class GuideRatingSerializer(serializers.ModelSerializer):
                 "avatar": obj.tourist.face_image,
             }
         return None
+
+
+
+class GuidePublicProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer exposed to tourists when viewing a guide public profile.
+    Uses tour-based rating aggregates to stay consistent with the product spec.
+    """
+
+    id = serializers.IntegerField(source="pk", read_only=True)
+    average_rating = serializers.SerializerMethodField(read_only=True)
+    rating_count = serializers.SerializerMethodField(read_only=True)
+    tours_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Guide
+        fields = [
+            "id",
+            "name",
+            "age",
+            "gender",
+            "languages",
+            "location",
+            "face_image",
+            "average_rating",
+            "rating_count",
+            "tours_count",
+            "bio",
+        ]
+
+    def get_average_rating(self, obj):
+        return obj.average_rating()
+
+    def get_rating_count(self, obj):
+        return obj.rating_count
+
+    def get_tours_count(self, obj):
+        return obj.tours.count()
