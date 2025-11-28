@@ -50,6 +50,22 @@ def tour_post(request):
                 tour.tags = []
                 tour.save()
 
+        # --- Stops Descriptions ---
+        stops_descriptions = data.get('stops_descriptions')
+        if stops_descriptions:
+            try:
+                if isinstance(stops_descriptions, str):
+                    tour.stops_descriptions = json.loads(stops_descriptions)
+                else:
+                    tour.stops_descriptions = stops_descriptions
+                tour.save()
+            except json.JSONDecodeError:
+                tour.stops_descriptions = []
+                tour.save()
+        else:
+            tour.stops_descriptions = []
+            tour.save()
+
         # --- Places (ManyToMany, avoid duplicates by lat+lon) ---
         places_data = data.get('places', '[]')
         if isinstance(places_data, str):
@@ -127,6 +143,19 @@ def tour_put(request, tour_id):
             tour.tags = []
     else:
         tour.tags = []
+    tour.save()
+
+    # --- Stops Descriptions ---
+    stops_descriptions = data.get('stops_descriptions')
+    if stops_descriptions is not None:
+        try:
+            if isinstance(stops_descriptions, str):
+                tour.stops_descriptions = json.loads(stops_descriptions)
+            else:
+                tour.stops_descriptions = stops_descriptions
+        except json.JSONDecodeError:
+            tour.stops_descriptions = []
+    # If stops_descriptions is not provided, keep existing value (partial update)
     tour.save()
 
     # --- Places with order ---
@@ -299,7 +328,7 @@ def guide_get_all_tours(request, guide_id):
                 "duration": t['duration'],
                 "groupSize": t['max_people'],
                 "transportation": t['transportation'],
-                "price": t['price']
+                "price": t['price'],
             })
 
         return Response({'success': True, 'tours': tours_data})

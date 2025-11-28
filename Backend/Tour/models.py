@@ -59,6 +59,7 @@ class Tour(models.Model):
     )
     tags = JSONField(default=list, blank=True)
     description = models.TextField(max_length=1000, blank=True)
+    stops_descriptions = JSONField(default=list, blank=True, help_text="List of descriptions for each stop in order")
     rating_total = models.PositiveIntegerField(default=0, help_text="Sum of all ratings")
     rating_count = models.PositiveIntegerField(default=0, help_text="Number of ratings received")
 

@@ -121,6 +121,8 @@ export default function TourCreate() {
     const [price, setprice] = useState("");
     //Description
     const [description, setdescription] = useState("");
+    //Stops Descriptions
+    const [stopsDescriptions, setStopsDescriptions] = useState([]);
     //Add Stops
     const [addedStops, setAddedStops] = useState([]);
 
@@ -182,6 +184,9 @@ export default function TourCreate() {
 
 
     const handleSubmit = async () => {
+        // Tách description ra thành mảng chuỗi để gửi xuống backend
+        // Backend mong đợi: stops_descriptions = ["desc 1", "desc 2", ...]
+        const stopsDescriptions = addedStops.map((stop) => stop.description);
         const result = await tourService.createTour({
             tourname,
             hour,
@@ -194,14 +199,20 @@ export default function TourCreate() {
             selectedTags,
             price,
             description,
+            addedStops,     // Gửi list địa điểm
+            // Gửi thêm mảng mô tả đã tách
+            stops_descriptions: JSON.stringify(stopsDescriptionsArray), 
+            // Lưu ý: Nếu tourService của bạn tự stringify thì bỏ JSON.stringify ở đây đi
+            // Căn cứ vào views.py bạn gửi, backend có đoạn json.loads(stops_descriptions), 
+            // nên ở đây ta gửi JSON string hoặc array tùy theo cách tourService xử lý FormData.
+            // An toàn nhất với FormData là gửi string JSON.
         });
 
         if (result.success) {
             setTimeout(() => window.location.reload(), 1500);
         }
     };
-
-
+    
     return (
         <div className="items-center">
             <div
@@ -246,6 +257,7 @@ export default function TourCreate() {
                                 onRemoveItem={handleRemoveStop}
                                 onReorder={setAddedStops}
                                 onRenameItem={handleRenameStop}
+                                onEditDescription={handleEditDescription}
                             />
                         </div>
                     </CardContent>
