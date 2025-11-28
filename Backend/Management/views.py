@@ -6,6 +6,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
+from datetime import datetime
 
 from .models import Booking, BookingNotification, BookingStatus, PastTour
 from .serializers import (
@@ -27,6 +28,103 @@ class BookingPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
     max_page_size = 100
+
+
+def get_future_booking_ids(bookings_queryset):
+    """
+    Helper function to filter bookings that haven't started yet.
+    Uses timezone-aware datetime comparison.
+    Returns list of booking IDs that are in the future.
+    """
+    now = timezone.now()
+    future_ids = []
+
+    for booking in bookings_queryset:
+        try:
+            booking_datetime = timezone.make_aware(
+                datetime.combine(booking.tour_date, booking.tour_time),
+                timezone.get_current_timezone(),
+            )
+            if booking_datetime >= now:
+                future_ids.append(booking.id)
+        except Exception:
+            # If error, include the booking (fail-safe)
+            future_ids.append(booking.id)
+
+    return future_ids
+
+
+def cleanup_expired_pending_bookings():
+    """
+    Helper function to automatically delete pending bookings that have passed
+    their tour date+time (never accepted by guide).
+    This prevents "zombie" pending requests from accumulating in the database.
+    """
+    now = timezone.now()
+
+    # Find all pending bookings
+    pending_bookings = Booking.objects.filter(
+        status=BookingStatus.PENDING,
+    ).select_related("tourist", "guide", "tour")
+
+    deleted_count = 0
+
+    for booking in pending_bookings:
+        try:
+            # Combine date and time into timezone-aware datetime
+            booking_datetime = timezone.make_aware(
+                datetime.combine(booking.tour_date, booking.tour_time),
+                timezone.get_current_timezone(),
+            )
+
+            # Check if the booking datetime has passed
+            if booking_datetime < now:
+                # Delete expired pending booking
+                booking.delete()
+                deleted_count += 1
+        except Exception as e:
+            # Log error but continue processing other bookings
+            print(f"Error deleting expired pending booking {booking.id}: {str(e)}")
+            continue
+
+    return deleted_count
+
+
+def migrate_past_bookings_to_history():
+    """
+    Helper function to automatically migrate accepted bookings that have passed
+    their tour date+time into PastTour records.
+    This uses timezone-aware datetime comparison to respect Vietnam timezone.
+    """
+    now = timezone.now()
+
+    # Find all accepted bookings where the tour datetime has passed
+    past_bookings = Booking.objects.filter(
+        status=BookingStatus.ACCEPTED,
+    ).select_related("tourist", "guide", "tour")
+
+    migrated_count = 0
+
+    for booking in past_bookings:
+        try:
+            # Combine date and time into a timezone-aware datetime
+            booking_datetime = timezone.make_aware(
+                datetime.combine(booking.tour_date, booking.tour_time),
+                timezone.get_current_timezone(),
+            )
+
+            # Check if the booking datetime has passed
+            if booking_datetime < now:
+                # Check if already migrated
+                if not PastTour.objects.filter(booking=booking).exists():
+                    PastTour.create_from_booking(booking)
+                    migrated_count += 1
+        except Exception as e:
+            # Log error but continue processing other bookings
+            print(f"Error migrating booking {booking.id}: {str(e)}")
+            continue
+
+    return migrated_count
 
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -269,6 +367,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         Operation 3: View booking requests for created tours (for tourist)
         GET /management/bookings/my-requests/
         Returns all bookings made by the authenticated tourist (only future bookings)
+        Uses timezone-aware datetime comparison.
         """
         if request.user.role != "tourist":
             return Response(
@@ -284,11 +383,14 @@ class BookingViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Only show bookings that haven't passed yet
+        # Get all bookings and filter by future datetime
+        all_bookings = Booking.objects.filter(tourist=tourist).select_related(
+            "tourist", "guide", "tour"
+        )
+        future_ids = get_future_booking_ids(all_bookings)
+
         queryset = (
-            Booking.objects.filter(
-                tourist=tourist, tour_date__gte=timezone.now().date()
-            )
+            Booking.objects.filter(id__in=future_ids)
             .select_related("tourist", "guide", "tour")
             .prefetch_related("tour__tour_images")
             .order_by("-created_at")
@@ -318,6 +420,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         GET /management/bookings/requests/
         Returns all bookings (pending + accepted) for the guide's tours (only future bookings)
         Can filter by status using query param: ?status=pending or ?status=accepted
+        Uses timezone-aware datetime comparison.
         """
         if request.user.role != "guide":
             return Response(
@@ -332,9 +435,14 @@ class BookingViewSet(viewsets.ModelViewSet):
                 {"error": "Guide profile not found"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get all bookings (pending + accepted, only future dates)
+        # Get all bookings and filter by future datetime
+        all_bookings = Booking.objects.filter(guide=guide).select_related(
+            "tourist", "guide", "tour"
+        )
+        future_ids = get_future_booking_ids(all_bookings)
+
         queryset = (
-            Booking.objects.filter(guide=guide, tour_date__gte=timezone.now().date())
+            Booking.objects.filter(id__in=future_ids)
             .select_related("tourist", "guide", "tour")
             .prefetch_related("tour__tour_images")
             .order_by("-created_at")
@@ -363,17 +471,19 @@ class BookingViewSet(viewsets.ModelViewSet):
         Operation 4: Manage upcoming tours for accepted requests
         GET /management/bookings/upcoming-tours/
         Returns all accepted bookings with future dates (for both tourists and guides)
+        Uses timezone-aware datetime comparison.
         """
         user = request.user
 
         if user.role == "tourist":
             try:
                 tourist = user.tourist_profile
-                queryset = Booking.objects.filter(
+                all_bookings = Booking.objects.filter(
                     tourist=tourist,
                     status=BookingStatus.ACCEPTED,
-                    tour_date__gte=timezone.now().date(),
-                )
+                ).select_related("tourist", "guide", "tour")
+                future_ids = get_future_booking_ids(all_bookings)
+                queryset = Booking.objects.filter(id__in=future_ids)
             except Tourist.DoesNotExist:
                 return Response(
                     {"error": "Tourist profile not found"},
@@ -383,11 +493,12 @@ class BookingViewSet(viewsets.ModelViewSet):
         elif user.role == "guide":
             try:
                 guide = user.guide_profile
-                queryset = Booking.objects.filter(
+                all_bookings = Booking.objects.filter(
                     guide=guide,
                     status=BookingStatus.ACCEPTED,
-                    tour_date__gte=timezone.now().date(),
-                )
+                ).select_related("tourist", "guide", "tour")
+                future_ids = get_future_booking_ids(all_bookings)
+                queryset = Booking.objects.filter(id__in=future_ids)
             except Guide.DoesNotExist:
                 return Response(
                     {"error": "Guide profile not found"},
@@ -422,7 +533,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         View past tours from PastTour model (completed tours with saved history)
         GET /management/bookings/past-tours/
         Returns all past tour records (for both tourists and guides)
-        
+
         This now queries the PastTour model instead of Booking model
         """
         user = request.user
@@ -468,7 +579,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             queryset, many=True, context={"request": request}
         )
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=["get"], url_path="past-tour-detail")
     def past_tour_detail(self, request, pk=None):
         """
@@ -476,12 +587,14 @@ class BookingViewSet(viewsets.ModelViewSet):
         GET /management/bookings/{past_tour_id}/past-tour-detail/
         """
         user = request.user
-        
+
         try:
-            past_tour = PastTour.objects.select_related(
-                "tourist", "guide", "tour"
-            ).prefetch_related("tour__tour_images").get(pk=pk)
-            
+            past_tour = (
+                PastTour.objects.select_related("tourist", "guide", "tour")
+                .prefetch_related("tour__tour_images")
+                .get(pk=pk)
+            )
+
             # Verify user has access to this past tour
             if user.role == "tourist":
                 if past_tour.tourist.user != user:
@@ -499,58 +612,38 @@ class BookingViewSet(viewsets.ModelViewSet):
                 return Response(
                     {"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST
                 )
-            
+
             serializer = PastTourSerializer(past_tour, context={"request": request})
             return Response(serializer.data)
-            
+
         except PastTour.DoesNotExist:
             return Response(
                 {"error": "Past tour not found"}, status=status.HTTP_404_NOT_FOUND
             )
-    
+
     @action(detail=False, methods=["post"], url_path="migrate-past-bookings")
     def migrate_past_bookings(self, request):
         """
         Manually trigger migration of past bookings to PastTour model
         POST /management/bookings/migrate-past-bookings/
         Only accessible by staff/admin users
+        Uses timezone-aware datetime comparison.
         """
         if not request.user.is_staff:
             return Response(
                 {"error": "Only staff can trigger this action"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        
-        # Find all accepted bookings that are in the past
-        past_bookings = Booking.objects.filter(
-            status=BookingStatus.ACCEPTED,
-            tour_date__lt=timezone.now().date(),
-        ).select_related("tourist", "guide", "tour")
-        
-        migrated_count = 0
-        skipped_count = 0
-        errors = []
-        
-        for booking in past_bookings:
-            try:
-                # Check if already migrated
-                if PastTour.objects.filter(booking=booking).exists():
-                    skipped_count += 1
-                    continue
-                
-                # Create past tour record
-                PastTour.create_from_booking(booking)
-                migrated_count += 1
-                
-            except Exception as e:
-                errors.append(f"Booking {booking.id}: {str(e)}")
-        
-        return Response({
-            "message": "Migration completed",
-            "migrated": migrated_count,
-            "skipped": skipped_count,
-            "errors": errors,
-        })
+
+        # Use the helper function to migrate
+        migrated_count = migrate_past_bookings_to_history()
+
+        return Response(
+            {
+                "message": "Migration completed",
+                "migrated": migrated_count,
+            }
+        )
 
 
 @api_view(["GET"])
@@ -560,23 +653,30 @@ def booking_statistics(request):
     Get booking statistics for the authenticated user
     GET /management/statistics/
     Now includes past_tours count from PastTour model
+    Uses timezone-aware datetime comparison.
     """
     user = request.user
 
     if user.role == "tourist":
         try:
             tourist = user.tourist_profile
-            all_bookings = Booking.objects.filter(tourist=tourist)
-            future_bookings = all_bookings.filter(tour_date__gte=timezone.now().date())
+            all_bookings = Booking.objects.filter(tourist=tourist).select_related(
+                "tourist", "guide", "tour"
+            )
+            future_ids = get_future_booking_ids(all_bookings)
+            future_bookings = Booking.objects.filter(id__in=future_ids)
+
             # Count past tours from PastTour model instead
             past_tours_count = PastTour.objects.filter(tourist=tourist).count()
 
             stats = {
                 "total_bookings": future_bookings.count(),
                 "pending": future_bookings.filter(status=BookingStatus.PENDING).count(),
-                "accepted": future_bookings.filter(status=BookingStatus.ACCEPTED).count(),
+                "accepted": future_bookings.filter(
+                    status=BookingStatus.ACCEPTED
+                ).count(),
                 "upcoming": future_bookings.filter(
-                    status=BookingStatus.ACCEPTED, tour_date__gte=timezone.now().date()
+                    status=BookingStatus.ACCEPTED
                 ).count(),
                 "past_tours": past_tours_count,
             }
@@ -589,17 +689,23 @@ def booking_statistics(request):
     elif user.role == "guide":
         try:
             guide = user.guide_profile
-            all_bookings = Booking.objects.filter(guide=guide)
-            future_bookings = all_bookings.filter(tour_date__gte=timezone.now().date())
+            all_bookings = Booking.objects.filter(guide=guide).select_related(
+                "tourist", "guide", "tour"
+            )
+            future_ids = get_future_booking_ids(all_bookings)
+            future_bookings = Booking.objects.filter(id__in=future_ids)
+
             # Count past tours from PastTour model instead
             past_tours_count = PastTour.objects.filter(guide=guide).count()
 
             stats = {
                 "total_bookings": future_bookings.count(),
                 "pending": future_bookings.filter(status=BookingStatus.PENDING).count(),
-                "accepted": future_bookings.filter(status=BookingStatus.ACCEPTED).count(),
+                "accepted": future_bookings.filter(
+                    status=BookingStatus.ACCEPTED
+                ).count(),
                 "upcoming": future_bookings.filter(
-                    status=BookingStatus.ACCEPTED, tour_date__gte=timezone.now().date()
+                    status=BookingStatus.ACCEPTED
                 ).count(),
                 "past_tours": past_tours_count,
             }
@@ -621,9 +727,17 @@ def frontend_management_snapshot(request):
     """
     Simplified dataset tailored for the current frontend management UI
     GET /management/frontend/snapshot/
+
+    Automatically migrates past bookings to PastTour and cleans up expired pending bookings.
     """
     user = request.user
     context = {"request": request}
+
+    # Auto-cleanup expired pending bookings (timezone-aware)
+    cleanup_expired_pending_bookings()
+
+    # Auto-migrate past accepted bookings to PastTour (timezone-aware)
+    migrate_past_bookings_to_history()
 
     if user.role == "tourist":
         try:
@@ -634,15 +748,28 @@ def frontend_management_snapshot(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        bookings = (
-            Booking.objects.filter(
-                tourist=tourist,
-                tour_date__gte=timezone.now().date(),
+        # Filter bookings: only show future bookings (using timezone-aware comparison)
+        now = timezone.now()
+        all_bookings = Booking.objects.filter(tourist=tourist).select_related(
+            "tourist", "guide", "tour"
+        )
+
+        future_bookings = []
+        for booking in all_bookings:
+            booking_datetime = timezone.make_aware(
+                datetime.combine(booking.tour_date, booking.tour_time),
+                timezone.get_current_timezone(),
             )
+            if booking_datetime >= now:
+                future_bookings.append(booking.id)
+
+        bookings = (
+            Booking.objects.filter(id__in=future_bookings)
             .select_related("tourist", "guide", "tour")
             .prefetch_related("tour__tour_images")
             .order_by("-created_at")
         )
+
         past_tours = (
             PastTour.objects.filter(tourist=tourist)
             .select_related("tourist", "guide", "tour")
@@ -672,15 +799,28 @@ def frontend_management_snapshot(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        incoming = (
-            Booking.objects.filter(
-                guide=guide,
-                tour_date__gte=timezone.now().date(),
+        # Filter bookings: only show future bookings (using timezone-aware comparison)
+        now = timezone.now()
+        all_bookings = Booking.objects.filter(guide=guide).select_related(
+            "tourist", "guide", "tour"
+        )
+
+        future_bookings = []
+        for booking in all_bookings:
+            booking_datetime = timezone.make_aware(
+                datetime.combine(booking.tour_date, booking.tour_time),
+                timezone.get_current_timezone(),
             )
+            if booking_datetime >= now:
+                future_bookings.append(booking.id)
+
+        incoming = (
+            Booking.objects.filter(id__in=future_bookings)
             .select_related("tourist", "guide", "tour")
             .prefetch_related("tour__tour_images")
             .order_by("-created_at")
         )
+
         past_tours = (
             PastTour.objects.filter(guide=guide)
             .select_related("tourist", "guide", "tour")
