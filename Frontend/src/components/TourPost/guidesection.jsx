@@ -28,6 +28,8 @@ const GuideSection = ({ guide }) => {
         id: guide.id,
         username: guide.username,
         name: guide.name,
+        avatar: guide.avatar,
+        avatar_url: guide.avatar_url,
       },
     };
   }, [guide, user]);

@@ -77,8 +77,25 @@ export default function ChatPage() {
       if (!conversation) return conversation;
 
       // Always prioritize parsing from room name to ensure getting the correct recipient
-      const parsedName = resolveRoomMateName(conversation.room);
+      let parsedName = resolveRoomMateName(conversation.room);
 
+      // If parsing from room name failed, but contactName looks like a room name (contains " & "),
+      // try to parse from contactName by treating it as a room name format
+      if (!parsedName && conversation.contactName?.includes(" & ")) {
+        // Try to extract partner name from "user1 & user2" format
+        const parts = conversation.contactName.split(" & ").map(p => p.trim()).filter(Boolean);
+        if (parts.length >= 2 && user?.username) {
+          const lowerCurrent = user.username.toLowerCase();
+          const partner = parts.find(
+            (name) => name && name.toLowerCase() !== lowerCurrent
+          );
+          if (partner) {
+            parsedName = partner;
+          }
+        }
+      }
+
+      // If we successfully parsed a name, use it
       if (parsedName) {
         return {
           ...conversation,
@@ -87,9 +104,11 @@ export default function ChatPage() {
       }
 
       // If parsing from room name fails, then use contactName from backend
+      // But skip if it looks like a room name format
       const hasCustomName =
         conversation.contactName &&
-        !conversation.contactName.toLowerCase().startsWith("room:");
+        !conversation.contactName.toLowerCase().startsWith("room:") &&
+        !conversation.contactName.includes(" & ");
 
       if (hasCustomName) {
         return {
@@ -98,14 +117,33 @@ export default function ChatPage() {
         };
       }
 
+      // Last resort: strip "Room:" prefix if present
       const stripped =
         conversation.contactName?.replace(/^Room:\s*/i, "").trim() || "";
+      
+      // If stripped still looks like room name, try to parse it one more time
+      if (stripped.includes(" & ") && user?.username) {
+        const parts = stripped.split(" & ").map(p => p.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          const lowerCurrent = user.username.toLowerCase();
+          const partner = parts.find(
+            (name) => name && name.toLowerCase() !== lowerCurrent
+          );
+          if (partner) {
+            return {
+              ...conversation,
+              contactName: partner,
+            };
+          }
+        }
+      }
+
       return {
         ...conversation,
         contactName: stripped || "Unknown contact",
       };
     },
-    [resolveRoomMateName]
+    [resolveRoomMateName, user?.username]
   );
 
   const normalizeAndEnhance = useCallback(
@@ -168,11 +206,17 @@ export default function ChatPage() {
           otherUserId = existing?.contactId || roomName;
         }
 
+        // Get avatar from message sender if available, otherwise use existing
+        let contactAvatar = existing?.contactAvatar;
+        if (message?.sender && message.sender.id !== user?.id) {
+          contactAvatar = message.sender.avatar || message.sender.avatar_url || contactAvatar;
+        }
+
         const updatedConversation = {
           room: roomName,
           contactName: otherUserName,
           contactId: otherUserId,
-          contactAvatar: existing?.contactAvatar,
+          contactAvatar: contactAvatar,
           nationality:
             existing?.nationality ||
             (message?.sender && message.sender.id !== user?.id
@@ -336,7 +380,7 @@ export default function ChatPage() {
       targetUser?.id != null
         ? String(targetUser.id)
         : targetUser?.username || targetRoom;
-    const nationality = targetUser?.nationality || targetUser?.country || "";
+    const contactAvatar = targetUser?.avatar || targetUser?.avatar_url || null;
 
     setSelectedRoom(targetRoom);
     setConversations((prev) => {
@@ -345,7 +389,8 @@ export default function ChatPage() {
         room: targetRoom,
         contactName,
         contactId,
-        nationality: nationality || existing?.nationality || "",
+        contactAvatar: contactAvatar || existing?.contactAvatar || null,
+        nationality: existing?.nationality || null,
         lastMessage: existing?.lastMessage || "No message yet",
         lastMessageTime: existing?.lastMessageTime || null,
         responseTime: existing?.responseTime || "30 minutes",

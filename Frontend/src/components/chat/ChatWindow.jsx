@@ -121,39 +121,42 @@ export default function ChatWindow({
   );
 
   useEffect(() => {
-    if (contactName === " chatbot") return;
+    // Skip for chatbot (case-insensitive check)
+    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" || 
+                      contactId === "chatbot" || 
+                      roomName?.endsWith("chatbot");
+    if (isChatbot) return;
+    
     if (!contactId || user?.role === "guide") return;
 
     const fetchGuideRating = async () => {
       setAverageRating(0);
       setTotalReviews(0);
-      if (contactName !== "chatbot") {
-        const res = await tourService.getAllToursByGuide(contactId);
-        if (res.success && Array.isArray(res.data)) {
-          const tours = res.data;
-          if (tours.length > 0) {
-            // Calculate average of tour ratings
-            const totalRating = tours.reduce(
-              (acc, tour) => acc + (parseFloat(tour.rating) || 0),
-              0
-            );
-            const avg = totalRating / tours.length;
+      const res = await tourService.getAllToursByGuide(contactId);
+      if (res.success && Array.isArray(res.data)) {
+        const tours = res.data;
+        if (tours.length > 0) {
+          // Calculate average of tour ratings
+          const totalRating = tours.reduce(
+            (acc, tour) => acc + (parseFloat(tour.rating) || 0),
+            0
+          );
+          const avg = totalRating / tours.length;
 
-            // Calculate total reviews across all tours
-            const totalRev = tours.reduce(
-              (acc, tour) => acc + (parseInt(tour.reviews) || 0),
-              0
-            );
+          // Calculate total reviews across all tours
+          const totalRev = tours.reduce(
+            (acc, tour) => acc + (parseInt(tour.reviews) || 0),
+            0
+          );
 
-            setAverageRating(avg);
-            setTotalReviews(totalRev);
-          }
+          setAverageRating(avg);
+          setTotalReviews(totalRev);
         }
       }
     };
 
     fetchGuideRating();
-  }, [contactId, user?.role]);
+  }, [contactId, contactName, user?.role, roomName]);
 
   const handleNotifyParent = (message) => {
     if (typeof onMessageUpdate === "function" && message) {
@@ -366,8 +369,8 @@ export default function ChatWindow({
             ))}
           <div>
             <h2 className="font-semibold text-gray-900">{contactName || "Unknown"}</h2>
-            {contactName === "chatbot" ? (
-              <p className="text-sm text-gray-500">Tell Me Your Dream Trip — I’ll Find It</p>
+            {(contactName?.toLowerCase().trim() === "chatbot" || contactId === "chatbot" || roomName?.endsWith("chatbot")) ? (
+              <p className="text-sm text-gray-500">Tell Me Your Dream Trip — I'll Find It</p>
             )
               : (user?.role === "guide" ? (
                 <p className="text-sm text-gray-500">
@@ -380,7 +383,10 @@ export default function ChatWindow({
               ))}
           </div>
         </div>
-        {(user?.role !== "guide" && contactName !== "chatbot") && (
+        {(user?.role !== "guide" && 
+          contactName?.toLowerCase().trim() !== "chatbot" && 
+          contactId !== "chatbot" && 
+          !roomName?.endsWith("chatbot")) && (
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
