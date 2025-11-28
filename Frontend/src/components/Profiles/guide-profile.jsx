@@ -12,6 +12,7 @@ import {LanguageSelector} from "@/components/lang_selector.jsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.jsx";
 import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/constant.js";
 
 // Updated: Initial data is mostly cleared for a fresh guide entry
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
@@ -76,6 +77,22 @@ export function GuideProfile({className}) {
     const [avatarImages, setAvatarImages] = useState([]);
     // const navigate = useNavigate();
     const refreshUser = useAuthStore((state) => state.refreshUser);
+    const user = useAuthStore((state) => state.user);
+
+    // Set profileId từ user.id (vì Guide.id = user.id theo model)
+    // Nếu user.id không có, thử refresh user để lấy id mới
+    useEffect(() => {
+        if (user?.id) {
+            setProfileId(user.id);
+        } else if (user && !user.id) {
+            // Nếu user tồn tại nhưng không có id, refresh để lấy id mới từ backend
+            refreshUser().then((updatedUser) => {
+                if (updatedUser?.id) {
+                    setProfileId(updatedUser.id);
+                }
+            });
+        }
+    }, [user, refreshUser]);
 
     const fullName = useMemo(() => {
         const parts = [profile.firstName, profile.lastName]
@@ -88,7 +105,11 @@ export function GuideProfile({className}) {
         const loadProfile = async () => {
             try {
                 const data = await profileService.getMyProfile();
-                setProfileId(data.id);
+                // Guide.id = user.id (vì Guide model có primary_key=True trên user field)
+                // Đảm bảo profileId được set từ user.id
+                if (user?.id) {
+                    setProfileId(user.id);
+                }
                 const [first = "", ...rest] = (data.name || "").split(" ");
                 setProfile({
                     firstName: first,
@@ -363,7 +384,7 @@ export function GuideProfile({className}) {
                         {/* Action Buttons are kept outside the rounded border for clarity */}
                         <div className="flex justify-end gap-3 pt-4">
                             <Link
-                              to={profileId ? `/public-profile/${profileId}` : "#"}
+                              to={profileId ? ROUTES.PUBLIC_PROFILE(profileId) : "#"}
                               className={`inline-block ${!profileId ? 'pointer-events-none opacity-50' : ''}`}
                             >
                                 <Button 

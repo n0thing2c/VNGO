@@ -335,6 +335,22 @@ export default function TourPost() {
     if (!tourData) return <p className="text-center p-4">Tour not found.</p>;
 
     const {tour} = tourData;
+
+    // Chuẩn bị dữ liệu stops có description thật
+    const timelineStops = (tour.tour_places || []).map((tp, index) => {
+        let desc = "";
+        // Parse stops_descriptions nếu nó chưa phải là array (tuỳ backend trả về)
+        // Nhưng thường serializer DRF trả về List/Array JSONField dưới dạng Array JS luôn.
+        if (Array.isArray(tour.stops_descriptions) && tour.stops_descriptions[index]) {
+            desc = tour.stops_descriptions[index];
+        }
+        
+        return {
+            ...tp.place, // Lấy thông tin lat, lon, name
+            description: desc // Inject description thật vào
+        };
+    });
+
     const averageRating =
         tour.rating_count > 0
             ? (tour.rating_total / tour.rating_count).toFixed(1)
@@ -482,9 +498,13 @@ export default function TourPost() {
                         {/* Content */}
                         <div className="bg-white">
                             {viewMode === "timeline" ? (
-                                <TourStopsTimeline stops={tour.tour_places?.map((tp) => tp.place) || []}/>
+                                //<TourStopsTimeline stops={tour.tour_places?.map((tp) => tp.place) || []}/>
+                                // Truyền biến timelineStops đã merge thay vì tour.tour_places direct
+                                <TourStopsTimeline stops={timelineStops}/>
                             ) : (
-                                <TourRoute Stops={tour.tour_places?.map((tp) => tp.place) || []}/>
+                                // <TourRoute Stops={tour.tour_places?.map((tp) => tp.place) || []}/>
+                                // Map vẫn dùng places gốc cũng được, hoặc dùng timelineStops đều ok
+                                <TourRoute Stops={timelineStops}/>
                             )}
                         </div>
 

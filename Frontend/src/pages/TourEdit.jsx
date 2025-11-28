@@ -36,8 +36,6 @@ import {Textarea} from "@/components/ui/textarea.jsx";
 import ImageUploader from "@/components/imageuploader.jsx";
 import DragList from "@/components/drag_list.jsx";
 import {toast} from "sonner";
-import Header from "@/components/layout/Header.jsx";
-import Footer from "@/components/layout/Footer.jsx";
 import Map from "../components/APIs/Map.jsx";
 import {Links, Link} from "react-router-dom";
 import {useAuthStore} from "@/stores/useAuthStore.js";
@@ -208,6 +206,16 @@ export default function TourEdit() {
         );
     };
 
+    const handleEditDescription = (index, newDescription) => {
+        setAddedStops((prevStops) => {
+            const updatedStops = [...prevStops];
+            updatedStops[index] = {
+                ...updatedStops[index],
+                description: newDescription
+            };
+            return updatedStops;
+        });
+    };
 
     useEffect(() => {
         async function fetchTour() {
@@ -233,6 +241,26 @@ export default function TourEdit() {
                 return;
             }
 
+            const placesFromBackend = Array.isArray(tour.tour_places) 
+                ? tour.tour_places.map(tp => tp.place) 
+                : [];
+            
+            // Lấy descriptions từ server (nếu có)
+            let descriptionsFromBackend = [];
+            if (Array.isArray(tour.stops_descriptions)) {
+                descriptionsFromBackend = tour.stops_descriptions;
+            } else if (typeof tour.stops_descriptions === 'string') {
+                 try {
+                    descriptionsFromBackend = JSON.parse(tour.stops_descriptions);
+                 } catch (e) { descriptionsFromBackend = []; }
+            }
+
+            // Gộp place và description lại thành 1 object cho addedStops
+            const mergedStops = placesFromBackend.map((place, index) => ({
+                ...place,
+                description: descriptionsFromBackend[index] || "" // Lấy description theo index tương ứng
+            }));
+
             // Pre-fill form fields
             setTourData(tour);
             settourname(tour.name || "");
@@ -244,11 +272,12 @@ export default function TourEdit() {
             setprice(tour.price || 0);
             setSelectedTags(Array.isArray(tour.tags) ? tour.tags : []);
             setdescription(tour.description || "");
-            setAddedStops(
-                Array.isArray(tour.tour_places)
-                    ? tour.tour_places.map(tp => tp.place)
-                    : []
-            );
+            // setAddedStops(
+            //     Array.isArray(tour.tour_places)
+            //         ? tour.tour_places.map(tp => tp.place)
+            //         : []
+            // );
+            setAddedStops(mergedStops);
             setImageData({
                 images:
                     tour.tour_images?.map((img) => ({
@@ -270,6 +299,9 @@ export default function TourEdit() {
         return <p className="text-center p-4">Tour not found.</p>;
 
     const handleSubmit = async () => {
+        // Tách description ra thành mảng chuỗi để gửi xuống backend
+        // Backend mong đợi: stops_descriptions = ["desc 1", "desc 2", ...]
+        const stopsDescriptions = addedStops.map((stop) => stop.description || "");
         const result = await tourService.updateTour({
             tour_id,
             tourname,
@@ -284,6 +316,8 @@ export default function TourEdit() {
             selectedTags,
             price,
             description,
+            // Thêm dòng này (lưu ý: tourService.updateTour cần được update để nhận tham số này)
+            stops_descriptions: JSON.stringify(stopsDescriptions),
         });
 
         if (result.success) {
@@ -339,6 +373,7 @@ export default function TourEdit() {
                                 onRemoveItem={handleRemoveStop}
                                 onReorder={setAddedStops}
                                 onRenameItem={handleRenameStop}
+                                onUpdateDescription={handleEditDescription}
                             />
                         </div>
                     </CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     DndContext,
     closestCenter,
@@ -16,170 +16,211 @@ import {
     useSortable,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {CSS} from "@dnd-kit/utilities";
-import {Trash2, Pencil, Check, Text, X} from "lucide-react";
+import { CSS } from "@dnd-kit/utilities";
+import { Trash2, Pencil, Check, GripVertical } from "lucide-react";
 
-function SortableList({item, id, idx, onRemove, onRename, onUpdateDescription}) {
-    const {attributes, listeners, setNodeRef, transform, transition} = useSortable({id});
-    const [isEditing, setIsEditing] = useState(false);
+// Giới hạn ký tự cho mô tả
+const MAX_DESC_LENGTH = 250;
+
+// Component con: 1 Dòng địa điểm
+function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id });
+
+    const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(item.name);
-    const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
-    const [tempDescription, setTempDescription] = useState(item.description || "");
+    
+    // State cho phần Description
+    const [isEditingDesc, setIsEditingDesc] = useState(false);
+    // State để đếm ký tự realtime
+    const [descValue, setDescValue] = useState(item.description || "");
 
+    // Cập nhật lại state khi props item thay đổi (đề phòng drag drop xong bị sai content)
     useEffect(() => {
-        setTempDescription(item.description || "");
-    }, [item.description]);
-
+        setDescValue(item.description || "");
+        setTempName(item.name);
+    }, [item.description, item.name]);
+    
+    // Style cho hiệu ứng kéo thả
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        zIndex: isDragging ? 50 : "auto", // Đưa item đang kéo lên trên cùng
+        opacity: isDragging ? 0.9 : 1,
     };
 
-    const handleRename = () => {
+    const handleRenameSave = () => {
         if (!tempName.trim()) return;
         onRename(tempName);
-        setIsEditing(false);
+        setIsEditingName(false);
+    };
+
+    const handleDescSave = (e) => {
+        // Lưu khi blur hoặc bấm nút save (ở đây ta dùng onBlur cho tiện)
+        onUpdateDescription(idx, e.target.value);
+        setIsEditingDesc(false);
     };
 
     return (
         <li
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            className="cursor-grab active:cursor-grabbing bg-gray-100 px-3 py-2 rounded-lg shadow-sm flex justify-between items-center"
+            className={`
+                group flex flex-col gap-2 p-3 rounded-xl border transition-all mb-3
+                ${isDragging ? "bg-blue-50 border-blue-300 shadow-lg" : "bg-white border-gray-200 shadow-sm hover:shadow-md"}
+            `}
         >
-            {isEditing ? (
-                <input
-                    type="text"
-                    value={tempName}
-                    onChange={(e) => setTempName(e.target.value)}
-                    onBlur={handleRename}
-                    onKeyDown={(e) => e.key === "Enter" && handleRename()}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm flex-1 mr-2"
-                    autoFocus
-                />
-            ) : (
-                <span className="font-medium truncate">
-          <span className="mr-2 font-semibold">{idx + 1}.</span> {item.name.split(",")[0]}
-        </span>
-            )}
-
-            <div className="flex items-center gap-4">
-
-        <span {...listeners} className="cursor-grab p-1 select-none">
-          ☰
-        </span>
-                {isEditing ? (
-                    <button onClick={handleRename} className="text-green-600 hover:text-green-800">
-                        <Check className="w-4 h-4"/>
-                    </button>
-                ) : (
-                    <button onClick={() => setIsEditing(true)} className="text-blue-600 hover:text-blue-800">
-                        <Pencil className="w-4 h-4"/>
-                    </button>
-                )}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsDescriptionOpen(true);
-                    }}
-                    className="text-purple-600 hover:text-purple-800"
-                    title="Add stop description"
+            {/* --- HÀNG 1: Handle, Số thứ tự, Tên, Nút Xóa --- */}
+            <div className="flex items-center gap-3">
+                {/* Nút nắm để kéo (Handle) */}
+                <div 
+                    {...attributes} 
+                    {...listeners} 
+                    className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 rounded"
                 >
-                    <Text className="w-4 h-4"/>
-                </button>
+                    <GripVertical size={20} />
+                </div>
+
+                {/* Số thứ tự */}
+                <div className="flex-shrink-0 w-7 h-7 bg-[#068F64] text-white rounded-full flex items-center justify-center font-bold text-xs">
+                    {idx + 1}
+                </div>
+
+                {/* Phần Tên (View/Edit) */}
+                <div className="flex-1 min-w-0">
+                    {isEditingName ? (
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={tempName}
+                                onChange={(e) => setTempName(e.target.value)}
+                                onBlur={handleRenameSave}
+                                onKeyDown={(e) => e.key === "Enter" && handleRenameSave()}
+                                className="flex-1 border border-[#068F64] rounded px-2 py-1 text-sm outline-none bg-gray-50"
+                                autoFocus
+                            />
+                            <button 
+                                onClick={handleRenameSave}
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                                <Check size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <div 
+                            className="flex items-center gap-2 cursor-pointer group/name" 
+                            onClick={() => setIsEditingName(true)}
+                        >
+                            <span className="font-semibold text-gray-800 truncate select-none">
+                                {item.name.split(",")[0]}
+                            </span>
+                            <Pencil size={18} className="text-gray-400 opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                        </div>
+                    )}
+                </div>
+
+                {/* Nút Xóa */}
                 <button
                     onClick={(e) => {
-                        e.stopPropagation();
+                        e.stopPropagation(); // Ngăn sự kiện drag
                         onRemove();
                     }}
-                    className="ml-2 text-red-500 hover:text-red-700 font-bold"
+                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                    title="Remove stop"
                 >
-                    <Trash2 className="w-4 h-4 text-red-500"/>
+                    <Trash2 size={18} />
                 </button>
-                {item.description && (
-                    <span className="text-xs text-purple-600 font-medium">Has description</span>
-                )}
             </div>
 
-            {isDescriptionOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-semibold">Stop description</h2>
-                            <button
-                                onClick={() => setIsDescriptionOpen(false)}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <X className="w-4 h-4"/>
-                            </button>
-                        </div>
-                        <p className="text-sm text-gray-500">
-                            {idx + 1}. {item.name.split(",")[0]}
-                        </p>
+            {/* --- HÀNG 2: Inline Description --- */}
+            <div className="pl-11 pr-2">
+                {isEditingDesc ? (
+                    <div className="relative">
                         <textarea
-                            value={tempDescription}
-                            onChange={(e) => setTempDescription(e.target.value)}
-                            rows={5}
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                            placeholder="Add details for this stop"
+                            className="w-full text-sm p-3 border rounded-lg focus:outline-none focus:border-[#068F64] focus:ring-1 focus:ring-[#068F64] bg-gray-50 resize-y min-h-[80px]"
+                            placeholder="Suggestion: At what time? What are the activities? What's special about this place?"
+                            defaultValue={item.description || ""}
+                            onBlur={(e) => {
+                                handleDescSave(e);
+                                setIsEditingDesc(false);
+                            }}
+                            autoFocus
                         />
-                        <div className="flex items-center justify-between">
-                            <button
-                                onClick={() => setTempDescription("")}
-                                className="text-sm text-red-500 hover:text-red-700"
-                            >
-                                Clear description
-                            </button>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setIsDescriptionOpen(false)}
-                                    className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100"
-                                >
-                                    Reset
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        onUpdateDescription && onUpdateDescription(idx, tempDescription.trim());
-                                        setIsDescriptionOpen(false);
-                                    }}
-                                    className="rounded-md bg-purple-600 px-3 py-1 text-sm font-semibold text-white hover:bg-purple-700"
-                                >
-                                    Save
-                                </button>
-                            </div>
+                        <div className="absolute bottom-2 left-2 text-xs text-gray-400">
+                            Click outside to save
+                        </div>
+                        {/* Bộ đếm ký tự */}
+                        <div className={`
+                            absolute bottom-2 right-2 text-[10px] font-medium pointer-events-none
+                            ${descValue.length >= MAX_DESC_LENGTH ? "text-red-500" : "text-gray-400"}
+                        `}>
+                            {descValue.length}/{MAX_DESC_LENGTH}
                         </div>
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div
+                        onClick={() => setIsEditingDesc(true)}
+                        className={`
+                            cursor-pointer text-sm p-2 rounded-lg border border-transparent 
+                            hover:bg-gray-50 hover:border-dashed hover:border-gray-300 transition-all
+                            ${!item.description ? "text-gray-400 italic" : "text-gray-600"}
+                        `}
+                    >
+                        {item.description ? (
+                            <p className="line-clamp-2 leading-relaxed">
+                                {item.description}
+                            </p>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                <Pencil size={12} /> Add a description...
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
         </li>
     );
 }
 
-export default function DragList({items, onRemoveItem, onReorder, onRenameItem, onUpdateDescription}) {
+// Component chính
+export default function DragList({ items, onRemoveItem, onReorder, onRenameItem, onUpdateDescription }) {
     const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates})
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 1, // Di chuyển chuột 1px mới tính là drag (tránh click nhầm)
+            },
+        }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
     const handleDragEnd = (event) => {
-        const {active, over} = event;
+        const { active, over } = event;
         if (!over || active.id === over.id) return;
 
+        // Lưu ý: Dùng item.name làm ID có rủi ro nếu trùng tên. 
+        // Nếu backend có ID (item.id) thì nên dùng item.id thay vì item.name
         const oldIndex = items.findIndex((s) => s.name === active.id);
         const newIndex = items.findIndex((s) => s.name === over.id);
-        const reordered = arrayMove(items, oldIndex, newIndex);
-
-        onReorder(reordered);
+        
+        if (oldIndex !== -1 && newIndex !== -1) {
+             const reordered = arrayMove(items, oldIndex, newIndex);
+             onReorder(reordered);
+        }
     };
 
     return (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={items.map((s) => s.name)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-2">
+                <ul className="space-y-1 pb-4">
                     {items.map((item, idx) => (
-                        <SortableList
-                            key={item.name}
+                        <SortableItem
+                            key={item.name + idx} // Fallback key để tránh lỗi duplicate key react
                             item={item}
                             id={item.name}
                             idx={idx}
@@ -188,6 +229,11 @@ export default function DragList({items, onRemoveItem, onReorder, onRenameItem, 
                             onUpdateDescription={onUpdateDescription}
                         />
                     ))}
+                    {items.length === 0 && (
+                        <div className="text-center py-8 text-gray-400 border-2 border-dashed rounded-xl">
+                            <p>No places added yet. Click on the map to add stops.</p>
+                        </div>
+                    )}
                 </ul>
             </SortableContext>
         </DndContext>

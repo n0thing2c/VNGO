@@ -9,9 +9,19 @@ export default function TourStopsTimeline({stops = []}) {
     const startX = useRef(0);
     const scrollStart = useRef(0);
 
-    const mockDescriptions = stops.map(
-        (s, i) => s.description || `This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}.`
+    // const mockDescriptions = stops.map(
+    //     (s, i) => s.description || `This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}.`
+    // );
+
+    // --- LOGIC LẤY DESCRIPTION ---
+    // Dựa vào scrollProgress để tính index hiện tại
+    const currentIndex = Math.min(
+        Math.floor(scrollProgress * (stops.length - 1) + 0.1), // +0.1 để fix lỗi làm tròn
+        stops.length - 1
     );
+    
+    // Lấy description thật, nếu không có thì hiện fallback text
+    const currentDescription = stops[currentIndex]?.description || "No description available for this stop.";
 
     const totalSegments = stops.length - 1;
 
@@ -172,7 +182,8 @@ export default function TourStopsTimeline({stops = []}) {
 
             <div className="mt-8 px-4">
                 <p className="text-neutral-700 text-md max-w-3xl mx-auto leading-relaxed text-start">
-                    {mockDescriptions[Math.floor(scrollProgress * totalSegments)]}
+                    {/* {mockDescriptions[Math.floor(scrollProgress * totalSegments)]} */}
+                    {currentDescription}
                 </p>
             </div>
         </>

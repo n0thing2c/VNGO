@@ -182,11 +182,26 @@ export default function TourCreate() {
         return englishName
     };
 
+    const handleEditDescription = (index, newDescription) => {
+        setAddedStops((prevStops) => {
+            const updatedStops = [...prevStops];
+            updatedStops[index] = {
+                ...updatedStops[index],
+                description: newDescription
+            };
+            return updatedStops;
+        });
+    };
 
     const handleSubmit = async () => {
+        // Validation cơ bản (tuỳ chọn)
+        if (!tourname || !price || addedStops.length === 0) {
+             toast.error("Please fill in required fields");
+             return;
+        }
         // Tách description ra thành mảng chuỗi để gửi xuống backend
-        // Backend mong đợi: stops_descriptions = ["desc 1", "desc 2", ...]
-        const stopsDescriptions = addedStops.map((stop) => stop.description);
+        // Backend mong đợi: stops_descriptions = ["desc 1", "desc 2", ...] (JSON list string)
+        const stopsDescriptions = addedStops.map((stop) => stop.description || "");
         const result = await tourService.createTour({
             tourname,
             hour,
@@ -194,14 +209,13 @@ export default function TourCreate() {
             maxpeople,
             transportation,
             meeting,
-            addedStops,
+            addedStops, // Gửi list địa điểm
             imageData,
             selectedTags,
             price,
-            description,
-            addedStops,     // Gửi list địa điểm
+            description, 
             // Gửi thêm mảng mô tả đã tách
-            stops_descriptions: JSON.stringify(stopsDescriptionsArray), 
+            stops_descriptions: JSON.stringify(stopsDescriptions), 
             // Lưu ý: Nếu tourService của bạn tự stringify thì bỏ JSON.stringify ở đây đi
             // Căn cứ vào views.py bạn gửi, backend có đoạn json.loads(stops_descriptions), 
             // nên ở đây ta gửi JSON string hoặc array tùy theo cách tourService xử lý FormData.
@@ -257,7 +271,7 @@ export default function TourCreate() {
                                 onRemoveItem={handleRemoveStop}
                                 onReorder={setAddedStops}
                                 onRenameItem={handleRenameStop}
-                                onEditDescription={handleEditDescription}
+                                onUpdateDescription={handleEditDescription}
                             />
                         </div>
                     </CardContent>

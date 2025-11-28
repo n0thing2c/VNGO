@@ -15,6 +15,7 @@ export const tourService = {
                            selectedTags,
                            price,
                            description,
+                           stops_descriptions,
                        }) => {
         try {
             if (
@@ -44,6 +45,10 @@ export const tourService = {
             formData.append("tags", JSON.stringify(selectedTags));
             formData.append("description", description || "No description");
             formData.append("thumbnail_idx", imageData.thumbnailIdx ?? 0);
+
+            if (stops_descriptions) {
+              formData.append("stops_descriptions", stops_descriptions);
+            }
 
             // Append images
             imageData.images.forEach((img) => {
@@ -89,6 +94,7 @@ export const tourService = {
                            selectedTags = [],
                            price,
                            description,
+                           stops_descriptions,
                        }) => {
         try {
             // Validate required fields
@@ -119,6 +125,10 @@ export const tourService = {
             formData.append("places", JSON.stringify(addedStops));
             formData.append("tags", JSON.stringify(selectedTags));
             formData.append("description", description || "");
+
+            if (stops_descriptions) {
+              formData.append("stops_descriptions", stops_descriptions);
+            }
 
             // Append new image files
             const newImageFiles = [];
