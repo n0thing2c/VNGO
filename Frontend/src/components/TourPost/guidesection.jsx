@@ -56,7 +56,11 @@ const GuideSection = ({ guide }) => {
     <Card className="w-full bg-neutral-100 rounded-4xl p-4 flex flex-col sm:flex-row gap-4 items-center h-full">
       <div className="flex-shrink-0 flex flex-col items-center gap-2">
         {/* Avatar */}
-        <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden text-xl font-bold text-gray-700">
+          <Button
+            className="bg-transparent p-2 hover:bg-transparent flex mt-3 mb-3"
+            onClick={handleViewProfile}
+          >
+            <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden text-xl font-bold text-gray-700">
           {guide.avatar ? (
             <img
               src={guide.avatar}
@@ -66,8 +70,8 @@ const GuideSection = ({ guide }) => {
           ) : (
             guideInitial
           )}
-        </div>
-
+            </div>
+          </Button>
         {/* Message button */}
         {userRole !== "guide" && (
           <Button
@@ -99,12 +103,7 @@ const GuideSection = ({ guide }) => {
           <span className="text-sm ml-1"> {guide.rating.toFixed(1)} ({guide.rating_count} votes)</span>
         </div>
         <div className="flex flex-wrap gap-2 mt-3">
-          <Button
-            className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-2xl px-3 py-1 text-xs"
-            onClick={handleViewProfile}
-          >
-            View profile
-          </Button>
+
         </div>
       </div>
     </Card>

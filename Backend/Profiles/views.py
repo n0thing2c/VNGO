@@ -17,8 +17,10 @@ from .serializers import (
     GuideRatingImageSerializer,
     GuidePublicProfileSerializer,
 )
-from Tour.models import TourRating
+from django.db.models import Count, F
+from Tour.models import TourRating, Tour
 from Tour.serializers import TourRatingSerializer
+from Management.models import PastTour
 import json
 User = get_user_model()
 
@@ -128,6 +130,17 @@ class GuideRateView(APIView):
         # Get or create tourist profile
         tourist_profile, _ = Tourist.objects.get_or_create(user=user)
 
+        # Check if tourist has completed at least one tour with this guide
+        has_completed = PastTour.objects.filter(
+            tourist=tourist_profile,
+            guide=guide
+        ).exists()
+        if not has_completed:
+            return Response(
+                {"detail": "You can only rate guides you have completed a tour with."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         # Check if the tourist already rated this guide
         if GuideRating.objects.filter(tourist=tourist_profile, guide=guide).exists():
             return Response(
@@ -184,4 +197,54 @@ class GuidePublicProfileView(generics.RetrieveAPIView):
         return get_object_or_404(Guide, pk=guide_id)
 
 
+class GuideAchievementView(APIView):
+    """
+    Returns guide achievement badges and basic stats based on guide performance.
+    """
+    permission_classes = [permissions.AllowAny]
 
+    def get(self, request, guide_id):
+        guide = get_object_or_404(Guide, pk=guide_id)
+        achievements = []
+
+        # Highly Rated: average rating 4+ stars
+        if guide.average_rating() >= 4:
+            achievements.append("Loved")
+
+        # Multilingual: knows 3+ languages
+        if guide.languages and len(guide.languages) >= 3:
+            achievements.append("Multilingual")
+
+        # Experienced: top 30% in past tours
+        all_guides = Guide.objects.annotate(
+            past_tours_count=Count('past_tours')
+        ).order_by('-past_tours_count')
+
+        guide_past_count = PastTour.objects.filter(guide=guide).count()
+        total_guides = all_guides.count()
+        if total_guides > 1:
+            guides_less_or_equal = all_guides.filter(past_tours_count__lte=guide_past_count).count()
+            percentile = guides_less_or_equal / total_guides
+            if percentile >= 0.7:
+                achievements.append("Experienced")
+
+        # Crafter: top 30% in number of tours hosted
+        guide_tour_count = Tour.objects.filter(guide=guide).count()
+        all_guides_tours = Guide.objects.annotate(
+            tour_count=Count('tours')  # adjust 'tour' if your related_name is different
+        ).order_by('-tour_count')
+
+        if total_guides > 1:
+            guides_less_or_equal_tours = all_guides_tours.filter(tour_count__lte=guide_tour_count).count()
+            percentile_tours = guides_less_or_equal_tours / total_guides
+            if percentile_tours >= 0.7:
+                achievements.append("Crafter")
+
+        # Optional: other stats
+        stats = {
+            "total_past_tours": guide_past_count,
+            "total_tours": guide_tour_count,
+            "achievement_count": len(achievements)
+        }
+
+        return Response({"success": True, "achievements": achievements, "stats": stats})

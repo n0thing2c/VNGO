@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card.jsx";
 import { FieldLabel } from "@/components/ui/field.jsx";
-import { Star } from "lucide-react";
+import { Star, Heart } from "lucide-react"; // add Heart
 import AlbumPhotoFrame from "@/components/albumframes.jsx";
 import { Badge } from "@/components/ui/badge.jsx";
 import {
@@ -17,7 +17,7 @@ import { TOUR_TAG_VARIANTS, GUIDE_TAG_VARIANTS } from "@/components/rating/tag_v
 
 const RatingList = ({ ratings = [], type = "tour" }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const ratingsPerPage = 2;
+  const ratingsPerPage = 4;
   const [expandedReviews, setExpandedReviews] = useState({});
 
   if (!ratings.length)
@@ -40,7 +40,7 @@ const RatingList = ({ ratings = [], type = "tour" }) => {
     <div className="flex flex-col space-y-4">
       {paginatedRatings.map((rating, idx) => (
         <div key={idx} className="bg-transparent p-4 flex flex-col gap-4 border-0">
-          {/* Top Row: Avatar + Name + Stars */}
+          {/* Top Row: Avatar + Name + Stars/Hearts */}
           <div className="flex flex-row gap-4 items-start">
             <div className="flex-shrink-0 w-16">
               <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-gray-300 flex items-center justify-center font-bold overflow-hidden">
@@ -66,18 +66,27 @@ const RatingList = ({ ratings = [], type = "tour" }) => {
               </FieldLabel>
 
               <div className="flex flex-row space-x-1 mt-1">
-                {Array.from({ length: 5 }).map((_, i) => {
-                  const isFilled = i < rating.rating;
-                  return (
-                    <Star
-                      key={i}
-                      className="w-5 h-5"
-                      fill={isFilled ? "#facc15" : "#d1d5db"}
-                      stroke={isFilled ? "#facc15" : "#d1d5db"}
-                    />
-                  );
-                })}
-              </div>
+  {Array.from({ length: 5 }).map((_, i) => {
+  const isFilled = i < rating.rating;
+  const Icon = type === "guide" ? Heart : Star;
+
+  // Colors
+  const filledColor = type === "guide" ? "#f87171" : "#facc15"; // Heart red, Star yellow
+  const emptyColor = "#d1d5db"; // gray
+
+  return (
+    <Icon
+      key={i}
+      className="w-5 h-5"
+      fill={isFilled ? filledColor : emptyColor}
+      stroke={isFilled ? filledColor : emptyColor}
+    />
+  );
+})}
+
+
+</div>
+
             </div>
           </div>
 

@@ -9,6 +9,37 @@ import ImageUploader, { ImageDropBox } from "../imageuploader.jsx";
 import { tourService } from "@/services/tourService.js";
 import { profileService } from "@/services/profileService.js";
 import { TOUR_TAG_VARIANTS, GUIDE_TAG_VARIANTS } from "@/components/rating/tag_variants.js";
+import {Heart} from "lucide-react";
+
+const HeartRating = ({ value, onValueChange, max = 5, size = 24 }) => {
+  const handleClick = (idx) => {
+    onValueChange(idx + 1);
+  };
+
+  return (
+    <div className="flex space-x-1">
+      {Array.from({ length: max }).map((_, idx) => {
+        const filled = idx < value;
+        return (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => handleClick(idx)}
+            className="focus:outline-none"
+          >
+            <Heart
+              size={size}
+              fill={filled ? "#f87171" : "#d1d5db"}
+              stroke={filled ? "#f87171" : "#d1d5db"}
+              className="transition-colors"
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 
 export default function Rate({ id, type = "tour", onRated }) {
   const [rating, setRating] = useState(0);
@@ -58,12 +89,16 @@ export default function Rate({ id, type = "tour", onRated }) {
 
       {/* Star Rating */}
       <div className="flex justify-center sm:justify-start mb-4">
-        <Rating value={rating} onValueChange={setRating}>
-          {[...Array(5)].map((_, idx) => (
-            <RatingButton key={idx} size={20} className="text-yellow-500" />
-          ))}
-        </Rating>
-      </div>
+  {type === "tour" ? (
+    <Rating value={rating} onValueChange={setRating}>
+      {[...Array(5)].map((_, idx) => (
+        <RatingButton key={idx} size={20} className="text-yellow-500" />
+      ))}
+    </Rating>
+  ) : (
+    <HeartRating value={rating} onValueChange={setRating} size={24} />
+  )}
+</div>
 
       {/* Review */}
       <div className="relative mb-5 w-full">

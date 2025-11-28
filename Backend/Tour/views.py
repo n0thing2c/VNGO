@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny
 
-from Management.models import Booking
+from Management.models import Booking, PastTour
 from Profiles.models import Guide
 from .models import Tour, Place, TourImage
 from .serializers import TourSerializer
@@ -401,6 +401,17 @@ def tour_rate(request, tour_id):
         # Không cho rate trùng
     if TourRating.objects.filter(tour=tour, tourist=tourist_profile).exists():
         return Response({"success": False, "error": "You already rated this tour"}, status=400)
+
+    has_completed = PastTour.objects.filter(
+        tourist=tourist_profile,
+        tour=tour
+    ).exists()
+
+    if not has_completed:
+        return Response(
+            {"success": False, "error": "You can only rate tours you have completed"},
+            status=403
+        )
 
     # Parse review_tags if it's a string
     review_tags = request.data.get('review_tags', '[]')

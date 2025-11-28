@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils.js";
-import { Languages, PiggyBank, LucideGem, UserStar, Flame, MessagesSquare } from "lucide-react";
+import {Languages, PiggyBank, LucideGem, UserStar, Flame, MessagesSquare, Star, Paintbrush, Heart} from "lucide-react";
 
 const ACHIEVEMENT_COLORS = {
   popular: "from-red-400 via-red-500 to-red-700",
@@ -9,6 +9,10 @@ const ACHIEVEMENT_COLORS = {
   budget: "from-pink-200 via-pink-400 to-pink-600",
   luxury: "from-cyan-100 via-sky-300 to-blue-500",
   reviews: "from-rose-200 via-orange-300 to-rose-500",
+  experienced: "from-green-300 via-green-400 to-green-600", // new
+  crafter: "from-orange-300 via-orange-400 to-orange-500", // updated to light orange
+  loved: "from-red-200 via-red-400 to-red-600",
+
 };
 
 const ACHIEVEMENT_OUTLINES = {
@@ -18,16 +22,24 @@ const ACHIEVEMENT_OUTLINES = {
   budget: "#c0266c",        // slightly darker pink
   luxury: "#6ca0e0",        // slightly darker blue
   reviews: "#d46f09",       // slightly darker rose/orange
+    experienced: "#15803d", // new
+    crafter: "#f97316", // slightly darker orange outline
+      loved: "#b91c1c",
+
 };
 
 
 const ACHIEVEMENT_ICONS = {
   popular: <Flame fill="#ff8a3d" stroke="#ff4500" className="w-4 h-4" />,
-  highlyrated: <UserStar fill="#facc15" stroke="#ca8a04" className="w-4 h-4" />,
+  highlyrated: <Star fill="#facc15" stroke="#ca8a04" className="w-4 h-4" />,
   multilingual: <Languages color = "#3b82f6" className="w-4 h-4" />,
   budget: <PiggyBank fill="#f9a8d4" stroke="#ec4899" className="w-4 h-4" />,
   luxury: <LucideGem fill="#d6f0ff" stroke="#60a5fa" className="w-4 h-4" />,
   reviews: <MessagesSquare fill="#fb923c" stroke="#ea580c" className="w-4 h-4" />,
+    experienced: <UserStar fill="#4ade80" stroke="#15803d" className="w-4 h-4" />, // new
+    crafter: <Paintbrush fill="#fed7aa" stroke="#f97316" className="w-4 h-4" />, // light orange icon
+      loved: <Heart fill="#f87171" stroke="#b91c1c" className="w-4 h-4" />,
+
 };
 
 function AchievementBadge({ variant = "popular", label }) {
