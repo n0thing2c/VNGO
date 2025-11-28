@@ -1,6 +1,7 @@
 import { memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import TypingIndicator from "./TypingIndicator";
 
 const startOfDay = (date) => {
   const d = new Date(date);
@@ -119,7 +120,7 @@ const MessageItem = memo(({ message, isOwnMessage, senderName, senderAvatar, sen
 
 MessageItem.displayName = "MessageItem";
 
-const MessagesList = memo(({ messages, user, roomName, userAvatar }) => {
+const MessagesList = memo(({ messages, user, roomName, userAvatar, isTyping, contactName, contactAvatar }) => {
   const renderedMessages = useMemo(() => {
     if (messages.length === 0) {
       return (
@@ -179,7 +180,18 @@ const MessagesList = memo(({ messages, user, roomName, userAvatar }) => {
     return rendered;
   }, [messages, user, roomName, userAvatar]);
 
-  return <>{renderedMessages}</>;
+  return (
+    <>
+      {renderedMessages}
+      {isTyping && (
+        <TypingIndicator
+          contactName={contactName}
+          contactAvatar={contactAvatar}
+          roomName={roomName}
+        />
+      )}
+    </>
+  );
 });
 
 MessagesList.displayName = "MessagesList";

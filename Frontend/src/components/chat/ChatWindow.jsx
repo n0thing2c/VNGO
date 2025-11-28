@@ -102,6 +102,7 @@ export default function ChatWindow({
   const messagesContainerRef = useRef(null);
   const justSwitchedRoomRef = useRef(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+  const typingTimeoutRef = useRef(null);
   const { user } = useAuthStore();
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
@@ -271,8 +272,25 @@ export default function ChatWindow({
         // Auto-scroll on new message (container only)
         ensureScrollBottom(true);
       } else if (data.type === "typing") {
-        setIsTyping(true);
-        setTimeout(() => setIsTyping(false), 3000);
+        // Backend sends typing event with user_id, not sender object
+        const typingUserId = data.user_id;
+        const currentUserId = user?.id;
+        
+        // Only show typing indicator if it's from the other person, not from current user
+        const isFromCurrentUser = currentUserId && typingUserId && String(typingUserId) === String(currentUserId);
+        
+        if (!isFromCurrentUser) {
+          setIsTyping(true);
+          // Clear existing timeout if any
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+          }
+          // Set new timeout to hide typing indicator after 3 seconds
+          typingTimeoutRef.current = setTimeout(() => {
+            setIsTyping(false);
+            typingTimeoutRef.current = null;
+          }, 3000);
+        }
       }
     };
 
@@ -300,6 +318,11 @@ export default function ChatWindow({
       websocketService.off("connected", handleConnected);
       websocketService.off("disconnected", handleDisconnected);
       websocketService.off("error", handleError);
+      // Clear typing timeout on cleanup
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
     };
   }, [roomName, user?.id, enrichSender]);
 
@@ -414,6 +437,9 @@ export default function ChatWindow({
           user={user}
           roomName={roomName}
           userAvatar={userAvatar}
+          isTyping={isTyping}
+          contactName={contactName}
+          contactAvatar={contactAvatar}
         />
         <div ref={messagesEndRef} />
       </div>

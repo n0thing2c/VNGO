@@ -10,23 +10,23 @@ const ChatInput = memo(({ onSendMessage, disabled = false }) => {
     if (!websocketService.isConnected()) return;
 
     const now = Date.now();
-    // Throttle: chỉ gửi typing mỗi 500ms
+    // Throttle: only send typing every 500ms
     if (now - lastTypingTimeRef.current < 500) {
       return;
     }
 
-    // Clear timeout cũ nếu có
+    // Clear existing timeout if any
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Gửi typing ngay lập tức nếu đã đủ thời gian
+    // Send typing immediately if enough time has passed
     websocketService.sendTyping();
     lastTypingTimeRef.current = now;
 
-    // Debounce: nếu người dùng tiếp tục gõ, không gửi thêm typing trong 2s
+    // Debounce: if user continues typing, don't send additional typing for 2s
     typingTimeoutRef.current = setTimeout(() => {
-      // Reset sau 2s để có thể gửi typing lại
+      // Reset after 2s to allow sending typing again
       lastTypingTimeRef.current = 0;
     }, 2000);
   }, []);
