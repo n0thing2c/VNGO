@@ -43,7 +43,6 @@ export default function ChatPage() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
-  const [isListRefreshing, setIsListRefreshing] = useState(false);
   const { user, refreshUser, accessToken } = useAuthStore();
   const location = useLocation();
   const targetRoom = location.state?.targetRoom;
@@ -114,6 +113,15 @@ export default function ChatPage() {
     [withDisplayName]
   );
 
+  const sortByLatest = useCallback(
+    (a, b) => {
+      const timeA = a?.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+      const timeB = b?.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+      return timeB - timeA;
+    },
+    []
+  );
+
   const handleConversationUpdate = useCallback(
     (roomName, message) => {
       if (!roomName) return;
@@ -174,30 +182,28 @@ export default function ChatPage() {
           reviewCount: existing?.reviewCount ?? 0,
         };
 
-        const filtered = prev.filter((c) => c.room === roomName);
-        const normalized = normalizeAndEnhance([
-          ...filtered,
-          updatedConversation,
-        ]);
+        const enhancedConversation = withDisplayName(updatedConversation);
+
+        const others = prev.filter((c) => c.room !== roomName);
+        const updatedList = [enhancedConversation, ...others].sort(sortByLatest);
 
         if (selectedRoom === roomName) {
-          const found = normalized.find((c) => c.room === roomName);
+          const found = updatedList.find((c) => c.room === roomName);
           if (found) {
             setSelectedContact(found);
           }
         }
 
-        return normalized;
+        return updatedList;
       });
     },
-    [normalizeAndEnhance, selectedRoom, user?.id, user?.username, resolveRoomMateName]
+    [withDisplayName, selectedRoom, user?.id, user?.username, resolveRoomMateName, sortByLatest]
   );
 
   // Load conversations from API when component mounts
   useEffect(() => {
     const loadConversations = async () => {
       try {
-        setIsListRefreshing(true);
         const data = await chatService.getConversations();
         const normalized = normalizeAndEnhance(data || []);
         setConversations(normalized);
@@ -209,8 +215,6 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("Error loading conversations:", error);
-      } finally {
-        setIsListRefreshing(false);
       }
     };
 
@@ -223,7 +227,6 @@ export default function ChatPage() {
     let isCancelled = false;
     const tick = async () => {
       try {
-        setIsListRefreshing(true);
         const data = await chatService.getConversations();
         if (isCancelled) return;
         const normalized = normalizeAndEnhance(data || []);
@@ -233,11 +236,6 @@ export default function ChatPage() {
           return merged;
         });
       } catch { }
-      finally {
-        if (!isCancelled) {
-          setIsListRefreshing(false);
-        }
-      }
     };
 
     const id = setInterval(tick, 5000); // 5s refresh
@@ -371,7 +369,6 @@ export default function ChatPage() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onStartChatbot={handleStartChatbot}
-            isRefreshing={isListRefreshing}
           />
         </div>
 
