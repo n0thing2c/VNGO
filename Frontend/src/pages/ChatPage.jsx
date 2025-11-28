@@ -43,6 +43,7 @@ export default function ChatPage() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
+  const [isListRefreshing, setIsListRefreshing] = useState(false);
   const { user, refreshUser, accessToken } = useAuthStore();
   const location = useLocation();
   const targetRoom = location.state?.targetRoom;
@@ -196,6 +197,7 @@ export default function ChatPage() {
   useEffect(() => {
     const loadConversations = async () => {
       try {
+        setIsListRefreshing(true);
         const data = await chatService.getConversations();
         const normalized = normalizeAndEnhance(data || []);
         setConversations(normalized);
@@ -207,6 +209,8 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("Error loading conversations:", error);
+      } finally {
+        setIsListRefreshing(false);
       }
     };
 
@@ -219,6 +223,7 @@ export default function ChatPage() {
     let isCancelled = false;
     const tick = async () => {
       try {
+        setIsListRefreshing(true);
         const data = await chatService.getConversations();
         if (isCancelled) return;
         const normalized = normalizeAndEnhance(data || []);
@@ -227,7 +232,12 @@ export default function ChatPage() {
           const merged = normalizeAndEnhance([...prev, ...normalized]);
           return merged;
         });
-      } catch {}
+      } catch { }
+      finally {
+        if (!isCancelled) {
+          setIsListRefreshing(false);
+        }
+      }
     };
 
     const id = setInterval(tick, 5000); // 5s refresh
@@ -271,6 +281,45 @@ export default function ChatPage() {
     setSelectedRoom(roomName);
     const contact = normalizedConversations.find((c) => c.room === roomName);
     setSelectedContact(contact || null);
+  };
+
+  const handleStartChatbot = () => {
+    if (!user?.username) return;
+
+    // Construct room name: username__chatbot
+    // This ensures a private room for the user with the bot
+    const botRoomName = `${user.username}__chatbot`;
+
+    // Check if this room already exists in conversations
+    const existing = conversations.find(c => c.room === botRoomName);
+
+    if (existing) {
+      handleSelectRoom(botRoomName);
+    } else {
+      // If not exists, we need to "create" it locally so ChatWindow can connect.
+      // The backend will create the room/messages when we send the first message.
+      // But we need to add it to the list so it's selectable.
+
+      const newBotConversation = {
+        room: botRoomName,
+        contactName: "Chatbot",
+        contactId: "chatbot",
+        contactAvatar: null, // Or set a default bot avatar URL if available
+        lastMessage: "Start chatting with our AI assistant!",
+        lastMessageTime: new Date().toISOString(),
+        responseTime: "Instant",
+        rating: 5,
+        reviewCount: 999,
+      };
+
+      setConversations(prev => {
+        const normalized = normalizeAndEnhance([...prev, newBotConversation]);
+        return normalized;
+      });
+
+      setSelectedRoom(botRoomName);
+      setSelectedContact(newBotConversation);
+    }
   };
 
   useEffect(() => {
@@ -321,6 +370,8 @@ export default function ChatPage() {
             onSelectRoom={handleSelectRoom}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            onStartChatbot={handleStartChatbot}
+            isRefreshing={isListRefreshing}
           />
         </div>
 

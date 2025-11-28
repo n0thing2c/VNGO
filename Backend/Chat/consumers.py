@@ -2,7 +2,6 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
 
-
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope.get("url_route", {}).get("kwargs", {}).get("room_name")
@@ -90,6 +89,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             except Exception:
                 pass
 
+            # --- CHATBOT TRIGGER ---
+            # If the room contains 'chatbot' and the sender is NOT the chatbot
+            if "chatbot" in self.room_name and getattr(user, "username", "") != "chatbot":
+                # Fire and forget (or await)
+                await self.handle_bot_response(text)
+
         elif msg_type == "typing":
             user = self.scope["user"]
             await self.channel_layer.group_send(
@@ -103,6 +108,60 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def chat_typing(self, event):
         await self.send_json({"type": "typing", **event["payload"]})
+
+    async def handle_bot_response(self, user_text):
+        """
+        Process the user's message, ask AI, and send response.
+        """
+        try:
+            # 1. Search for relevant tours
+            from .ai_service import get_relevant_tours, ask_gemini
+            from asgiref.sync import sync_to_async
+            from django.contrib.auth import get_user_model
+
+            # Send typing indicator from bot
+            await self.channel_layer.group_send(
+                self.group_name,
+                {"type": "chat.typing", "payload": {"user_id": "chatbot"}},
+            )
+
+            tours = await database_sync_to_async(get_relevant_tours)(user_text)
+
+            # 2. Ask Gemini
+            # sync_to_async is needed because google-generativeai is synchronous
+            ai_response_text = await sync_to_async(ask_gemini)(user_text, tours)
+
+            # 3. Save and Broadcast Bot Message
+            User = get_user_model()
+            # Get or create chatbot user
+            # We use a lambda to make it callable for database_sync_to_async
+            bot_user = await database_sync_to_async(lambda: User.objects.get_or_create(username="chatbot")[0])()
+            
+            message_id = None
+            created_at = None
+            
+            from .models import Message
+            msg_obj = await database_sync_to_async(Message.objects.create)(
+                room=self.room_name, sender=bot_user, content=ai_response_text
+            )
+            message_id = msg_obj.id
+            created_at = msg_obj.created_at.isoformat()
+
+            payload = {
+                "type": "chat.message",
+                "message": ai_response_text,
+                "sender": {"id": bot_user.id, "username": bot_user.username},
+                "message_id": message_id,
+                "created_at": created_at,
+                "room": self.room_name,
+            }
+
+            await self.channel_layer.group_send(
+                self.group_name,
+                {"type": "chat.message", "payload": payload},
+            )
+        except Exception as e:
+            print(f"Error in handle_bot_response: {e}")
 
 
 class NotificationConsumer(AsyncJsonWebsocketConsumer):

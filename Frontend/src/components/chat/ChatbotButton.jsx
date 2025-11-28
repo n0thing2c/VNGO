@@ -1,11 +1,12 @@
 export default function FloatingChatbotButton({
   className = "fixed bottom-6 left-6 z-50",
+  onClick,
 }) {
   return (
     <div className={className}>
       <button
         className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
-        onClick={() => console.log("Chatbot button clicked")}
+        onClick={onClick}
         aria-label="Open Chatbot"
       >
         <svg
