@@ -331,39 +331,29 @@ export default function TourEdit() {
 
     return (
         <div className="items-center">
-            <div
-                className="
-          flex flex-col-reverse gap-6 md:flex-row justify-center items-start
-          mt-40 mb-40
-          scale-100
-          xl:scale-[0.7]
-          2xl:scale-[0.8]
-          3xl:scale-[0.9]
-          transition-transform duration-300 origin-top
-        "
-            >
+            <div className="flex flex-col gap-6 md:flex-row justify-center items-start mt-20 mb-20 px-4">
                 {/* LEFT CARD (MAP + TOUR SCHEDULE) */}
-                <Card className="w-full max-w-xl xl:max-w-2xl 2xl:max-w-3xl">
+                <Card className="w-full max-w-lg sm:max-w-md lg:max-w-xl">
                     <CardHeader>
                         <CardTitle>
-                            <h1 className="text-center text-xl xl:text-2xl 2xl:text-3xl font-bold p-5">
+                            <h1 className="text-center text-lg sm:text-lg lg:text-2xl font-bold lg:p-4 md:p-3 sm:p-0">
                                 EDIT TOUR PLACES
                             </h1>
                         </CardTitle>
                     </CardHeader>
-                    <FieldSeparator/>
-                    <CardContent className="flex flex-col gap-6 xl:gap-8">
+                    <FieldSeparator className="h-0 mb-3"/>
+                    <CardContent className="flex flex-col gap-6">
                         <div>
                             <Map
                                 onLocationAdd={handleAddStop}
-                                className="w-full h-60 md:h-90 xl:h-110"
+                                className="w-full h-60 md:h-70 xl:h-90 lg:h-80 sm:h-60"
                                 addedStops={addedStops}
                             />
                         </div>
                         <FieldSeparator/>
                         <div className="space-y-4 w-full">
-                            <div className="rounded-2xl border-[#23C491] border-2 p-4">
-                                <FieldLabel className="text-base xl:text-lg text-[#23C491] font-bold">
+                            <div className="rounded-2xl border-[#23C491] border-2 p-3">
+                                <FieldLabel className="text-md sm:text-sm lg:text-md text-[#23C491] font-bold">
                                     Tour Schedule
                                 </FieldLabel>
                             </div>
@@ -380,39 +370,38 @@ export default function TourEdit() {
                 </Card>
 
                 {/* RIGHT CARD (EDIT FORM) */}
-                <Card className="w-full max-w-md xl:max-w-lg 2xl:max-w-xl">
+                <Card className="w-full max-w-lg sm:max-w-md lg:max-w-lg">
                     <CardHeader>
                         <CardTitle>
-                            <h1 className="text-center text-xl xl:text-2xl 2xl:text-3xl font-bold p-5">
-                                EDIT TOUR DETAILS
+                            <h1 className="text-center text-lg sm:text-lg lg:text-2xl font-bold lg:p-4 md:p-3 sm:p-0">
+                                EDIT TOUR INFO
                             </h1>
                         </CardTitle>
                     </CardHeader>
-                    <FieldSeparator/>
-                    <CardContent className="flex flex-col gap-6 xl:gap-8 text-base xl:text-lg">
+                    <FieldSeparator className="h-0 mb-3"/>
+                    <CardContent className="flex flex-col gap-7 text-md">
                         {/* ROW 1: TOUR NAME */}
                         <div className="flex justify-between gap-5">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <IdCard/> Tour name:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <IdCard className="w-5 h-5"/> Tour name:
                             </FieldLabel>
                             <Input
-                                className="flex-1 py-2 xl:py-3 text-base xl:text-lg"
+                                className="flex-1 py-2 xl:py-3 text-md "
                                 value={tourname}
                                 onChange={(e) => settourname(e.target.value)}
                             />
                         </div>
 
-                        <FieldSeparator/>
 
                         {/* ROW 2: DURATION */}
                         <div className="flex justify-between gap-5">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Clock/> Duration:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <Clock className="w-5 h-5"/> Duration:
                             </FieldLabel>
                             <div className="flex justify-end gap-3 items-center">
-                                <FieldLabel className="hidden md:inline">Up to</FieldLabel>
+                                <FieldLabel className="hidden md:inline text-md">up to</FieldLabel>
                                 <Input
-                                    className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
+                                    className="flex-1 text-center py-2 xl:py-3 text-md"
                                     type="number"
                                     value={hour}
                                     min={min_hour}
@@ -430,16 +419,16 @@ export default function TourEdit() {
                             </div>
                         </div>
 
-                        <FieldSeparator/>
+
 
                         {/* ROW 3: GROUP SIZE */}
                         <div className="flex justify-between gap-5">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <UserPlus/> Group size:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <UserPlus className="w-5 h-5"/> Group size:
                             </FieldLabel>
                             <div className="flex justify-end gap-3 items-center">
                                 <Input
-                                    className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
+                                    className="flex-1 text-center py-2 xl:py-3 text-md"
                                     type="number"
                                     value={minpeople}
                                     min={min_people}
@@ -458,7 +447,7 @@ export default function TourEdit() {
                                 />
                                 <FieldLabel> - </FieldLabel>
                                 <Input
-                                    className="flex-1 text-center py-2 xl:py-3 text-base xl:text-lg"
+                                    className="flex-1 text-center py-2 xl:py-3 text-md"
                                     type="number"
                                     value={maxpeople}
                                     min={min_people}
@@ -479,15 +468,15 @@ export default function TourEdit() {
                             </div>
                         </div>
 
-                        <FieldSeparator/>
+
 
                         {/* TRANSPORTATION */}
                         <div className="flex justify-between gap-5">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
+                            <FieldLabel className="text-md flex items-center gap-1">
                                 {getTransportationIcon(transportation)} Transportation:
                             </FieldLabel>
                             <Select value={transportation} onValueChange={setTransportation}>
-                                <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
+                                <SelectTrigger className="flex-1 py-2 xl:py-3 text-md">
                                     <SelectValue placeholder="Select transportation"/>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -498,15 +487,15 @@ export default function TourEdit() {
                             </Select>
                         </div>
 
-                        <FieldSeparator/>
+
 
                         {/* MEETING PLACE */}
                         <div className="flex justify-between gap-5">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Pin/> Meeting place:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <Pin className="w-5 h-5"/> Meeting place:
                             </FieldLabel>
                             <Select value={meeting} onValueChange={setMeeting}>
-                                <SelectTrigger className="flex-1 py-2 xl:py-3 text-base xl:text-lg">
+                                <SelectTrigger className="flex-1 py-2 xl:py-3 text-md">
                                     <SelectValue placeholder="Select location"/>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -517,30 +506,30 @@ export default function TourEdit() {
                             </Select>
                         </div>
 
-                        <FieldSeparator/>
+
 
                         {/* PRICE */}
                         <div className="flex justify-between gap-3 items-center">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <CircleDollarSignIcon/> Price:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <CircleDollarSignIcon className="w-5 h-5"/> Price:
                             </FieldLabel>
                             <VNDInput
-                                className="flex-1 text-[#23C491] text-xl xl:text-2xl font-semibold"
+                                className="flex-1 text-[#23C491] text-lg xl:text-xl font-semibold"
                                 value={price}
                                 max={1e7}
                                 onChange={setprice}
                             />
-                            <FieldLabel className="text-sm xl:text-base">
+                            <FieldLabel className="text-md">
                                 (per person)
                             </FieldLabel>
                         </div>
 
-                        <FieldSeparator/>
+
 
                         {/* PHOTOS */}
                         <div className="flex justify-between gap-5">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <PictureInPicture2Icon/> Photos:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <PictureInPicture2Icon className="w-5 h-5"/> Photos:
                             </FieldLabel>
                             {/* ✅ STEP 4: Point to the new handler */}
                             <ImageUploader
@@ -551,12 +540,12 @@ export default function TourEdit() {
                             />
                         </div>
 
-                        <FieldSeparator/>
+
 
                         {/* DESCRIPTION */}
                         <div className="flex flex-col w-full gap-2 relative">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Edit2/> Description:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <Edit2 className="w-5 h-5"/> Description:
                             </FieldLabel>
                             <Textarea
                                 value={description}
@@ -568,19 +557,19 @@ export default function TourEdit() {
                                     )
                                 }
                                 rows={5}
-                                className="resize-none py-2 xl:py-3 text-base xl:text-lg"
+                                className="resize-none py-2 xl:py-3 text-md"
                             />
                             <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
                                 {description.length}/500
                               </span>
                         </div>
 
-                        <FieldSeparator/>
+
 
                         {/* TAGS */}
                         <div className="flex justify-between gap-5">
-                            <FieldLabel className="text-base xl:text-lg flex items-center gap-1">
-                                <Tag/> Tags:
+                            <FieldLabel className="text-md flex items-center gap-1">
+                                <Tag className="w-5 h-5"/> Tags:
                             </FieldLabel>
                             <TagSelector
                                 tags={TagList}
@@ -591,7 +580,7 @@ export default function TourEdit() {
                         </div>
                     </CardContent>
 
-                    <FieldSeparator/>
+
 
                     <CardFooter className="flex justify-end gap-4">
                         <Link to={`/tour/post/${tour_id}`}

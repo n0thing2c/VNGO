@@ -268,7 +268,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
 
     return (
         <div className="flex flex-col items-center gap-4">
-            <div className="w-full max-w-md relative z-[1001]">
+            <div className="w-full max-w-md relative z-10">
                 <Input
                     ref={inputRef}
                     type="text"
@@ -279,7 +279,7 @@ export default function Map({className = "", onLocationAdd, addedStops = []}) {
                         setWikiVisible(false);
                     }}
                     placeholder="Search location..."
-                    className="w-full"
+                    className="w-full z-0"
                 />
                 {!hasSelected && suggestions.length > 0 && (
                     <ul className="absolute top-full left-0 right-0 bg-white border border-gray-300 max-h-40 overflow-y-auto shadow-lg rounded-b-md">

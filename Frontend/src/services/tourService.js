@@ -27,7 +27,7 @@ export const tourService = {
                 !price ||
                 !meeting ||
                 !addedStops?.length ||
-                !imageData
+                imageData.images.length === 0
             ) {
                 toast.error("Please fill in all information!");
                 return {success: false};
