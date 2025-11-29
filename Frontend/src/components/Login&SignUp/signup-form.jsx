@@ -91,7 +91,7 @@ export function SignupForm({ className, ...props }) {
       className={cn("flex flex-col items-center pb-4", className)}
       {...props}
     >
-      <Card className="mx-auto mt-2 md:mt-0 w-[92%]  md:max-w-4xl overflow-hidden p-0 shadow-xl">
+      <Card className="mx-auto mt-2 md:mt-8.5 w-[92%]  md:max-w-4xl overflow-hidden p-0 shadow-xl">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form className="p-3 md:p-5" onSubmit={handleSubmit}>
             <FieldGroup className="gap-3 md:gap-4 text-sm">

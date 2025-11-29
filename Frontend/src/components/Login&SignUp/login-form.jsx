@@ -78,7 +78,7 @@ export function LoginForm({ className, ...props }) {
       className={cn("flex flex-col items-center pb-4", className)}
       {...props}
     >
-      <Card className="mx-auto mt-2 md:mt-0 w-[92%]  md:max-w-4xl overflow-hidden p-0 shadow-xl">
+      <Card className="mx-auto mt-2 md:mt-11 w-[92%]  md:max-w-4xl overflow-hidden p-0 shadow-xl">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup className="gap-6 md:gap-8 text-sm">
