@@ -7,52 +7,16 @@ import { Textarea } from "@/components/ui/textarea.jsx";
 import TagSelector from "@/components/tagsselector.jsx";
 import ImageUploader, { ImageDropBox } from "../imageuploader.jsx";
 import { tourService } from "@/services/tourService.js";
-import { profileService } from "@/services/profileService.js";
-import { TOUR_TAG_VARIANTS, GUIDE_TAG_VARIANTS } from "@/components/rating/tag_variants.js";
-import {Heart} from "lucide-react";
+import { TOUR_TAG_VARIANTS } from "@/components/rating/tag_variants.js";
 
-const HeartRating = ({ value, onValueChange, max = 5, size = 24 }) => {
-  const handleClick = (idx) => {
-    onValueChange(idx + 1);
-  };
-
-  return (
-    <div className="flex space-x-1">
-      {Array.from({ length: max }).map((_, idx) => {
-        const filled = idx < value;
-        return (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => handleClick(idx)}
-            className="focus:outline-none"
-          >
-            <Heart
-              size={size}
-              fill={filled ? "#f87171" : "#d1d5db"}
-              stroke={filled ? "#f87171" : "#d1d5db"}
-              className="transition-colors"
-            />
-          </button>
-        );
-      })}
-    </div>
-  );
-};
-
-
-export default function Rate({ id, type = "tour", onRated }) {
+export default function Rate({ id, onRated }) {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [reviewTags, setReviewTags] = useState([]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const predefinedTags = type === "tour"
-    ? Object.keys(TOUR_TAG_VARIANTS)
-    : Object.keys(GUIDE_TAG_VARIANTS);
-
-  const tagVariants = type === "tour" ? TOUR_TAG_VARIANTS : GUIDE_TAG_VARIANTS;
+  const predefinedTags = Object.keys(TOUR_TAG_VARIANTS);
 
   const handleImagesChange = (imgs) => {
     setImages(imgs.slice(0, 10)); // limit to 10 images
@@ -65,9 +29,7 @@ export default function Rate({ id, type = "tour", onRated }) {
     try {
       const payload = { rating, review, reviewTags, images };
 
-      const result = type === "tour"
-        ? await tourService.submitRating({ tourId: id, ...payload })
-        : await profileService.submitGuideRating({ guideId: id, ...payload });
+      const result = await tourService.submitRating({ tourId: id, ...payload });
 
       if (result?.success) {
         setRating(0);
@@ -84,26 +46,22 @@ export default function Rate({ id, type = "tour", onRated }) {
   return (
     <div className="w-[90vw] sm:max-w-2xl mx-auto p-4 bg-transparent relative">
       <h3 className="text-lg sm:text-xl md:text-2xl mb-4 text-center sm:text-left">
-        {type === "tour" ? "Rate this tour" : "Rate this guide"}
+        Rate this tour
       </h3>
 
       {/* Star Rating */}
       <div className="flex justify-center sm:justify-start mb-4">
-  {type === "tour" ? (
-    <Rating value={rating} onValueChange={setRating}>
-      {[...Array(5)].map((_, idx) => (
-        <RatingButton key={idx} size={20} className="text-yellow-500" />
-      ))}
-    </Rating>
-  ) : (
-    <HeartRating value={rating} onValueChange={setRating} size={24} />
-  )}
-</div>
+        <Rating value={rating} onValueChange={setRating}>
+          {[...Array(5)].map((_, idx) => (
+            <RatingButton key={idx} size={20} className="text-yellow-500" />
+          ))}
+        </Rating>
+      </div>
 
       {/* Review */}
       <div className="relative mb-5 w-full">
         <Textarea
-          placeholder={`Enter a short description of your ${type}`}
+          placeholder="Enter a short description of your review"
           value={review}
           onChange={(e) => setReview(e.target.value.slice(0, 1000))}
           rows={5}
@@ -121,7 +79,7 @@ export default function Rate({ id, type = "tour", onRated }) {
           tags={predefinedTags}
           selectedTags={reviewTags}
           setSelectedTags={setReviewTags}
-          tagVariants={tagVariants}
+          tagVariants={TOUR_TAG_VARIANTS}
         />
       </div>
 

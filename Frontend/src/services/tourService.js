@@ -47,7 +47,7 @@ export const tourService = {
             formData.append("thumbnail_idx", imageData.thumbnailIdx ?? 0);
 
             if (stops_descriptions) {
-              formData.append("stops_descriptions", stops_descriptions);
+                formData.append("stops_descriptions", stops_descriptions);
             }
 
             // Append images
@@ -127,7 +127,7 @@ export const tourService = {
             formData.append("description", description || "");
 
             if (stops_descriptions) {
-              formData.append("stops_descriptions", stops_descriptions);
+                formData.append("stops_descriptions", stops_descriptions);
             }
 
             // Append new image files
@@ -201,97 +201,117 @@ export const tourService = {
         }
     },
     getAllToursByGuide: async (guideId) => {
-      if (!guideId) {
-        toast.error("Guide ID is required!");
-        return { success: false };
-      }
-
-      try {
-        const res = await api.get(`/api/tour/guide/${guideId}/all/`);
-        if (res.data.success) {
-          return { success: true, data: res.data.tours };
-        } else {
-          toast.error(res.data.error || "Failed to load guide's tours");
-          return { success: false };
+        if (!guideId) {
+            toast.error("Guide ID is required!");
+            return {success: false};
         }
-      } catch (err) {
-        console.error("Error fetching guide tours:", err);
-        toast.error("Unable to connect to the server.");
-        return { success: false, error: err };
-      }
+
+        try {
+            const res = await api.get(`/api/tour/guide/${guideId}/all/`);
+            if (res.data.success) {
+                return {success: true, data: res.data.tours};
+            } else {
+                toast.error(res.data.error || "Failed to load guide's tours");
+                return {success: false};
+            }
+        } catch (err) {
+            console.error("Error fetching guide tours:", err);
+            toast.error("Unable to connect to the server.");
+            return {success: false, error: err};
+        }
+    },
+    getAllTourRatingsByGuide: async (guideId) => {
+        if (!guideId) {
+            toast.error("Guide ID is required!");
+            return {success: false};
+        }
+
+        try {
+            const res = await api.get(`/api/tour/ratings/guide/${guideId}/all/`);
+            if (res.data.success) {
+                return {success: true, data: res.data.ratings};
+            } else {
+                toast.error(res.data.error || "Failed to load guide's tour ratings");
+                return {success: false};
+            }
+        } catch (err) {
+            console.error("Error fetching guide tour ratings:", err);
+            toast.error("Unable to connect to the server.");
+            return {success: false, error: err};
+        }
     },
 
-    submitRating: async ({ tourId, rating, review, reviewTags = [], images = [] }) => {
-    if (!rating) {
-      toast.error("Please select a rating.");
-      return { success: false };
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("rating", rating);
-      formData.append("review", review);
-      formData.append("review_tags", JSON.stringify(reviewTags));
-      images.forEach((img) => formData.append("images", img.file || img));
-
-      const res = await api.post(`/api/tour/rate/${tourId}/`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Axios sets this automatically with FormData, but explicit is fine
-        },
-      });
-
-      toast.success("Rating submitted successfully!");
-      return { success: true, data: res.data };
-      } catch (err) {
-        console.error("Error submitting rating:", err);
-
-        if (err.response?.data) {
-          toast.error("Failed to submit rating", {
-            description: err.response.data.detail || err.response.data.error || "Unknown error",
-          });
-        } else {
-          toast.error("Unable to connect to the server.");
+    submitRating: async ({tourId, rating, review, reviewTags = [], images = []}) => {
+        if (!rating) {
+            toast.error("Please select a rating.");
+            return {success: false};
         }
 
-        return { success: false, error: err };
-      }
-  },
+        try {
+            const formData = new FormData();
+            formData.append("rating", rating);
+            formData.append("review", review);
+            formData.append("review_tags", JSON.stringify(reviewTags));
+            images.forEach((img) => formData.append("images", img.file || img));
+
+            const res = await api.post(`/api/tour/rate/${tourId}/`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data", // Axios sets this automatically with FormData, but explicit is fine
+                },
+            });
+
+            toast.success("Rating submitted successfully!");
+            return {success: true, data: res.data};
+        } catch (err) {
+            console.error("Error submitting rating:", err);
+
+            if (err.response?.data) {
+                toast.error("Failed to submit rating", {
+                    description: err.response.data.detail || err.response.data.error || "Unknown error",
+                });
+            } else {
+                toast.error("Unable to connect to the server.");
+            }
+
+            return {success: false, error: err};
+        }
+    },
     getRatings: async (tourId) => {
-    try {
-      const res = await api.get(`/api/tour/ratings/${tourId}/`);
-      return { success: true, data: res.data };
-    } catch (err) {
-      console.error("Error fetching ratings:", err);
+        try {
+            const res = await api.get(`/api/tour/ratings/${tourId}/`);
+            return {success: true, data: res.data};
+        } catch (err) {
+            console.error("Error fetching ratings:", err);
 
-      if (err.response?.data) {
-        toast.error("Failed to load ratings", {
-          description: err.response.data.detail || err.response.data.error || "Unknown error",
-        });
-      } else {
-        toast.error("Unable to connect to the server.");
-      }
+            if (err.response?.data) {
+                toast.error("Failed to load ratings", {
+                    description: err.response.data.detail || err.response.data.error || "Unknown error",
+                });
+            } else {
+                toast.error("Unable to connect to the server.");
+            }
 
-      return { success: false, error: err };
-    }
-  },
-  
-  /**
-   * Get my tours (guide only)
-   * GET /api/tour/my-tours/
-   */
-  getMyTours: async () => {
-    try {
-      const res = await api.get("/api/tour/my-tours/");
-      if (res.data.success) {
-        return { success: true, data: res.data.tours, count: res.data.count };
-      } else {
-        toast.error(res.data.error || "Failed to load your tours");
-        return { success: false };
-      }
-    } catch (err) {
-      console.error("Error fetching my tours:", err);
-      toast.error("Unable to load your tours.");
-      return { success: false, error: err };
-    }
-  },
+            return {success: false, error: err};
+        }
+    },
+
+    /**
+     * Get my tours (guide only)
+     * GET /api/tour/my-tours/
+     */
+    getMyTours: async () => {
+        try {
+            const res = await api.get("/api/tour/my-tours/");
+            if (res.data.success) {
+                return {success: true, data: res.data.tours, count: res.data.count};
+            } else {
+                toast.error(res.data.error || "Failed to load your tours");
+                return {success: false};
+            }
+        } catch (err) {
+            console.error("Error fetching my tours:", err);
+            toast.error("Unable to load your tours.");
+            return {success: false, error: err};
+        }
+    },
 };
