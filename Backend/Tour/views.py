@@ -675,7 +675,10 @@ def get_popular_destinations(request):
     try:
         # 1. Nhóm các Place theo 'province_en' (vì DL đã sạch)
         #    và đếm số lượng tour 'distinct' (duy nhất) liên quan đến mỗi tỉnh.
-        popular_provinces = Place.objects.values('province', 'province_en').annotate(
+        # Thêm exclude để loại bỏ các Place chưa điền tên tỉnh
+        popular_provinces = Place.objects.exclude(
+            Q(province_en__isnull=True) | Q(province_en="")
+        ).values('province', 'province_en').annotate(
             tour_count=Count('tours', distinct=True)
         ).filter(tour_count__gt=0).order_by('-tour_count')[:6]
 
@@ -683,23 +686,23 @@ def get_popular_destinations(request):
 
         # 2. Lấy ảnh đại diện cho mỗi tỉnh
         for province in popular_provinces:
-            image_url = "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop"
+            # image_url = "https://unsplash.com/photos/aerial-view-of-cars-on-road-during-daytime-5QbZIJV8k4E"
             
-            # 3. Tìm một tour bất kỳ thuộc tỉnh này để lấy ảnh
-            #    Tìm Place đầu tiên trong 'province' này MÀ CÓ tour
-            first_place_in_province = Place.objects.filter(
-                province_en=province['province_en'], 
-                tours__isnull=False
-            ).first()
+            # # 3. Tìm một tour bất kỳ thuộc tỉnh này để lấy ảnh
+            # #    Tìm Place đầu tiên trong 'province' này MÀ CÓ tour
+            # first_place_in_province = Place.objects.filter(
+            #     province_en=province['province_en'], 
+            #     tours__isnull=False
+            # ).first()
 
-            if first_place_in_province:
-                # Lấy tour đầu tiên của place đó
-                first_tour = first_place_in_province.tours.first()
-                if first_tour:
-                    # Lấy ảnh đầu tiên của tour đó
-                    image_obj = TourImage.objects.filter(tour=first_tour).first()
-                    if image_obj:
-                        image_url = request.build_absolute_uri(image_obj.image.url)
+            # if first_place_in_province:
+            #     # Lấy tour đầu tiên của place đó
+            #     first_tour = first_place_in_province.tours.first()
+            #     if first_tour:
+            #         # Lấy ảnh đầu tiên của tour đó
+            #         image_obj = TourImage.objects.filter(tour=first_tour).first()
+            #         if image_obj:
+            #             image_url = request.build_absolute_uri(image_obj.image.url)
 
             response_data.append({
                 # Dùng province_en làm 'id' hoặc key cho React
@@ -707,7 +710,7 @@ def get_popular_destinations(request):
                 'name': province['province'], # Tên tiếng Việt
                 'name_en': province['province_en'], # Tên tiếng Anh
                 'tour_count': province['tour_count'],
-                'image': image_url
+                # 'image': image_url
             })
 
         return Response(response_data, status=status.HTTP_200_OK)
