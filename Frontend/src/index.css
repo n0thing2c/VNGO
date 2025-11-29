@@ -146,4 +146,41 @@
       /* Animation mượt */
       transition-all duration-300 ease-in-out cursor-pointer;
   }
+
+  .btn-vngo-gradient-simple {
+    @apply
+      bg-gradient-to-r from-[#020765] to-[#23c491]
+      hover:opacity-80;
+  }
+}
+
+@layer utilities {
+  /* Bạn đổi mã màu #068F64 ở đây thì toàn bộ web sẽ đổi theo */
+  
+  /* 1. Class cho màu chữ: text-primary */
+  .text-vngo-primary {
+    color: #020765;
+  }
+
+  /* 2. Class cho màu nền: bg-primary */
+  .bg-vngo-primary {
+    background-color: #068F64;
+  }
+
+  /* 3. Class cho viền: border-primary */
+  .border-vngo-primary {
+    border-color: #068F64;
+  }
+
+  /* 4. Class cho viền focus (lúc bấm vào input): ring-primary */
+  /* Cái này hơi đặc biệt, nó set biến màu cho Tailwind ring */
+  .ring-vngo-primary {
+    --tw-ring-color: #068F64;
+  }
+  
+  /* 5. Màu nền nhạt (dùng cho hover): bg-primary-light */
+  /* Thay vì dùng opacity/50, ta tạo luôn 1 màu nhạt cho dễ dùng */
+  .bg-vngo-primary-light {
+    background-color: #E6F7F0; /* Màu xanh rất nhạt pha từ màu gốc */
+  }
 }

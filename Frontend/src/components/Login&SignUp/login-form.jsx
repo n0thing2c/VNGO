@@ -95,7 +95,7 @@ export function LoginForm({ className, ...props }) {
                   name="username"
                   type="username"
                   required
-                  className="h-12 text-base"
+                  className="rounded-full h-12 text-base"
                 />
               </Field>
 
@@ -108,13 +108,13 @@ export function LoginForm({ className, ...props }) {
                   name="password"
                   type="password"
                   required
-                  className="h-12 text-base"
+                  className="rounded-full h-12 text-base"
                 />
               </Field>
 
               <Field>
                 <Button
-                  className="w-full md:w-auto h-12 px-6 text-base"
+                  className="w-full rounded-full md:w-auto h-12 px-6 text-base"
                   type="submit"
                   disabled={loading}
                 >

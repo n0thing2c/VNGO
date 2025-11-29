@@ -116,6 +116,25 @@ export default function TourCreate() {
         "Countryside": "olive",
         "Recreational": "peach",
     };
+    const TOUR_TAG_STYLES = {
+        Nature: "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-transparent",
+        Beach: "bg-sky-100 text-sky-800 hover:bg-sky-200 border-transparent",
+        Trekking: "bg-stone-100 text-stone-800 hover:bg-stone-200 border-transparent",
+        Culture: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-transparent",
+        History: "bg-amber-100 text-amber-800 hover:bg-amber-200 border-transparent",
+        "Local Experience": "bg-teal-100 text-teal-800 hover:bg-teal-200 border-transparent",
+        Sightseeing: "bg-blue-100 text-blue-800 hover:bg-blue-200 border-transparent",
+        Adventure: "bg-rose-100 text-rose-800 hover:bg-rose-200 border-transparent",
+        "Food & Drink": "bg-orange-100 text-orange-800 hover:bg-orange-200 border-transparent",
+        Nightlife: "bg-violet-100 text-violet-800 hover:bg-violet-200 border-transparent",
+        "City Life": "bg-slate-100 text-slate-800 hover:bg-slate-200 border-transparent",
+        Shopping: "bg-pink-100 text-pink-800 hover:bg-pink-200 border-transparent",
+        Photography: "bg-zinc-100 text-zinc-800 hover:bg-zinc-200 border-transparent",
+        Relaxation: "bg-lime-100 text-lime-800 hover:bg-lime-200 border-transparent",
+        "Water Sports": "bg-cyan-100 text-cyan-800 hover:bg-cyan-200 border-transparent",
+        Countryside: "bg-green-100 text-green-800 hover:bg-green-200 border-transparent",
+        Recreational: "bg-fuchsia-100 text-fuchsia-800 hover:bg-fuchsia-200 border-transparent",
+    };
 
     //Price
     const [price, setprice] = useState("");
@@ -125,6 +144,7 @@ export default function TourCreate() {
     const [stopsDescriptions, setStopsDescriptions] = useState([]);
     //Add Stops
     const [addedStops, setAddedStops] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleAddStop = (newStop) => {
         setAddedStops((prevStops) => {
@@ -199,6 +219,10 @@ export default function TourCreate() {
              toast.error("Please fill in required fields");
              return;
         }
+        if (isSubmitting) return; // chặn spam khi chưa xử lý xong
+
+        setIsSubmitting(true);
+
         // Tách description ra thành mảng chuỗi để gửi xuống backend
         // Backend mong đợi: stops_descriptions = ["desc 1", "desc 2", ...] (JSON list string)
         const stopsDescriptions = addedStops.map((stop) => stop.description || "");
@@ -225,6 +249,9 @@ export default function TourCreate() {
         if (result.success) {
             setTimeout(() => window.location.reload(), 1500);
         }
+        else {
+            setIsSubmitting(false);
+        }
     };
     
     return (
@@ -234,7 +261,7 @@ export default function TourCreate() {
                 <Card className="w-full max-w-lg sm:max-w-md lg:max-w-xl">
                     <CardHeader>
                         <CardTitle>
-                            <h1 className="text-center text-lg sm:text-lg lg:text-2xl font-bold lg:p-4 md:p-3 sm:p-0">
+                            <h1 className="text-[#020765] text-center text-lg sm:text-lg lg:text-2xl font-bold lg:p-4 md:p-3 sm:p-0">
                                 ADD TOUR PLACES
                             </h1>
                         </CardTitle>
@@ -250,8 +277,8 @@ export default function TourCreate() {
                         </div>
 
                         <div className="space-y-4 w-full">
-                            <div className="rounded-2xl border-[#23C491] border-2 p-3">
-                                <FieldLabel className="text-md sm:text-sm lg:text-md text-[#23C491] font-bold">
+                            <div className="rounded-2xl border-[#068F64] border-2 p-3">
+                                <FieldLabel className="text-md sm:text-sm lg:text-md text-[#068F64] font-bold">
                                     Tour Schedule
                                 </FieldLabel>
                             </div>
@@ -271,7 +298,7 @@ export default function TourCreate() {
                 <Card className="w-full max-w-lg sm:max-w-md lg:max-w-lg">
                     <CardHeader>
                         <CardTitle>
-                            <h1 className="text-center text-lg sm:text-lg lg:text-2xl font-bold lg:p-4 md:p-3 sm:p-0">
+                            <h1 className="text-[#020765] text-center text-lg sm:text-lg lg:text-2xl font-bold lg:p-4 md:p-3 sm:p-0">
                                 ADD TOUR INFO
                             </h1>
                         </CardTitle>
@@ -472,7 +499,7 @@ export default function TourCreate() {
                                 tags={TagList}
                                 selectedTags={selectedTags}
                                 setSelectedTags={setSelectedTags}
-                                tagVariants={TOUR_TAG_VARIANTS}
+                                tagVariants={TOUR_TAG_STYLES}//{TOUR_TAG_VARIANTS}
                             />
                         </div>
                     </CardContent>
@@ -481,14 +508,17 @@ export default function TourCreate() {
 
                     <CardFooter className="flex justify-end">
                         <button
-                            className="
-            bg-[#23C491] text-white px-4 py-2
-            rounded-2xl font-semibold text-base xl:text-lg
-            hover:bg-white hover:border-1 hover:border-black hover:text-black
-          "
+                            disabled={isSubmitting}
+                            className={`
+                                bg-[#068F64] text-white px-4 py-2
+                                rounded-full font-semibold text-base xl:text-lg
+                                border border-transparent
+                                hover:bg-white hover:border-1 hover:border-black hover:text-black
+                                ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}
+                            `}
                             onClick={handleSubmit}
                         >
-                            Create Tour
+                            {isSubmitting ? "Creating..." : "Create Tour"}
                         </button>
                     </CardFooter>
                 </Card>

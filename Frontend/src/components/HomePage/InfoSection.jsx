@@ -1,9 +1,17 @@
+import QuestionIcon from "@/assets/homepage/question.png"
 export default function InfoSection() {
     return(
         <section className="py-16 md:py-20 lg:py-24 bg-gray-50">
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              <div className="flex justify-center mb-4 md:mb-6">
+                <img
+                  src={QuestionIcon}
+                  alt="Question Icon"
+                  className="w-8 md:w-12 lg:w-16 h-auto object-cover"
+                />
+              </div>
+              <h2 className="text-vngo-primary text-3xl md:text-4xl font-bold mb-4">
                 Why Choose Us?
               </h2>
               <p className="text-gray-600 mb-12 max-w-2xl mx-auto">

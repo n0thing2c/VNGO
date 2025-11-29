@@ -6,6 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import ReviewIcon from "@/assets/homepage/review.png"
 
 // mock data
 const reviews = [
@@ -43,11 +44,16 @@ export default function ReviewsSection() {
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12 lg:mb-16">
               <div className="flex justify-center mb-4 md:mb-6">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
+                {/* <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
                   <span className="text-5xl">💬</span>
-                </div>
+                </div> */}
+                <img
+                  src={ReviewIcon}
+                  alt="Review Icon"
+                  className="w-8 md:w-12 lg:w-16 h-auto object-cover"
+                />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-2">What travellers say</h2>
+              <h2 className="text-vngo-primary text-3xl md:text-4xl font-bold text-black mb-2">What travellers say</h2>
             </div>
             
             <Carousel

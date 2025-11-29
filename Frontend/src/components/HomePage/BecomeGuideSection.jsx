@@ -23,7 +23,7 @@ export default function BecomeGuideSection() {
             {/* Content Side */}
             <div className="flex-1 py-16 md:py-20 lg:py-28 px-6 md:px-12 lg:px-16 flex items-center justify-center md:justify-start">
               <div className="max-w-xl text-center md:text-left">
-                <h2 className="mb-6 text-black text-3xl md:text-4xl font-bold">Become a guide</h2>
+                <h2 className="mb-6 text-vngo-primary text-black text-3xl md:text-4xl font-bold">Become a guide</h2>
                 <p className="mb-8 text-black/55 leading-relaxed">
                   If you're ready to join a network of creative local tour guides who thrive on
                   providing visitors with truly memorable experiences, we'd love to hear from you

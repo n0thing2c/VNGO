@@ -585,8 +585,8 @@ export default function TourEdit() {
                     <CardFooter className="flex justify-end gap-4">
                         <Link to={`/tour/post/${tour_id}`}
                               className="
-                bg-red-500 text-white px-4 py-2
-                rounded-2xl font-semibold text-base xl:text-lg
+                bg-[#CC3737] text-white px-4 py-2
+                rounded-full font-semibold text-base xl:text-lg
                 hover:bg-white hover:border-1 hover:border-black hover:text-black
               "
 
@@ -595,8 +595,8 @@ export default function TourEdit() {
                         </Link>
                         <button
                             className="
-                bg-[#23C491] text-white px-4 py-2
-                rounded-2xl font-semibold text-base xl:text-lg
+                bg-[#068F64] text-white px-4 py-2
+                rounded-full font-semibold text-base xl:text-lg
                 hover:bg-white hover:border-1 hover:border-black hover:text-black
               "
                             onClick={handleSubmit}

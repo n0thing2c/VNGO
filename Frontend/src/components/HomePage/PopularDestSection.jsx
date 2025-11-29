@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin } from "lucide-react";
+import PopDestIcon from "@/assets/homepage/popdest.png"
 
 export default function PopularDestSection({ popularDestinations = [] }) {
   return (
@@ -9,11 +10,16 @@ export default function PopularDestSection({ popularDestinations = [] }) {
           {/* Icon and text */}
           <div className="text-center mb-12 md:mb-16">
             <div className="flex justify-center mb-4 md:mb-6">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
+              {/* <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
                 <span className="text-3xl md:text-5xl">🗺️</span>
-              </div>
+              </div> */}
+              <img
+                  src={PopDestIcon}
+                  alt="PopDest Icon"
+                  className="w-8 md:w-12 lg:w-16 h-auto object-cover"
+              />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
+            <h2 className="text-vngo-primary text-3xl md:text-4xl font-bold mb-4 text-center">
               Popular Destinations
             </h2>
             <p className="text-center text-gray-600 max-w-2xl mx-auto">
