@@ -16,7 +16,7 @@ import {Checkbox} from "../components/ui/checkbox";
 import {Label} from "../components/ui/label";
 import {useSearchParams} from 'react-router-dom'; // read params
 import TourCard from '@/components/TourCard';
-import {getProvinceImage} from '@/utils/provinceImages';
+import {getProvinceHeroImage} from '@/utils/provinceImages';
 
 // API
 import {API_ENDPOINTS} from "@/constant";
@@ -66,7 +66,7 @@ const ToursShowPage = () => {
     // const heroTitle = searchTerm || selectedLocation || "Discover All Tours";
 
     // State cho ảnh hero
-    const [heroImage, setHeroImage] = useState(getProvinceImage('')) // Lấy ảnh default ban đầu
+    const [heroImage, setHeroImage] = useState(getProvinceHeroImage('')) // Lấy ảnh default ban đầu
 
     //Sorting
     const SORT_OPTIONS = [
@@ -113,8 +113,13 @@ const ToursShowPage = () => {
         setSearchTerm(currentSearch);
         setSelectedLocation(currentLocation);
 
-        const query = currentSearch || currentLocation;
-        setHeroImage(getProvinceImage(query));
+        let queryForImage = '';
+        if (currentLocation) {
+            queryForImage = currentLocation;
+        } else if (currentSearch) {
+            queryForImage = currentSearch;
+        }
+        setHeroImage(getProvinceHeroImage(queryForImage));
     }, [searchParams]); // Hook chạy mỗi khi URL param thay đổi
 
     // --- Fetch Tours (khi filter thay đổi) ---
@@ -184,11 +189,11 @@ const ToursShowPage = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* --- Hero Section --- */}
-            <div className="relative w-full h-48 md:h-64 bg-gray-800">
+            <div className="relative w-full h-64 md:h-72 bg-gray-800">
                 <img
                     src={heroImage || "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"}
                     alt="Scenic view"
-                    className="w-full h-full object-cover opacity-50"
+                    className="w-full h-full object-cover object-bottom opacity-80"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                     {/* <h1 className="text-3xl md:text-5xl font-bold text-white text-center px-4 capitalize">
