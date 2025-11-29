@@ -91,6 +91,26 @@ export const profileService = {
             return { success: false, error: err };
         }
     },
+    getTouristPublicProfile: async (touristId) => {
+        if (!touristId) {
+            return { success: false, error: new Error("Tourist ID is required") };
+        }
+
+        try {
+            const res = await api.get(`/profiles/tourist/public/${touristId}/`);
+            return { success: true, data: res.data };
+        } catch (err) {
+            console.error("Error fetching public tourist profile:", err);
+            if (err.response?.data) {
+                toast.error("Failed to load tourist profile", {
+                    description: err.response.data.detail || err.response.data.error || "Unknown error",
+                });
+            } else {
+                toast.error("Unable to connect to the server.");
+            }
+            return { success: false, error: err };
+        }
+    },
     getGuideAchievements: async (guideId) => {
         if (!guideId) {
             return { success: false, error: new Error("Guide ID is required") };
