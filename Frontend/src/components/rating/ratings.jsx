@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card.jsx";
 import { FieldLabel } from "@/components/ui/field.jsx";
-import { Star, Heart } from "lucide-react"; // add Heart
+import { Star } from "lucide-react"; // only stars
 import AlbumPhotoFrame from "@/components/albumframes.jsx";
 import { Badge } from "@/components/ui/badge.jsx";
 import {
@@ -13,9 +13,9 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination.jsx";
-import { TOUR_TAG_VARIANTS, GUIDE_TAG_VARIANTS } from "@/components/rating/tag_variants.js";
+import { TOUR_TAG_VARIANTS } from "@/components/rating/tag_variants.js";
 
-const RatingList = ({ ratings = [], type = "tour" }) => {
+const RatingList = ({ ratings = [], showTourName = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const ratingsPerPage = 4;
   const [expandedReviews, setExpandedReviews] = useState({});
@@ -33,14 +33,11 @@ const RatingList = ({ ratings = [], type = "tour" }) => {
     setExpandedReviews((prev) => ({ ...prev, [idx]: !prev[idx] }));
   };
 
-  // Pick correct tag variants based on type
-  const TAG_VARIANTS = type === "tour" ? TOUR_TAG_VARIANTS : GUIDE_TAG_VARIANTS;
-
   return (
     <div className="flex flex-col space-y-4">
       {paginatedRatings.map((rating, idx) => (
         <div key={idx} className="bg-transparent p-4 flex flex-col gap-4 border-0">
-          {/* Top Row: Avatar + Name + Stars/Hearts */}
+          {/* Top Row: Avatar + Name + Stars */}
           <div className="flex flex-row gap-4 items-start">
             <div className="flex-shrink-0 w-16">
               <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-gray-300 flex items-center justify-center font-bold overflow-hidden">
@@ -65,28 +62,23 @@ const RatingList = ({ ratings = [], type = "tour" }) => {
                 {rating.tourist?.username || "Anonymous"}
               </FieldLabel>
 
+              {showTourName && rating.tour?.name && (
+                <p className="text-sm text-gray-500 mt-0.5">Tour: {rating.tour.name}</p>
+              )}
+
               <div className="flex flex-row space-x-1 mt-1">
-  {Array.from({ length: 5 }).map((_, i) => {
-  const isFilled = i < rating.rating;
-  const Icon = type === "guide" ? Heart : Star;
-
-  // Colors
-  const filledColor = type === "guide" ? "#f87171" : "#facc15"; // Heart red, Star yellow
-  const emptyColor = "#d1d5db"; // gray
-
-  return (
-    <Icon
-      key={i}
-      className="w-5 h-5"
-      fill={isFilled ? filledColor : emptyColor}
-      stroke={isFilled ? filledColor : emptyColor}
-    />
-  );
-})}
-
-
-</div>
-
+                {Array.from({ length: 5 }).map((_, i) => {
+                  const isFilled = i < rating.rating;
+                  return (
+                    <Star
+                      key={i}
+                      className="w-5 h-5"
+                      fill={isFilled ? "#facc15" : "#d1d5db"}
+                      stroke={isFilled ? "#facc15" : "#d1d5db"}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -108,13 +100,15 @@ const RatingList = ({ ratings = [], type = "tour" }) => {
           )}
 
           {/* Images */}
-          {rating.images && rating.images.length > 0 && <AlbumPhotoFrame images={rating.images} />}
+          {rating.images && rating.images.length > 0 && (
+            <AlbumPhotoFrame images={rating.images} />
+          )}
 
           {/* Tags */}
           {rating.review_tags && rating.review_tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-1">
               {rating.review_tags.map((tag, i) => (
-                <Badge key={i} variant={TAG_VARIANTS[tag] || "default"}>
+                <Badge key={i} variant={TOUR_TAG_VARIANTS[tag] || "default"}>
                   {tag}
                 </Badge>
               ))}

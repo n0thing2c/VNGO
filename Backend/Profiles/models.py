@@ -53,29 +53,29 @@ class Guide(models.Model):
     gender = models.CharField(
         max_length=10, choices=Gender.choices, blank=True, null=True
     )
-    rating_total = models.PositiveIntegerField(
-        default=0, help_text="Sum of all ratings received"
-    )
-    rating_count = models.PositiveIntegerField(
-        default=0, help_text="Number of ratings received"
-    )
+    # rating_total = models.PositiveIntegerField(
+    #     default=0, help_text="Sum of all ratings received"
+    # )
+    # rating_count = models.PositiveIntegerField(
+    #     default=0, help_text="Number of ratings received"
+    # )
 
     languages = models.JSONField(default=list, blank=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     face_image = models.URLField(max_length=2055, blank=True, null=True)
     bio = models.TextField(blank=True, null=True, help_text="About me section")
 
-    def average_rating(self):
-        """Return average rating, or 0 if no ratings"""
-        if self.rating_count > 0:
-            return self.rating_total / self.rating_count
-        return 0
-
-    def add_rating(self, value: int):
-        """Add a new rating"""
-        self.rating_total += value
-        self.rating_count += 1
-        self.save()
+    # def average_rating(self):
+    #     """Return average rating, or 0 if no ratings"""
+    #     if self.rating_count > 0:
+    #         return self.rating_total / self.rating_count
+    #     return 0
+    #
+    # def add_rating(self, value: int):
+    #     """Add a new rating"""
+    #     self.rating_total += value
+    #     self.rating_count += 1
+    #     self.save()
 
     def __str__(self):
         return f"Guide Profile for {self.user.username}"
@@ -91,44 +91,44 @@ class Guide(models.Model):
             return len(languages) > 0
         return bool(languages)
 
-class GuideRating(models.Model):
-    tourist = models.ForeignKey(
-        Tourist,
-        on_delete=models.CASCADE,
-        related_name='guide_ratings',
-        null=True,
-        blank=True,
-    )
-    guide = models.ForeignKey(
-        Guide,
-        on_delete=models.CASCADE,
-        related_name='ratings'
-    )
-    rating = models.PositiveSmallIntegerField()  # 1 to 5 stars
-    review = models.TextField(max_length=1000, blank=True, null=True)
-    review_tags = models.JSONField(
-        default=list,
-        blank=True,
-        help_text="JSON array of tags describing this review, e.g., ['Friendly', 'Professional']"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ('tourist', 'guide')  # one user can rate a guide only once
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"{self.tourist} - {self.guide} ({self.rating}⭐)"
-
-
-class GuideRatingImage(models.Model):
-    rating = models.ForeignKey(
-        GuideRating,
-        on_delete=models.CASCADE,
-        related_name='images'
-    )
-    image = models.ImageField(upload_to='guide_rating_images/')
-
-    def __str__(self):
-        return f"Image for {self.rating}"
+# class GuideRating(models.Model):
+#     tourist = models.ForeignKey(
+#         Tourist,
+#         on_delete=models.CASCADE,
+#         related_name='guide_ratings',
+#         null=True,
+#         blank=True,
+#     )
+#     guide = models.ForeignKey(
+#         Guide,
+#         on_delete=models.CASCADE,
+#         related_name='ratings'
+#     )
+#     rating = models.PositiveSmallIntegerField()  # 1 to 5 stars
+#     review = models.TextField(max_length=1000, blank=True, null=True)
+#     review_tags = models.JSONField(
+#         default=list,
+#         blank=True,
+#         help_text="JSON array of tags describing this review, e.g., ['Friendly', 'Professional']"
+#     )
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#
+#     class Meta:
+#         unique_together = ('tourist', 'guide')  # one user can rate a guide only once
+#         ordering = ['-created_at']
+#
+#     def __str__(self):
+#         return f"{self.tourist} - {self.guide} ({self.rating}⭐)"
+#
+#
+# class GuideRatingImage(models.Model):
+#     rating = models.ForeignKey(
+#         GuideRating,
+#         on_delete=models.CASCADE,
+#         related_name='images'
+#     )
+#     image = models.ImageField(upload_to='guide_rating_images/')
+#
+#     def __str__(self):
+#         return f"Image for {self.rating}"

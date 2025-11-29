@@ -9,15 +9,13 @@ from django.core.files.storage import default_storage
 from django.conf import settings
 import os
 import uuid
-from .models import Tourist, Guide, GuideRating, GuideRatingImage
+from .models import Tourist, Guide
 from .serializers import (
     TouristProfileSerializer,
     GuideProfileSerializer,
-    GuideRatingSerializer,
-    GuideRatingImageSerializer,
     GuidePublicProfileSerializer,
 )
-from django.db.models import Count, F
+from django.db.models import Count, F, Avg
 from Tour.models import TourRating, Tour
 from Tour.serializers import TourRatingSerializer
 from Management.models import PastTour
@@ -91,96 +89,96 @@ class ProfileImageUploadView(APIView):
 
         return Response({"url": absolute_url}, status=status.HTTP_201_CREATED)
 
-class GuideRateView(APIView):
-    """
-    Submit a rating for a guide.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (MultiPartParser, FormParser)
-
-    def post(self, request, guide_id):
-        user = request.user
-        rating_value = request.data.get("rating")
-        review = request.data.get("review", "")
-        review_tags = request.data.get("review_tags", "[]")  # default to empty list
-        images = request.FILES.getlist("images")
-
-        # Validate rating
-        if not rating_value:
-            return Response({"detail": "Rating is required."}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            rating_value = int(rating_value)
-            if rating_value < 1 or rating_value > 5:
-                raise ValueError
-        except ValueError:
-            return Response({"detail": "Rating must be an integer between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Parse review_tags from JSON string to Python list
-        if isinstance(review_tags, str):
-            try:
-                review_tags = json.loads(review_tags)
-                if not isinstance(review_tags, list):
-                    review_tags = []
-            except json.JSONDecodeError:
-                review_tags = []
-
-        # Get guide
-        guide = get_object_or_404(Guide, pk=guide_id)
-
-        # Get or create tourist profile
-        tourist_profile, _ = Tourist.objects.get_or_create(user=user)
-
-        # Check if tourist has completed at least one tour with this guide
-        has_completed = PastTour.objects.filter(
-            tourist=tourist_profile,
-            guide=guide
-        ).exists()
-        if not has_completed:
-            return Response(
-                {"detail": "You can only rate guides you have completed a tour with."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # Check if the tourist already rated this guide
-        if GuideRating.objects.filter(tourist=tourist_profile, guide=guide).exists():
-            return Response(
-                {"detail": "You have already rated this guide."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Create the rating
-        rating_obj = GuideRating.objects.create(
-            tourist=tourist_profile,
-            guide=guide,
-            rating=rating_value,
-            review=review,
-            review_tags=review_tags
-        )
-
-        # Handle images
-        for img in images:
-            GuideRatingImage.objects.create(rating=rating_obj, image=img)
-
-        # Update guide average rating
-        all_ratings = guide.ratings.all()
-        guide.rating_total = sum(r.rating for r in all_ratings)
-        guide.rating_count = all_ratings.count()
-        guide.save()
-
-        return Response(
-            {"success": True, "data": GuideRatingSerializer(rating_obj, context={"request": request}).data}
-        )
-
-
-
-class GuideRatingsView(generics.ListAPIView):
-    permission_classes = [permissions.AllowAny]
-    serializer_class = GuideRatingSerializer
-
-    def get_queryset(self):
-        guide_id = self.kwargs.get("guide_id")
-        guide = get_object_or_404(Guide, pk=guide_id)
-        return guide.ratings.all()
+# class GuideRateView(APIView):
+#     """
+#     Submit a rating for a guide.
+#     """
+#     permission_classes = [permissions.IsAuthenticated]
+#     parser_classes = (MultiPartParser, FormParser)
+#
+#     def post(self, request, guide_id):
+#         user = request.user
+#         rating_value = request.data.get("rating")
+#         review = request.data.get("review", "")
+#         review_tags = request.data.get("review_tags", "[]")  # default to empty list
+#         images = request.FILES.getlist("images")
+#
+#         # Validate rating
+#         if not rating_value:
+#             return Response({"detail": "Rating is required."}, status=status.HTTP_400_BAD_REQUEST)
+#         try:
+#             rating_value = int(rating_value)
+#             if rating_value < 1 or rating_value > 5:
+#                 raise ValueError
+#         except ValueError:
+#             return Response({"detail": "Rating must be an integer between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         # Parse review_tags from JSON string to Python list
+#         if isinstance(review_tags, str):
+#             try:
+#                 review_tags = json.loads(review_tags)
+#                 if not isinstance(review_tags, list):
+#                     review_tags = []
+#             except json.JSONDecodeError:
+#                 review_tags = []
+#
+#         # Get guide
+#         guide = get_object_or_404(Guide, pk=guide_id)
+#
+#         # Get or create tourist profile
+#         tourist_profile, _ = Tourist.objects.get_or_create(user=user)
+#
+#         # Check if tourist has completed at least one tour with this guide
+#         has_completed = PastTour.objects.filter(
+#             tourist=tourist_profile,
+#             guide=guide
+#         ).exists()
+#         if not has_completed:
+#             return Response(
+#                 {"detail": "You can only rate guides you have completed a tour with."},
+#                 status=status.HTTP_403_FORBIDDEN
+#             )
+#
+#         # Check if the tourist already rated this guide
+#         if GuideRating.objects.filter(tourist=tourist_profile, guide=guide).exists():
+#             return Response(
+#                 {"detail": "You have already rated this guide."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+#
+#         # Create the rating
+#         rating_obj = GuideRating.objects.create(
+#             tourist=tourist_profile,
+#             guide=guide,
+#             rating=rating_value,
+#             review=review,
+#             review_tags=review_tags
+#         )
+#
+#         # Handle images
+#         for img in images:
+#             GuideRatingImage.objects.create(rating=rating_obj, image=img)
+#
+#         # Update guide average rating
+#         all_ratings = guide.ratings.all()
+#         guide.rating_total = sum(r.rating for r in all_ratings)
+#         guide.rating_count = all_ratings.count()
+#         guide.save()
+#
+#         return Response(
+#             {"success": True, "data": GuideRatingSerializer(rating_obj, context={"request": request}).data}
+#         )
+#
+#
+#
+# class GuideRatingsView(generics.ListAPIView):
+#     permission_classes = [permissions.AllowAny]
+#     serializer_class = GuideRatingSerializer
+#
+#     def get_queryset(self):
+#         guide_id = self.kwargs.get("guide_id")
+#         guide = get_object_or_404(Guide, pk=guide_id)
+#         return guide.ratings.all()
 
 
 
@@ -207,8 +205,11 @@ class GuideAchievementView(APIView):
         guide = get_object_or_404(Guide, pk=guide_id)
         achievements = []
 
+        agg = TourRating.objects.filter(tour__guide=guide).aggregate(avg_rating=Avg('rating'))
+        avg_rating = agg['avg_rating'] or 0
+
         # Highly Rated: average rating 4+ stars
-        if guide.average_rating() >= 4:
+        if avg_rating >= 4:
             achievements.append("Loved")
 
         # Multilingual: knows 3+ languages

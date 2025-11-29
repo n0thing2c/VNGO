@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Tour, Place, TourPlace ,TourImage, TourRating, TourRatingImage
 from django.conf import settings
+from django.db.models import Avg, Count
 class PlaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Place
@@ -75,11 +76,19 @@ class TourSerializer(serializers.ModelSerializer):
     def get_guide(self, obj):
         guide = obj.guide
         if guide:
+            # compute average rating and count directly from TourRating
+            agg = TourRating.objects.filter(tour__guide=guide).aggregate(
+                avg_rating=Avg('rating'),
+                count_rating=Count('id')
+            )
+            avg_rating = round(agg['avg_rating'] or 0, 2)
+            count_rating = agg['count_rating'] or 0
+
             return {
                 "id": guide.user.id,
                 "name": guide.name,
-                "rating": guide.average_rating(),
-                "rating_count": guide.rating_count,
+                "rating": avg_rating,  # <- average tour rating
+                "rating_count": count_rating,  # <- total tour ratings count
                 "languages": guide.languages,
                 "location": guide.location,
                 "avatar": guide.face_image,

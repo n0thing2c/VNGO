@@ -6,8 +6,6 @@ urlpatterns = [
     path(
         "upload-avatar/", views.ProfileImageUploadView.as_view(), name="upload-avatar"
     ),
-    path("guide/rate/<int:guide_id>/", views.GuideRateView.as_view(), name="guide-rate"),
-    path("guide/ratings/<int:guide_id>/", views.GuideRatingsView.as_view(), name="guide-ratings"),
     path("guide/public/<int:guide_id>/", views.GuidePublicProfileView.as_view(), name="guide-public-profile"),
     path("guide/achievements/<int:guide_id>/",views.GuideAchievementView.as_view(), name="guide-achievements"),
 ]

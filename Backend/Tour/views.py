@@ -469,6 +469,43 @@ def tour_get_ratings(request, tour_id):
         serialized_ratings.append(rating_data)
 
     return Response({"success": True, "ratings": serialized_ratings}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def guide_get_all_tour_ratings(request, guide_id):
+    """
+    Get all ratings for all tours created by a specific guide.
+    Returns serialized rating data including images and tour info.
+    """
+    try:
+        guide = Guide.objects.get(pk=guide_id)
+    except Guide.DoesNotExist:
+        return Response({'success': False, 'error': 'Guide not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    ratings = TourRating.objects.filter(tour__guide=guide).order_by('-created_at')
+    serialized_ratings = []
+
+    for rating in ratings:
+        serializer = TourRatingSerializer(rating, context={'request': request})
+        data = serializer.data
+
+        # Include images for this rating
+        images = TourRatingImage.objects.filter(rating=rating)
+        data['images'] = [request.build_absolute_uri(img.image.url) for img in images]
+
+        # Include tour info
+        data['tour'] = {
+            'id': rating.tour.id,
+            'name': rating.tour.name,
+        }
+
+        serialized_ratings.append(data)
+
+    return Response({
+        'success': True,
+        'ratings': serialized_ratings,
+    }, status=status.HTTP_200_OK)
+
 # ------------------------
 # All Places
 # ------------------------

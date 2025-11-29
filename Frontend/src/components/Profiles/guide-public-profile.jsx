@@ -108,6 +108,7 @@ export function GuidePublicProfile({guideId}) {
     const [achievements, setAchievements] = useState([]);
     const canRateGuide = user?.role === "tourist";
     const [activeTab, setActiveTab] = useState("bio"); // "bio" or "achievements"
+    const [averageRating, setAverageRating] = useState(0);
 
     const normalizeReviews = (data) => {
         return (data || []).map((r) => ({
@@ -132,7 +133,7 @@ export function GuidePublicProfile({guideId}) {
             const [profileRes, toursRes, reviewsRes, achievementsRes] = await Promise.all([
                 profileService.getGuidePublicProfile(guideId),
                 tourService.getAllToursByGuide(guideId),
-                profileService.getGuideRatings(guideId),
+                tourService.getAllTourRatingsByGuide(guideId),
                 profileService.getGuideAchievements(guideId),
             ]);
 
@@ -151,9 +152,22 @@ export function GuidePublicProfile({guideId}) {
             if (toursRes.success) setTours(toursRes.data || []);
             else setTours([]);
 
-            if (reviewsRes.success) setReviews(normalizeReviews(reviewsRes.data));
-            else setReviews([]);
 
+            if (reviewsRes.success) {
+                const normalized = normalizeReviews(reviewsRes.data);
+                setReviews(normalized);
+
+                // Compute average rating
+                if (normalized.length > 0) {
+                    const total = normalized.reduce((sum, r) => sum + (r.rating || 0), 0);
+                    setAverageRating(total / normalized.length);
+                } else {
+                    setAverageRating(0);
+                }
+            } else {
+                setReviews([]);
+                setAverageRating(0);
+            }
             if (achievementsRes.success) {
                 setAchievements(achievementsRes.data?.achievements || []);
                 setGuide(prev => ({
@@ -176,22 +190,11 @@ export function GuidePublicProfile({guideId}) {
         fetchProfile();
     }, [fetchProfile]);
 
-    const ratingValue = useMemo(() => Number(guide?.average_rating || 0), [guide]);
 
     const handleViewTour = (tourId) => {
         if (!tourId) return;
         navigate(ROUTES.TOUR_POST(tourId));
     };
-
-    const handleRated = async () => {
-        try {
-            const reviewsRes = await profileService.getGuideRatings(guideId);
-            if (reviewsRes.success) setReviews(normalizeReviews(reviewsRes.data));
-        } catch (err) {
-            console.error("Failed to fetch reviews after rating:", err);
-        }
-    };
-
     const scrollTours = (direction) => {
         if (!tourListRef.current) return;
         const scrollAmount = 260;
@@ -243,11 +246,13 @@ export function GuidePublicProfile({guideId}) {
                             <span>{guide.languages?.length ? guide.languages.join(", ") : "Languages not set"}</span>
                         </div>
                         <div className="flex items-center pt-1">
-                            <HeartRating rating={ratingValue}/>
+                            <HeartRating rating={averageRating}/>
                             <span className="text-sm text-gray-600 ml-2">
-                                {ratingValue.toFixed(1)} ({guide.rating_count || 0} ratings)
+                                {averageRating.toFixed(1)} ({reviews.length} review{reviews.length === 1 ? "" : "s"})
                             </span>
                         </div>
+
+
                         {/*                {userRole !== "guide" && (*/}
                         {/*  <Button*/}
                         {/*    className="bg-[#068F64] rounded-2xl w-auto h-auto text-[9px] flex items-center gap-1"*/}
@@ -372,21 +377,6 @@ export function GuidePublicProfile({guideId}) {
                     )}
                 </div>
 
-                {/* Rate Guide Dialog */}
-                {canRateGuide && (
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button
-                                className="w-full bg-neutral-200 text-gray-600 hover:bg-white hover:border hover:border-neutral-400 hover:text-black">
-                                Write your review here
-                            </Button>
-                        </DialogTrigger>
-
-                        <DialogContent className="w-full sm:max-w-3xl break-words">
-                            <Rate id={guideId} type="guide" onRated={handleRated}/>
-                        </DialogContent>
-                    </Dialog>
-                )}
                 <FieldSeparator className="p-10"/>
                 {/* Guide Reviews */}
                 <div>
@@ -403,7 +393,7 @@ export function GuidePublicProfile({guideId}) {
                             No reviews yet. Be the first to share your experience!
                         </FieldDescription>
                     ) : (
-                        <RatingList ratings={reviews} type="guide"/>
+                        <RatingList ratings={reviews} showTourName={true}/>
                     )}
                 </div>
             </div>

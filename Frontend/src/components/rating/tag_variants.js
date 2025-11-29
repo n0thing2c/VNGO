@@ -10,7 +10,7 @@ export const TOUR_TAG_VARIANTS = {
   "Great Value": "lime",
   "Family Friendly": "mint",
   "Friendly Guide": "brightgreen",
-  "Unfriendly Staff": "plum",
+  "Unfriendly Guide": "plum",
   "Boring": "sand",
   "Overpriced": "mustard",
   "Low Quality Food": "peach",
