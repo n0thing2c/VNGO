@@ -6,7 +6,7 @@ class WebSocketService {
     this.roomName = null;
     this.listeners = new Map();
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
+    this.maxReconnectAttempts = 10;
     this.reconnectDelay = 1000;
   }
 

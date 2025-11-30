@@ -25,10 +25,20 @@ const normalizeConversations = (items) => {
         : 0;
 
     if (!existing || currentTime >= existingTime) {
-      map.set(item.room, {
+      // Preserve important fields from existing if item doesn't have them
+      const merged = {
         ...existing,
         ...item,
-      });
+      };
+      // Preserve avatar from existing if item doesn't have one (or is null)
+      if (existing?.contactAvatar && (!item.contactAvatar || item.contactAvatar === null)) {
+        merged.contactAvatar = existing.contactAvatar;
+      }
+      // Preserve contactId from existing if item has null contactId but existing has a valid one
+      if (existing?.contactId && (!item.contactId || item.contactId === null || item.contactId === item.room)) {
+        merged.contactId = existing.contactId;
+      }
+      map.set(item.room, merged);
     }
   });
 
@@ -208,15 +218,21 @@ export default function ChatPage() {
           // If message is from current user, keep existing?.contactId
         }
 
-        // Fallback: If still no valid otherUserId, use roomName
+        // Fallback: If still no valid otherUserId, keep existing contactId or null
+        // Don't use roomName as contactId as it's not a valid user ID
         if (!otherUserId || otherUserId === roomName) {
-          otherUserId = existing?.contactId || roomName;
+          otherUserId = existing?.contactId || null;
         }
 
-        // Get avatar from message sender if available, otherwise use existing
+        // Get avatar from message sender if available, otherwise use existing or selectedContact
+        // Fix: Preserve avatar - prioritize existing, then message sender, then selectedContact
         let contactAvatar = existing?.contactAvatar;
         if (message?.sender && message.sender.id !== user?.id) {
+          // Message from other person - use their avatar if available, otherwise keep existing
           contactAvatar = message.sender.avatar || message.sender.avatar_url || contactAvatar;
+        } else if (!contactAvatar && selectedRoom === roomName && selectedContact?.room === roomName) {
+          // Message from current user and no existing avatar - get from selectedContact
+          contactAvatar = selectedContact.contactAvatar || null;
         }
 
         const updatedConversation = {
@@ -302,7 +318,7 @@ export default function ChatPage() {
         return updatedList;
       });
     },
-    [withDisplayName, selectedRoom, user?.id, user?.username, resolveRoomMateName, sortByLatest]
+    [withDisplayName, selectedRoom, selectedContact, user?.id, user?.username, resolveRoomMateName, sortByLatest]
   );
 
   // Load conversations from API when component mounts
@@ -310,7 +326,12 @@ export default function ChatPage() {
     const loadConversations = async () => {
       try {
         const data = await chatService.getConversations();
-        const normalized = normalizeAndEnhance(data || []);
+        // Fix: If contactId is the same as roomName, set it to null (not a valid user ID)
+        const cleaned = (data || []).map(conv => ({
+          ...conv,
+          contactId: conv.contactId && conv.contactId !== conv.room ? conv.contactId : null
+        }));
+        const normalized = normalizeAndEnhance(cleaned);
         setConversations(normalized);
 
         // Auto-select first conversation if available and no room is selected
@@ -335,7 +356,12 @@ export default function ChatPage() {
       try {
         const data = await chatService.getConversations();
         if (isCancelled) return;
-        const normalized = normalizeAndEnhance(data || []);
+        // Fix: If contactId is the same as roomName, set it to null (not a valid user ID)
+        const cleaned = (data || []).map(conv => ({
+          ...conv,
+          contactId: conv.contactId && conv.contactId !== conv.room ? conv.contactId : null
+        }));
+        const normalized = normalizeAndEnhance(cleaned);
         setConversations((prev) => {
           // Merge keeping latest info and order
           const merged = normalizeAndEnhance([...prev, ...normalized]);
@@ -388,7 +414,26 @@ export default function ChatPage() {
   const handleSelectRoom = (roomName) => {
     setSelectedRoom(roomName);
     const contact = normalizedConversations.find((c) => c.room === roomName);
-    setSelectedContact(contact || null);
+    
+    // If contact not found, create a temporary contact from room name
+    // contactId will be null initially and updated when messages arrive
+    if (!contact && roomName) {
+      const parsedName = resolveRoomMateName(roomName);
+      const tempContact = {
+        room: roomName,
+        contactName: parsedName || "Unknown contact",
+        contactId: null, // Will be updated when first message arrives
+        contactAvatar: null,
+        lastMessage: "No message yet",
+        lastMessageTime: null,
+        responseTime: "30 minutes",
+        rating: 3.5,
+        reviewCount: 0,
+      };
+      setSelectedContact(tempContact);
+    } else {
+      setSelectedContact(contact || null);
+    }
   };
 
   const handleStartChatbot = () => {
@@ -437,10 +482,12 @@ export default function ChatPage() {
       targetUser?.name?.trim() ||
       targetUser?.username ||
       "Unknown contact";
+    // Fix: Only use targetUser.id as contactId, don't fallback to username or targetRoom
+    // contactId must be a valid user ID, not a username or room name
     const contactId =
       targetUser?.id != null
         ? String(targetUser.id)
-        : targetUser?.username || targetRoom;
+        : null;
     const contactAvatar = targetUser?.avatar || targetUser?.avatar_url || null;
 
     // Set selectedRoom immediately to prevent auto-selection of latest room
@@ -531,6 +578,90 @@ export default function ChatPage() {
 
     fetchTouristNationality();
   }, [user?.role, selectedContact?.contactId, selectedContact?.room, selectedContact?.nationality, selectedRoom]);
+
+  // Fetch contact avatar when contactId is available but avatar is missing
+  useEffect(() => {
+    // Skip if no contactId or already has avatar
+    if (!selectedContact?.contactId || selectedContact.contactAvatar) return;
+    
+    // Skip chatbot
+    const contactIdLower = selectedContact.contactId?.toLowerCase();
+    const contactNameLower = selectedContact.contactName?.toLowerCase().trim();
+    const roomName = selectedContact.room?.toLowerCase();
+    
+    if (
+      contactIdLower === "chatbot" ||
+      contactNameLower === "chatbot" ||
+      roomName?.endsWith("chatbot") ||
+      roomName?.includes("__chatbot") ||
+      contactIdLower?.includes("chatbot")
+    ) {
+      return;
+    }
+
+    // Fetch avatar - determine profile type based on current user's role
+    // If user is guide, contact must be tourist (and vice versa)
+    const fetchContactAvatar = async () => {
+      try {
+        let avatar = null;
+        
+        // If current user is guide, contact must be tourist
+        if (user?.role === "guide") {
+          const touristRes = await profileService.getTouristPublicProfile(selectedContact.contactId);
+          if (touristRes.success && touristRes.data?.profile?.face_image) {
+            avatar = touristRes.data.profile.face_image;
+          }
+        } 
+        // If current user is tourist, contact must be guide
+        else if (user?.role === "tourist") {
+          const guideRes = await profileService.getGuidePublicProfile(selectedContact.contactId);
+          if (guideRes.success && guideRes.data?.face_image) {
+            avatar = guideRes.data.face_image;
+          }
+        }
+        // Fallback: try both if role is unknown (shouldn't happen, but just in case)
+        else {
+          // Try guide profile first
+          const guideRes = await profileService.getGuidePublicProfile(selectedContact.contactId);
+          if (guideRes.success && guideRes.data?.face_image) {
+            avatar = guideRes.data.face_image;
+          } else {
+            // Try tourist profile
+            const touristRes = await profileService.getTouristPublicProfile(selectedContact.contactId);
+            if (touristRes.success && touristRes.data?.profile?.face_image) {
+              avatar = touristRes.data.profile.face_image;
+            }
+          }
+        }
+
+        if (avatar) {
+          // Update the conversation with avatar
+          setConversations((prev) => {
+            return prev.map((conv) => {
+              if (conv.room === selectedContact.room) {
+                return { ...conv, contactAvatar: avatar };
+              }
+              return conv;
+            });
+          });
+          
+          // Update selectedContact if it matches
+          if (selectedContact.room === selectedRoom) {
+            setSelectedContact((prev) => {
+              if (prev?.room === selectedContact.room) {
+                return { ...prev, contactAvatar: avatar };
+              }
+              return prev;
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching contact avatar:", error);
+      }
+    };
+
+    fetchContactAvatar();
+  }, [selectedContact?.contactId, selectedContact?.contactAvatar, selectedContact?.room, selectedRoom, user?.role]);
 
   return (
     <div>

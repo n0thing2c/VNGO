@@ -74,7 +74,7 @@ class ConversationListView(generics.GenericAPIView):
             )
             
             contact_name = f"Room: {room_name}"
-            contact_id = room_name
+            contact_id = None  # Don't use room_name as contact_id - it's not a valid user ID
             contact_avatar = None
 
             if other_user_message and other_user_message.sender:
