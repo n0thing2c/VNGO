@@ -21,6 +21,7 @@ from django.db.models import Count, F, Avg
 from Tour.models import TourRating, Tour
 from Tour.serializers import TourRatingSerializer
 from Management.models import PastTour
+from Management.serializers import FrontendPastTourCardSerializer
 import json
 User = get_user_model()
 
@@ -253,6 +254,7 @@ class GuideAchievementView(APIView):
         return Response({"success": True, "achievements": achievements, "stats": stats})
 
 
+<<<<<<< HEAD
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_homepage_guides(request):
@@ -283,3 +285,50 @@ def get_homepage_guides(request):
 
     except Exception as e:
         return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+=======
+class TouristPublicProfileView(APIView):
+    """
+    Public view for displaying a tourist's profile information together with
+    their past tours and the reviews they have written for tours.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, tourist_id):
+        tourist = get_object_or_404(Tourist, pk=tourist_id)
+
+        # Basic profile information
+        profile_data = TouristProfileSerializer(tourist).data
+
+        # Past tours completed by this tourist
+        past_tours_qs = (
+            PastTour.objects.filter(tourist=tourist)
+            .select_related("tourist", "guide", "tour")
+            .prefetch_related("tour__tour_images")
+            .order_by("-tour_date", "-tour_time")
+        )
+        past_tours_data = FrontendPastTourCardSerializer(
+            past_tours_qs, many=True, context={"request": request}
+        ).data
+
+        # All tour ratings written by this tourist
+        ratings_qs = TourRating.objects.filter(tourist=tourist).order_by("-created_at")
+        ratings_data = []
+        for rating in ratings_qs:
+            serializer = TourRatingSerializer(rating, context={"request": request})
+            data = serializer.data
+            # Attach basic tour info so frontend can show which tour was rated
+            data["tour"] = {
+                "id": rating.tour.id,
+                "name": rating.tour.name,
+            }
+            ratings_data.append(data)
+
+        return Response(
+            {
+                "profile": profile_data,
+                "past_tours": past_tours_data,
+                "ratings": ratings_data,
+            }
+        )
+>>>>>>> e1bf39229904cf6d224c6ec125af770a3c6fcad4

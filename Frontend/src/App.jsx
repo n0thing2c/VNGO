@@ -11,6 +11,7 @@ import LogInPage from "./pages/LogInPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ChatPage from "./pages/ChatPage";
 import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
+import TouristPublicProfilePage from "@/pages/TouristPublicProfilePage.jsx";
 import GuideProfilePage from "@/pages/GuideProfilePage.jsx";
 import TouristProfilePage from "./pages/TouristProfilePage";
 import ScrollToTop from "./components/ScrollToTop";
@@ -41,6 +42,10 @@ function App() {
             <Route
               path="/public-profile/:guideId"
               element={<GuidePublicProfilePage />}
+            />
+            <Route
+              path="/tourist-public-profile/:touristId"
+              element={<TouristPublicProfilePage />}
             />
 
             {/* Protected routes - require authentication */}

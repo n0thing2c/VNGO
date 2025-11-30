@@ -1,13 +1,13 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {ChevronLeft, ChevronRight, Globe, Heart, Languages, MapPin, MessageCircleMore, Star} from "lucide-react";
-import {Button} from "@/components/ui/button.jsx";
-import {tourService} from "@/services/tourService.js";
-import {profileService} from "@/services/profileService.js";
-import {useAuthStore} from "@/stores/useAuthStore.js";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Globe, Heart, Languages, MapPin, MessageCircleMore, Star } from "lucide-react";
+import { Button } from "@/components/ui/button.jsx";
+import { tourService } from "@/services/tourService.js";
+import { profileService } from "@/services/profileService.js";
+import { useAuthStore } from "@/stores/useAuthStore.js";
 import RatingList from "@/components/rating/ratings.jsx";
 import Rate from "@/components/rating/rate.jsx";
-import {useNavigate} from "react-router-dom";
-import {ROUTES} from "@/constant.js";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constant.js";
 import {
     Dialog,
     DialogTrigger,
@@ -15,16 +15,16 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog.jsx";
-import {FieldLabel, FieldSeparator, FieldDescription} from "@/components/ui/field.jsx";
-import {AchievementBadge} from "@/components/TourPost/tour_achievements.jsx";
+import { FieldLabel, FieldSeparator, FieldDescription } from "@/components/ui/field.jsx";
+import { AchievementBadge } from "@/components/TourPost/tour_achievements.jsx";
 
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=Guide";
 
-const StarRating = ({rating = 0}) => {
+const StarRating = ({ rating = 0 }) => {
     const value = Number(rating) || 0;
     return (
         <div className="flex items-center space-x-0.5">
-            {Array.from({length: 5}).map((_, idx) => {
+            {Array.from({ length: 5 }).map((_, idx) => {
                 const isFilled = idx + 1 <= Math.round(value);
                 return (
                     <Star
@@ -37,11 +37,11 @@ const StarRating = ({rating = 0}) => {
         </div>
     );
 };
-const HeartRating = ({rating = 0}) => {
+const HeartRating = ({ rating = 0 }) => {
     const value = Number(rating) || 0;
     return (
         <div className="flex items-center space-x-0.5">
-            {Array.from({length: 5}).map((_, idx) => {
+            {Array.from({ length: 5 }).map((_, idx) => {
                 const isFilled = idx + 1 <= Math.round(value);
                 return (
                     <Heart
@@ -55,7 +55,7 @@ const HeartRating = ({rating = 0}) => {
     );
 };
 
-const TourCard = ({tour, onViewTour}) => (
+const TourCard = ({ tour, onViewTour }) => (
     <div
         className="flex flex-col min-w-[240px] w-[240px] h-[280px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
         <img
@@ -75,10 +75,10 @@ const TourCard = ({tour, onViewTour}) => (
             </p>
 
             <div className="flex items-center gap-2 text-xs text-gray-600 mt-2">
-                <StarRating rating={tour.rating}/>
+                <StarRating rating={tour.rating} />
                 <span>
-        {(tour.rating || 0).toFixed(1)} ({tour.reviews || 0})
-      </span>
+                    {(tour.rating || 0).toFixed(1)} ({tour.reviews || 0})
+                </span>
             </div>
 
             {/* Button always at bottom */}
@@ -95,8 +95,8 @@ const TourCard = ({tour, onViewTour}) => (
 
 );
 
-export function GuidePublicProfile({guideId}) {
-    const {user} = useAuthStore();
+export function GuidePublicProfile({ guideId }) {
+    const { user } = useAuthStore();
     const userRole = user?.role;
     const navigate = useNavigate();
     const [guide, setGuide] = useState(null);
@@ -114,7 +114,7 @@ export function GuidePublicProfile({guideId}) {
         return (data || []).map((r) => ({
             ...r,
             review_tags: Array.isArray(r.review_tags) ? r.review_tags : [],
-            tourist: r.tourist || {username: "Anonymous", avatar: null},
+            tourist: r.tourist || { username: "Anonymous", avatar: null },
         }));
     };
 
@@ -238,15 +238,15 @@ export function GuidePublicProfile({guideId}) {
 
                         {/* Other Info (left-aligned) */}
                         <div className="flex items-center text-gray-600 text-sm">
-                            <MapPin className="w-4 h-4 mr-1 text-red-600"/>
+                            <MapPin className="w-4 h-4 mr-1 text-red-600" />
                             <span>{guide.location || "Location not provided"}</span>
                         </div>
                         <div className="flex items-center text-gray-600 text-sm">
-                            <Languages className="w-4 h-4 mr-1 text-blue-700"/>
+                            <Languages className="w-4 h-4 mr-1 text-blue-700" />
                             <span>{guide.languages?.length ? guide.languages.join(", ") : "Languages not set"}</span>
                         </div>
                         <div className="flex items-center pt-1">
-                            <HeartRating rating={averageRating}/>
+                            <HeartRating rating={averageRating} />
                             <span className="text-sm text-gray-600 ml-2">
                                 {averageRating.toFixed(1)} ({reviews.length} review{reviews.length === 1 ? "" : "s"})
                             </span>
@@ -271,22 +271,20 @@ export function GuidePublicProfile({guideId}) {
                     <div className="md:col-span-2 md:pl-6">
                         <div className="flex border-b border-gray-300 mb-4">
                             <button
-                                className={`w-1/2 text-center px-4 py-2 text-sm font-medium ${
-                                    activeTab === "bio"
+                                className={`w-1/2 text-center px-4 py-2 text-sm font-medium ${activeTab === "bio"
                                         ? "border-b-2 border-gray-900 text-black"
                                         : "text-gray-600"
-                                }`}
+                                    }`}
                                 onClick={() => setActiveTab("bio")}
                             >
                                 About me
                             </button>
 
                             <button
-                                className={`w-1/2 text-center px-4 py-2 text-sm font-medium ${
-                                    activeTab === "achievements"
+                                className={`w-1/2 text-center px-4 py-2 text-sm font-medium ${activeTab === "achievements"
                                         ? "border-b-2 border-gray-900 text-black"
                                         : "text-gray-600"
-                                }`}
+                                    }`}
                                 onClick={() => setActiveTab("achievements")}
                             >
                                 Achievements
@@ -307,7 +305,7 @@ export function GuidePublicProfile({guideId}) {
                                 <div className="flex flex-wrap gap-5 justify-center mt-15">
                                     {achievements?.length > 0 ? (
                                         achievements.map((ach, idx) => (
-                                            <AchievementBadge key={idx} variant={ach.toLowerCase()} label={ach}/>
+                                            <AchievementBadge key={idx} variant={ach.toLowerCase()} label={ach} />
                                         ))
                                     ) : (
                                         <p className="text-gray-500 text-sm">No achievements yet.</p>
@@ -319,17 +317,17 @@ export function GuidePublicProfile({guideId}) {
                                     <p className="text-gray-600 text-sm mt-15 text-center">
                                         <span className="text-gray-600 font-normal">
                                             Past tours: <span
-                                            className="text-black font-semibold">{guide.stats.total_past_tours}</span>
+                                                className="text-black font-semibold">{guide.stats.total_past_tours}</span>
                                         </span>
                                         <span className="mx-5">|</span>
                                         <span className="text-black font-normal">
                                             Hosted tours: <span
-                                            className="text-black font-semibold">{guide.stats.total_tours}</span>
+                                                className="text-black font-semibold">{guide.stats.total_tours}</span>
                                         </span>
                                         <span className="mx-5">|</span>
                                         <span className="text-gray-600 font-normal">
                                             Achievements: <span
-                                            className="text-black font-semibold">{guide.stats.achievement_count} / 5</span>
+                                                className="text-black font-semibold">{guide.stats.achievement_count} / 5</span>
                                         </span>
                                     </p>
                                 )}
@@ -357,27 +355,27 @@ export function GuidePublicProfile({guideId}) {
                                 className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("left")}
                             >
-                                <ChevronLeft className="w-5 h-5 text-gray-700"/>
+                                <ChevronLeft className="w-5 h-5 text-gray-700" />
                             </Button>
                             <div
                                 ref={tourListRef}
                                 className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
                             >
                                 {tours.map((tour) => (
-                                    <TourCard key={tour.id} tour={tour} onViewTour={handleViewTour}/>
+                                    <TourCard key={tour.id} tour={tour} onViewTour={handleViewTour} />
                                 ))}
                             </div>
                             <Button
                                 className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("right")}
                             >
-                                <ChevronRight className="w-5 h-5 text-gray-700"/>
+                                <ChevronRight className="w-5 h-5 text-gray-700" />
                             </Button>
                         </div>
                     )}
                 </div>
 
-                <FieldSeparator className="p-10"/>
+                <FieldSeparator className="p-10" />
                 {/* Guide Reviews */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
@@ -393,7 +391,7 @@ export function GuidePublicProfile({guideId}) {
                             No reviews yet. Be the first to share your experience!
                         </FieldDescription>
                     ) : (
-                        <RatingList ratings={reviews} showTourName={true}/>
+                        <RatingList ratings={reviews} showTourName={true} />
                     )}
                 </div>
             </div>

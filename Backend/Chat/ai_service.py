@@ -21,11 +21,11 @@ import json
 
 def extract_search_params(text):
     """
-    Ask Gemini to extract keywords, tags, price constraints, and number of people.
-    Returns a dictionary with keys: keywords, tags, min_price, max_price, num_people.
+    Ask Gemini to extract keywords, tags, price constraints, number of people, and guide names.
+    Returns a dictionary with keys: keywords, tags, min_price, max_price, num_people, guide_names.
     """
     if not GEMINI_API_KEY:
-        return {"keywords": [text], "tags": [], "min_price": None, "max_price": None, "num_people": None}
+        return {"keywords": [text], "tags": [], "min_price": None, "max_price": None, "num_people": None, "guide_names": []}
 
     try:
         model = genai.GenerativeModel('gemini-2.5-flash')
@@ -40,6 +40,9 @@ def extract_search_params(text):
         4. "max_price": Maximum price in VND (integer) if mentioned, else null.
            Note: "2 triệu" = 2000000, "500k" = 500000.
         5. "num_people": Number of people if mentioned (integer), else null.
+        6. "guide_names": List of tour guide names if mentioned.
+           - Include the exact name mentioned.
+           - If it's a Vietnamese name, include both accented and unaccented forms (e.g. "Tuan" -> ["Tuan", "Tuấn"]).
         
         Return ONLY the raw JSON object. Do not use markdown formatting.
         
@@ -51,7 +54,7 @@ def extract_search_params(text):
         return params
     except Exception as e:
         print(f"Error extracting params: {e}")
-        return {"keywords": [text], "tags": [], "min_price": None, "max_price": None, "num_people": None}
+        return {"keywords": [text], "tags": [], "min_price": None, "max_price": None, "num_people": None, "guide_names": []}
 
 def get_relevant_tours(query, limit=5):
     """
@@ -69,8 +72,9 @@ def get_relevant_tours(query, limit=5):
     min_price = params.get("min_price")
     max_price = params.get("max_price")
     num_people = params.get("num_people")
+    guide_names = params.get("guide_names", [])
 
-    if not keywords and not tags and min_price is None and max_price is None and num_people is None:
+    if not keywords and not tags and min_price is None and max_price is None and num_people is None and not guide_names:
         return []
 
     # 2. Build Query
@@ -102,6 +106,13 @@ def get_relevant_tours(query, limit=5):
     if num_people is not None:
         tours = tours.filter(min_people__lte=num_people, max_people__gte=num_people)
 
+    # 5. Apply Guide Filter (AND logic)
+    if guide_names:
+        guide_q = Q()
+        for name in guide_names:
+            guide_q |= Q(guide__name__icontains=name)
+        tours = tours.filter(guide_q)
+
     return list(tours[:limit])
 
 def format_tour_context(tours):
@@ -119,6 +130,7 @@ def format_tour_context(tours):
         info = (
             f"Tour ID: {tour.id}\n"
             f"Name: {tour.name}\n"
+            f"Guide: {tour.guide.name}\n"
             f"Price: {int(tour.price):,}VND/person".replace(",", ".") + "\n"
             f"Group size: {tour.min_people} - {tour.max_people} people\n"
             f"Duration: {tour.duration} hours\n"
@@ -152,6 +164,7 @@ FORMATTING INSTRUCTIONS:
 For each tour, use EXACTLY this format:
 
 ### **[Tour Name]**
+💁 **Guide:** [Guide name]\n
 📍 **Places you'll visit:**
 *   [List places one by one]
 
