@@ -273,7 +273,7 @@ export function GuidePublicProfile({ guideId }) {
 
   return (
     <div className="min-h-screen w-full">
-      {/* THAY ĐỔI LAYOUT CHÍNH: 
+      {/* THAY ĐỔI LAYOUT CHÍNH:
                 - w-full: chiếm hết chiều ngang 
                 - max-w-[1440px]: Chặn lại khi màn hình quá to (hoặc zoom out)
                 - px-4 sm:px-8: Padding 2 bên để không dính sát lề
@@ -287,7 +287,7 @@ export function GuidePublicProfile({ guideId }) {
                         {/* Avatar + Name */}
                         <div className="flex flex-col items-center space-y-2">
                             <div
-                                className="relative h-40 w-40 md:h-48 md:w-48 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
+                                className="relative h-30 w-30 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
                                 <img
                                     src={guide.face_image || DEFAULT_AVATAR}
                                     alt={guide.name}
@@ -356,18 +356,19 @@ export function GuidePublicProfile({ guideId }) {
               </h3>
 
                             {/* Achievements badges */}
+                            {/* Achievements badges */}
                             <div className="grid grid-cols-10 gap-3 mb-10 w-full max-w-full justify-center">
-                              {achievements?.length > 0 ? (
-                                achievements.map((ach, idx) => (
-                                  <div key={idx} className="flex justify-center relative">
-                                    <AchievementBadge variant={ach.toLowerCase()} label={ach} />
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-gray-500 text-lg col-span-10 text-center">
-                                  No achievements yet.
-                                </p>
-                              )}
+                                {achievements?.length > 0 ? (
+                                    achievements.map((ach, idx) => (
+                                        <div key={idx} className="flex justify-center relative">
+                                            <AchievementBadge variant={ach.toLowerCase()} label={ach}/>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-lg col-span-10 text-center">
+                                        No achievements yet.
+                                    </p>
+                                )}
                             </div>
 
 
@@ -401,7 +402,7 @@ export function GuidePublicProfile({ guideId }) {
                                     </div>
                                     <div className="flex flex-col h-full">
                                         <p className="text-gray-600  justify-center text-md leading-tight">
-                                            Past tours
+                                            Completed tours
                                         </p>
                                         <p className="text-2xl font-semibold text-gray-900">
                                             {guide.stats.total_past_tours}
@@ -417,7 +418,7 @@ export function GuidePublicProfile({ guideId }) {
                                     </div>
                                     <div className="flex flex-col h-full">
                                         <p className="text-gray-600 justify-center text-md leading-tight">
-                                            Hosted tours
+                                            Offered tours
                                         </p>
                                         <p className="text-2xl font-semibold text-gray-900">
                                             {guide.stats.total_tours}
@@ -429,85 +430,86 @@ export function GuidePublicProfile({ guideId }) {
                     </div>
                 </div>
 
-        {/* About Me (Moved Down, Full Width) */}
-        <div className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">
-            About me
-          </h3>
-          <FieldDescription className="text-gray-700 leading-loose text-base md:text-lg break-words">
-            {guide.bio ||
-              "This guide has not added a bio yet. Check their tours and reviews below."}
-          </FieldDescription>
-        </div>
+                {/* About Me (Moved Down, Full Width) */}
+                <div
+                    className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">
+                        About me
+                    </h3>
+                    <FieldDescription className="text-gray-700 leading-loose text-base md:text-lg break-words">
+                        {guide.bio ||
+                            "This guide has not added a bio yet. Check their tours and reviews below."}
+                    </FieldDescription>
+                </div>
 
-        {/* Tours */}
-        <div>
-          <div className="flex items-center justify-between mt-2">
-            <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
-              Tours ({tours.length})
-            </FieldLabel>
-          </div>
-          {tours.length === 0 ? (
-            <FieldDescription className="text-gray-500 text-sm">
-              This guide has not published any tours yet.
-            </FieldDescription>
-          ) : (
-            <div className="relative flex items-center p-8">
-              <Button
-                className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
-                onClick={() => scrollTours("left")}
-              >
-                <ChevronLeft className="w-5 h-5 text-gray-700" />
-              </Button>
-              <div
-                ref={tourListRef}
-                className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
-              >
-                {tours.map((tour) => (
-                  <TourCard
-                    key={tour.id}
-                    tour={tour}
-                    onViewTour={handleViewTour}
-                  />
-                ))}
-              </div>
-              <Button
-                className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
-                onClick={() => scrollTours("right")}
-              >
-                <ChevronRight className="w-5 h-5 text-gray-700" />
-              </Button>
-            </div>
-          )}
-        </div>
+                {/* Tours */}
+                <div>
+                    <div className="flex items-center justify-between mt-2">
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
+                            Tours ({tours.length})
+                        </FieldLabel>
+                    </div>
+                    {tours.length === 0 ? (
+                        <FieldDescription className="text-gray-500 text-sm">
+                            This guide has not published any tours yet.
+                        </FieldDescription>
+                    ) : (
+                        <div className="relative flex items-center p-8">
+                            <Button
+                                className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
+                                onClick={() => scrollTours("left")}
+                            >
+                                <ChevronLeft className="w-5 h-5 text-gray-700"/>
+                            </Button>
+                            <div
+                                ref={tourListRef}
+                                className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
+                            >
+                                {tours.map((tour) => (
+                                    <TourCard
+                                        key={tour.id}
+                                        tour={tour}
+                                        onViewTour={handleViewTour}
+                                    />
+                                ))}
+                            </div>
+                            <Button
+                                className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
+                                onClick={() => scrollTours("right")}
+                            >
+                                <ChevronRight className="w-5 h-5 text-gray-700"/>
+                            </Button>
+                        </div>
+                    )}
+                </div>
 
-        <FieldSeparator className="p-10" />
-        {/* Guide Reviews */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
-              Recent reviews
-            </FieldLabel>
-            {!!reviews.length && (
-              <FieldDescription className="text-base md:text-lg text-gray-500">
-                {reviews.length} review{reviews.length === 1 ? "" : "s"}
-              </FieldDescription>
-            )}
-          </div>
-          {reviews.length === 0 ? (
-            <FieldDescription className="text-gray-500 text-base md:text-lg">
-              No reviews yet. Be the first to share your experience!
-            </FieldDescription>
-          ) : (
-            // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
-            // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
-            // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
-            <div className="text-lg">
-              <RatingList ratings={reviews} showTourName={true} />
+                <FieldSeparator className="p-10"/>
+                {/* Guide Reviews */}
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
+                            Recent reviews
+                        </FieldLabel>
+                        {!!reviews.length && (
+                            <FieldDescription className="text-base md:text-lg text-gray-500">
+                                {reviews.length} review{reviews.length === 1 ? "" : "s"}
+                            </FieldDescription>
+                        )}
+                    </div>
+                    {reviews.length === 0 ? (
+                        <FieldDescription className="text-gray-500 text-base md:text-lg">
+                            No reviews yet. Be the first to share your experience!
+                        </FieldDescription>
+                    ) : (
+                        // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
+                        // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
+                        // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
+                        <div className="text-lg">
+                            <RatingList ratings={reviews} showTourName={true}/>
+                        </div>
+                    )}
+                </div>
             </div>
-          )}
         </div>
-      </div>
-    </div>
-  );
+    );
 }

@@ -1,20 +1,20 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {Calendar, ChevronLeft, ChevronRight, Languages, MapPin, Star,} from "lucide-react";
-import { Mars, Venus } from "lucide-react";
-import { Button } from "@/components/ui/button.jsx";
-import { profileService } from "@/services/profileService.js";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {Calendar, ChevronLeft, ChevronRight, LandPlot, Languages, MapPin, Star,} from "lucide-react";
+import {Mars, Venus} from "lucide-react";
+import {Button} from "@/components/ui/button.jsx";
+import {profileService} from "@/services/profileService.js";
 import RatingList from "@/components/rating/ratings.jsx";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constant.js";
-import { FieldLabel, FieldSeparator, FieldDescription } from "@/components/ui/field.jsx";
+import {useNavigate} from "react-router-dom";
+import {ROUTES} from "@/constant.js";
+import {FieldLabel, FieldSeparator, FieldDescription} from "@/components/ui/field.jsx";
 
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
 
-const StarRating = ({ rating = 0 }) => {
+const StarRating = ({rating = 0}) => {
     const value = Number(rating) || 0;
     return (
         <div className="flex items-center space-x-0.5">
-            {Array.from({ length: 5 }).map((_, idx) => {
+            {Array.from({length: 5}).map((_, idx) => {
                 const isFilled = idx + 1 <= Math.round(value);
                 return (
                     <Star
@@ -28,7 +28,7 @@ const StarRating = ({ rating = 0 }) => {
     );
 };
 
-const PastTourCard = ({ tour, onViewTour }) => (
+const PastTourCard = ({tour, onViewTour}) => (
     <div
         className="flex flex-col min-w-[240px] w-[240px] h-[360px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
         <img
@@ -48,7 +48,7 @@ const PastTourCard = ({ tour, onViewTour }) => (
             </p>
 
             <div className="flex items-center gap-2 text-xs text-gray-600 mt-2">
-                <StarRating rating={tour.rating || 0} />
+                <StarRating rating={tour.rating || 0}/>
                 <span>{tour.rating ? tour.rating.toFixed(1) : "No rating"}</span>
             </div>
 
@@ -65,7 +65,7 @@ const PastTourCard = ({ tour, onViewTour }) => (
     </div>
 );
 
-export function TouristPublicProfile({ touristId }) {
+export function TouristPublicProfile({touristId}) {
     const navigate = useNavigate();
     const [guide, setGuide] = useState(null); // holds tourist profile
     const [tours, setTours] = useState([]); // past tours
@@ -78,7 +78,7 @@ export function TouristPublicProfile({ touristId }) {
         return (data || []).map((r) => ({
             ...r,
             review_tags: Array.isArray(r.review_tags) ? r.review_tags : [],
-            tourist: r.tourist || { username: "Anonymous", avatar: null },
+            tourist: r.tourist || {username: "Anonymous", avatar: null},
         }));
     };
 
@@ -149,8 +149,8 @@ export function TouristPublicProfile({ touristId }) {
     return (
         <div className="min-h-screen w-full">
             <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-8 pt-8 pb-12 space-y-8">
-                {/* Tourist Info */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Profile / Avatar card */}
                     <div
                         className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         {/* Avatar + Name */}
@@ -174,50 +174,52 @@ export function TouristPublicProfile({ touristId }) {
 
                         {/* Other Info */}
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0"/>
+                            <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0"/>
                             <span>{guide.nationality || "Nationality not provided"}</span>
                         </div>
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <Calendar className="w-4 h-4 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0"/>
-                            <span>
-                                {guide.age ? `${guide.age} years old` : "Age not provided"}
-                            </span>
+                            <Calendar className="w-5 h-5 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0"/>
+                            <span>{guide.age ? `${guide.age} years old` : "Age not provided"}</span>
                         </div>
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                          {guide.gender === "Male" && (
-                            <Mars className="w-4 h-4 md:w-5 md:h-5 mr-2 shrink-0" color="#3b82f6" />
-                          )}
-                          {guide.gender === "Female" && (
-                            <Venus className="w-4 h-4 md:w-5 md:h-5 mr-2 shrink-0" color="#ec4899" />
-                          )}
-                          <span>
-                            {guide.gender ? ` • ${guide.gender}` : ""}
-                          </span>
+                            {guide.gender === "Male" && (
+                                <Mars className="w-5 h-5 mr-2 shrink-0" color="#3b82f6"/>
+                            )}
+                            {guide.gender === "Female" && (
+                                <Venus className="w-5 h-5 mr-2 shrink-0" color="#ec4899"/>
+                            )}
+                            <span>{guide.gender ? ` • ${guide.gender}` : ""}</span>
+                        </div>
+                    </div>
+
+                    {/* Summary cards */}
+                    <div className="lg:col-span-8 xl:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Past Tours */}
+                        <div
+                            className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                            <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <Calendar className="w-8 h-8 text-blue-600"/>
+                            </div>
+                            <div className="flex flex-col">
+                                <p className="text-gray-600 text-md leading-tight">Completed tours</p>
+                                <p className="text-2xl font-semibold text-gray-900">{tours.length}</p>
+                            </div>
                         </div>
 
-
-                    </div>
-
-                    {/* Simple summary card */}
-                    <div
-                        className="lg:col-span-8 xl:col-span-9 w-full p-6 bg-white rounded-xl shadow-sm border border-gray-200 h-full">
-                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold pb-2 mb-5">
-                            Travel summary
-                        </FieldLabel>
-                        <FieldDescription className="text-gray-700 text-sm sm:text-md break-words">
-                            {tours.length
-                                ? `${guide.name || "This tourist"} has completed ${tours.length} past tour${tours.length === 1 ? "" : "s"
-                                }.`
-                                : "This tourist has not completed any tours yet."}
-                        </FieldDescription>
-                        <FieldDescription className="text-gray-700 text-sm sm:text-md break-words">
-                            {reviews.length
-                                ? `They have written ${reviews.length} review${reviews.length === 1 ? "" : "s"
-                                } about tours they joined.`
-                                : "No written reviews yet."}
-                        </FieldDescription>
+                        {/* Hosted Tours */}
+                        <div
+                            className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                            <div className="p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
+                                <Star className="w-8 h-8 text-yellow-400"/>
+                            </div>
+                            <div className="flex flex-col">
+                                <p className="text-gray-600 text-md leading-tight">Reviews</p>
+                                <p className="text-2xl font-semibold text-gray-900">{reviews.length}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
 
                 {/* Past tours */}
                 <div>
@@ -236,14 +238,14 @@ export function TouristPublicProfile({ touristId }) {
                                 className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("left")}
                             >
-                                <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                <ChevronLeft className="w-5 h-5 text-gray-700"/>
                             </Button>
                             <div
                                 ref={tourListRef}
                                 className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
                             >
                                 {tours.map((tour) => (
-                                    <PastTourCard key={tour.id} tour={tour} onViewTour={handleViewTour} />
+                                    <PastTourCard key={tour.id} tour={tour} onViewTour={handleViewTour}/>
                                 ))}
                                 <style>
                                     {`
@@ -258,7 +260,7 @@ export function TouristPublicProfile({ touristId }) {
                                 className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("right")}
                             >
-                                <ChevronRight className="w-5 h-5 text-gray-700" />
+                                <ChevronRight className="w-5 h-5 text-gray-700"/>
                             </Button>
                         </div>
                     )}
