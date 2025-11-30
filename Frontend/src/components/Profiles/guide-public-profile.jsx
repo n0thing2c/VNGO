@@ -1,13 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Globe, Heart, Languages, MapPin, MessageCircleMore, Star } from "lucide-react";
-import { Button } from "@/components/ui/button.jsx";
-import { tourService } from "@/services/tourService.js";
-import { profileService } from "@/services/profileService.js";
-import { useAuthStore } from "@/stores/useAuthStore.js";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {
+    ChevronLeft, ChevronRight, Globe, Heart, Languages, MapPin, MessageCircleMore, Star, SquareCheckBig,
+    CalendarCheck, Crown
+} from "lucide-react";
+import {Button} from "@/components/ui/button.jsx";
+import {tourService} from "@/services/tourService.js";
+import {profileService} from "@/services/profileService.js";
+import {useAuthStore} from "@/stores/useAuthStore.js";
 import RatingList from "@/components/rating/ratings.jsx";
 import Rate from "@/components/rating/rate.jsx";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constant.js";
+import {useNavigate} from "react-router-dom";
+import {ROUTES} from "@/constant.js";
 import {
     Dialog,
     DialogTrigger,
@@ -15,16 +18,20 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog.jsx";
-import { FieldLabel, FieldSeparator, FieldDescription } from "@/components/ui/field.jsx";
-import { AchievementBadge } from "@/components/TourPost/tour_achievements.jsx";
+import {FieldLabel, FieldSeparator, FieldDescription} from "@/components/ui/field.jsx";
+import {AchievementBadge} from "@/components/TourPost/tour_achievements.jsx";
 
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=Guide";
 
-const StarRating = ({ rating = 0 }) => {
+
+
+
+
+const StarRating = ({rating = 0}) => {
     const value = Number(rating) || 0;
     return (
         <div className="flex items-center space-x-0.5">
-            {Array.from({ length: 5 }).map((_, idx) => {
+            {Array.from({length: 5}).map((_, idx) => {
                 const isFilled = idx + 1 <= Math.round(value);
                 return (
                     <Star
@@ -37,11 +44,11 @@ const StarRating = ({ rating = 0 }) => {
         </div>
     );
 };
-const HeartRating = ({ rating = 0 }) => {
+const HeartRating = ({rating = 0}) => {
     const value = Number(rating) || 0;
     return (
         <div className="flex items-center space-x-0.5">
-            {Array.from({ length: 5 }).map((_, idx) => {
+            {Array.from({length: 5}).map((_, idx) => {
                 const isFilled = idx + 1 <= Math.round(value);
                 return (
                     <Heart
@@ -55,7 +62,7 @@ const HeartRating = ({ rating = 0 }) => {
     );
 };
 
-const TourCard = ({ tour, onViewTour }) => (
+const TourCard = ({tour, onViewTour}) => (
     <div
         className="flex flex-col min-w-[240px] w-[240px] h-[360px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
         <img
@@ -70,13 +77,13 @@ const TourCard = ({ tour, onViewTour }) => (
 
         <div className="flex flex-col p-4 flex-1 gap-3">
             <h4 className="font-semibold text-vngo-normal-medium-responsive truncate">{tour.title}</h4>
-            <p className="text-vngo-normal-small-responsive text-gray-500 line-clamp-2 mt-1">
+            <p className="text-vngo-normal-small-responsive text-gray-500 line-clamp-1 mt-1">
                 {tour.description || "No description provided."}
             </p>
 
             <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
-                <StarRating rating={tour.rating} />
-                <span classname="font-medium">
+                <StarRating rating={tour.rating}/>
+                <span className="font-medium">
                     {(tour.rating || 0).toFixed(1)} ({tour.reviews || 0})
                 </span>
             </div>
@@ -95,8 +102,8 @@ const TourCard = ({ tour, onViewTour }) => (
 
 );
 
-export function GuidePublicProfile({ guideId }) {
-    const { user } = useAuthStore();
+export function GuidePublicProfile({guideId}) {
+    const {user} = useAuthStore();
     const userRole = user?.role;
     const navigate = useNavigate();
     const [guide, setGuide] = useState(null);
@@ -114,7 +121,7 @@ export function GuidePublicProfile({ guideId }) {
         return (data || []).map((r) => ({
             ...r,
             review_tags: Array.isArray(r.review_tags) ? r.review_tags : [],
-            tourist: r.tourist || { username: "Anonymous", avatar: null },
+            tourist: r.tourist || {username: "Anonymous", avatar: null},
         }));
     };
 
@@ -221,11 +228,12 @@ export function GuidePublicProfile({ guideId }) {
                 {/* Top Section: Info and Achievements */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Left: Info Block */}
-                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div
+                        className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         {/* Avatar + Name */}
                         <div className="flex flex-col items-center space-y-2">
                             <div
-                                className="relative h-40 w-40 md:h-48 md:w-48 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
+                                className="relative h-30 w-30 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
                                 <img
                                     src={guide.face_image || DEFAULT_AVATAR}
                                     alt={guide.name}
@@ -243,7 +251,7 @@ export function GuidePublicProfile({ guideId }) {
 
                         {/* Rating (Moved below name) */}
                         <div className="flex items-center justify-center pt-1">
-                            <HeartRating rating={averageRating} />
+                            <HeartRating rating={averageRating}/>
                             <span className="text-sm md:text-base text-gray-600 ml-2 whitespace-nowrap">
                                 {averageRating.toFixed(1)} ({reviews.length} review{reviews.length === 1 ? "" : "s"})
                             </span>
@@ -251,77 +259,101 @@ export function GuidePublicProfile({ guideId }) {
 
                         {/* Other Info (left-aligned) */}
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
+                            <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0"/>
                             <span className="truncate">{guide.location || "Location not provided"}</span>
                         </div>
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0" />
-                            <span className="truncate">{guide.languages?.length ? guide.languages.join(", ") : "Languages not set"}</span>
+                            <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0"/>
+                            <span
+                                className="truncate">{guide.languages?.length ? guide.languages.join(", ") : "Languages not set"}</span>
                         </div>
 
                         {/* Message Button (Visible to all, clickable only for tourists) */}
                         <Button
                             className={`w-full mt-4 rounded-full flex items-center justify-center gap-2 btn-vngo-hover-effect ${userRole === "tourist"
-                                    ? "bg-[#068F64] text-white"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed hover:scale-100 hover:shadow-none"
-                                }`}
+                                ? "bg-[#068F64] text-white"
+                                : "bg-gray-300 text-gray-500 cursor-not-allowed hover:scale-100 hover:shadow-none"
+                            }`}
                             onClick={() => userRole === "tourist" && navigate(ROUTES.CHAT)}
                             disabled={userRole !== "tourist"}
                         >
-                            <MessageCircleMore className="w-4 h-4" />
+                            <MessageCircleMore className="w-4 h-4"/>
                             Message
                         </Button>
                     </div>
 
                     {/* Right: Achievements Section (Moved Up) */}
-                    <div className="lg:col-span-8 xl:col-span-9 w-full p-6 bg-white rounded-xl shadow-sm border border-gray-200 h-full">
-                        <h3 className="text-vngo-primary text-2xl md:text-3xl font-semibold border-b border-gray-200 pb-2 mb-4">
+                    <div
+                        className="lg:col-span-8 xl:col-span-9 w-full p-6 bg-white rounded-xl shadow-sm border border-gray-200 h-full">
+                        <h3 className="text-vngo-primary text-3xl md:text-3xl lg:text-4xl sm:text-xl font-semibold mb-7">
                             Achievements
                         </h3>
-                        <div className="flex flex-col justify-center items-center space-y-32">
-                            {/* 👆 căn giữa theo chiều dọc + chiều ngang, tạo khoảng cách giữa 2 phần */}
+                        <div
+                            className="flex flex-col justify-center items-center lg:space-y-20 md:space-y-10 sm:space-y-5 space-y-5">
                             {/* Achievements badges */}
-                            <div className="flex flex-wrap gap-6 md:scale-200 justify-center">
-                                {achievements?.length > 0 ? (
-                                    achievements.map((ach, idx) => (
-                                        <AchievementBadge key={idx} variant={ach.toLowerCase()} label={ach} />
-                                    ))
-                                ) : (
-                                    <p className="text-gray-500 text-lg">No achievements yet.</p>
-                                )}
+                            <div className="grid grid-cols-10 gap-x-6 gap-y-3 md:scale-120 justify-center">
+                              {achievements?.length > 0 ? (
+                                achievements.map((ach, idx) => (
+                                  <AchievementBadge key={idx} variant={ach.toLowerCase()} label={ach} />
+                                ))
+                              ) : (
+                                <p className="text-gray-500 text-lg col-span-10 text-center">
+                                  No achievements yet.
+                                </p>
+                              )}
                             </div>
 
-                            {/* Stats line with highlighted numbers and separators */}
+                        </div>
+                        <div>
                             {guide.stats && (
-                                <p className="text-gray-600
-                                    text-lg sm:text-xl md:text-2xl
-                                    font-normal
-                                    text-center
-                                    mt-10
-                                ">
-                                    <span className="text-gray-600 font-normal">
-                                        Past tours: <span
-                                            className="text-black font-semibold">{guide.stats.total_past_tours}</span>
-                                    </span>
-                                    <span className="mx-5">|</span>
-                                    <span className="text-black font-normal">
-                                        Hosted tours: <span
-                                            className="text-black font-semibold">{guide.stats.total_tours}</span>
-                                    </span>
-                                    <span className="mx-5">|</span>
-                                    <span className="text-gray-600 font-normal">
-                                        Achievements: <span
-                                            className="text-black font-semibold">{guide.stats.achievement_count} / 5</span>
-                                    </span>
-                                </p>
+                                <div
+                                    className="flex justify-center space-x-15 sm:space-x-8 md:space-x-20 lg:space-x-30 text-center">
+                                    {/* Past tours */}
+                                    <div className="flex flex-col items-center gap-2">
+                                      <span className="flex justify-center">
+                                        <CalendarCheck className="text-gray-600 h-7 w-7"/>
+                                      </span>
+                                        <span className="text-gray-600 text-md sm:text-base md:text-xl font-normal">
+                                        Completed tours
+                                      </span>
+                                        <span className="text-black text-lg sm:text-xl md:text-2xl font-semibold">
+                                        {guide.stats.total_past_tours}
+                                      </span>
+                                    </div>
+
+
+                                    {/* Hosted tours */}
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className="flex justify-center">
+                                            <MapPin className="text-gray-600 h-7 w-7"/>
+                                        </span>
+                                        <span className="text-gray-600 text-md sm:text-base md:text-xl font-normal">Offered tours</span>
+                                        <span
+                                            className="text-black text-lg sm:text-xl md:text-2xl font-semibold">{guide.stats.total_tours}</span>
+                                    </div>
+
+                                    {/* Achievements */}
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className="flex justify-center">
+                                            <Crown className="text-gray-600 h-7 w-7"/>
+                                        </span>
+                                        <span
+                                            className="text-gray-600 text-md sm:text-base md:text-xl font-normal">Achievements</span>
+                                        <span
+                                            className="text-black text-lg sm:text-xl md:text-2xl font-semibold">{guide.stats.achievement_count} / 4</span>
+                                    </div>
+                                </div>
                             )}
                         </div>
+
                     </div>
                 </div>
 
                 {/* About Me (Moved Down, Full Width) */}
-                <div className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                    <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">About me</h3>
+                <div
+                    className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">About
+                        me</h3>
                     <FieldDescription className="text-gray-700 leading-loose text-base md:text-lg break-words">
                         {guide.bio || "This guide has not added a bio yet. Check their tours and reviews below."}
                     </FieldDescription>
@@ -344,31 +376,40 @@ export function GuidePublicProfile({ guideId }) {
                                 className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("left")}
                             >
-                                <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                <ChevronLeft className="w-5 h-5 text-gray-700"/>
                             </Button>
                             <div
                                 ref={tourListRef}
                                 className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
                             >
                                 {tours.map((tour) => (
-                                    <TourCard key={tour.id} tour={tour} onViewTour={handleViewTour} />
+                                    <TourCard key={tour.id} tour={tour} onViewTour={handleViewTour}/>
                                 ))}
+                                <style>
+                                    {`
+                                      /* Hide scrollbar for Chrome, Safari and Opera */
+                                      div::-webkit-scrollbar {
+                                        display: none;
+                                      }
+                                    `}
+                                </style>
                             </div>
                             <Button
                                 className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("right")}
                             >
-                                <ChevronRight className="w-5 h-5 text-gray-700" />
+                                <ChevronRight className="w-5 h-5 text-gray-700"/>
                             </Button>
                         </div>
                     )}
                 </div>
 
-                <FieldSeparator className="p-10" />
+                <FieldSeparator className="p-10"/>
                 {/* Guide Reviews */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">Recent reviews</FieldLabel>
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">Recent
+                            reviews</FieldLabel>
                         {!!reviews.length && (
                             <FieldDescription className="text-base md:text-lg text-gray-500">
                                 {reviews.length} review{reviews.length === 1 ? "" : "s"}
@@ -383,8 +424,8 @@ export function GuidePublicProfile({ guideId }) {
                         // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
                         // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
                         // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
-                        <div className="text-lg"> 
-                            <RatingList ratings={reviews} showTourName={true} />
+                        <div className="text-lg">
+                            <RatingList ratings={reviews} showTourName={true}/>
                         </div>
                     )}
                 </div>

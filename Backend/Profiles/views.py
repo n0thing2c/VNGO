@@ -212,12 +212,19 @@ class GuideAchievementView(APIView):
         avg_rating = agg['avg_rating'] or 0
 
         # Highly Rated: average rating 4+ stars
+        if avg_rating >=3.5:
+            achievements.append("Liked")
         if avg_rating >= 4:
             achievements.append("Loved")
+        if avg_rating >=4.7:
+            achievements.append("People's Choice")
 
         # Multilingual: knows 3+ languages
         if guide.languages and len(guide.languages) >= 3:
             achievements.append("Multilingual")
+
+        if guide.languages and len(guide.languages) >= 5:
+            achievements.append("Polygot")
 
         # Experienced: top 30% in past tours
         all_guides = Guide.objects.annotate(
@@ -225,33 +232,39 @@ class GuideAchievementView(APIView):
         ).order_by('-past_tours_count')
 
         guide_past_count = PastTour.objects.filter(guide=guide).count()
-        total_guides = all_guides.count()
-        if total_guides > 1:
-            guides_less_or_equal = all_guides.filter(past_tours_count__lte=guide_past_count).count()
-            percentile = guides_less_or_equal / total_guides
-            if percentile >= 0.7:
-                achievements.append("Experienced")
 
-        # Crafter: top 30% in number of tours hosted
+        if guide_past_count >= 500:
+            achievements.append("Legendary Guide")
+        if guide_past_count >= 100:
+            achievements.append("Master Guide")
+        if guide_past_count >= 50:
+            achievements.append("Experienced Guide")
+        if guide_past_count >= 10:
+            achievements.append("Rising Guide")
+        if guide_past_count >= 1:
+            achievements.append("Rookie Guide")
+
         guide_tour_count = Tour.objects.filter(guide=guide).count()
-        all_guides_tours = Guide.objects.annotate(
-            tour_count=Count('tours')  # adjust 'tour' if your related_name is different
-        ).order_by('-tour_count')
 
-        if total_guides > 1:
-            guides_less_or_equal_tours = all_guides_tours.filter(tour_count__lte=guide_tour_count).count()
-            percentile_tours = guides_less_or_equal_tours / total_guides
-            if percentile_tours >= 0.7:
-                achievements.append("Crafter")
+        if guide_tour_count >= 100:
+            achievements.append("Master Architect")
+        if guide_tour_count >= 50:
+            achievements.append("Master Artist")
+        if guide_tour_count >= 30:
+            achievements.append("Skilled Artist")
+        if guide_tour_count >= 10:
+            achievements.append("Apprentice Crafter")
+        if guide_tour_count >= 1:
+            achievements.append("Rookie Crafter")
 
-        # Optional: other stats
-        stats = {
-            "total_past_tours": guide_past_count,
-            "total_tours": guide_tour_count,
-            "achievement_count": len(achievements)
-        }
+            # Optional: other stats
+            stats = {
+                "total_past_tours": guide_past_count,
+                "total_tours": guide_tour_count,
+                "achievement_count": len(achievements)
+            }
 
-        return Response({"success": True, "achievements": achievements, "stats": stats})
+            return Response({"success": True, "achievements": achievements, "stats": stats})
 
 
 @api_view(['GET'])
