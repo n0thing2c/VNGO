@@ -115,6 +115,16 @@ class WebSocketService {
     }
   }
 
+  sendMarkSeen() {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(
+        JSON.stringify({
+          type: "mark_seen",
+        })
+      );
+    }
+  }
+
   on(event, callback) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);

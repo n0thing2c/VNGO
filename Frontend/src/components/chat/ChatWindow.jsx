@@ -99,6 +99,7 @@ export default function ChatWindow({
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isContactOnline, setIsContactOnline] = useState(false);
+  const [contactSeenAt, setContactSeenAt] = useState(null);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const justSwitchedRoomRef = useRef(false);
@@ -160,7 +161,7 @@ export default function ChatWindow({
     fetchGuideRating();
   }, [contactId, contactName, user?.role, roomName]);
 
-  // Fetch initial online status for contact
+  // Fetch and poll online status for contact
   useEffect(() => {
     const isChatbot = contactName?.toLowerCase().trim() === "chatbot" || 
                       contactId === "chatbot" || 
@@ -197,8 +198,32 @@ export default function ChatWindow({
       setIsContactOnline(false);
     };
 
+    // Fetch immediately
     fetchOnlineStatus();
+
+    // Poll every 5 seconds to keep status updated
+    const intervalId = setInterval(fetchOnlineStatus, 5000);
+
+    return () => clearInterval(intervalId);
   }, [contactId, contactName, roomName, user?.username]);
+
+  // Fetch initial seen status for room
+  useEffect(() => {
+    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" || 
+                      contactId === "chatbot" || 
+                      roomName?.endsWith("chatbot");
+    if (isChatbot || !roomName) {
+      setContactSeenAt(null);
+      return;
+    }
+
+    const fetchSeenStatus = async () => {
+      const status = await chatService.getRoomSeenStatus(roomName);
+      setContactSeenAt(status.contact_seen_at);
+    };
+
+    fetchSeenStatus();
+  }, [roomName, contactId, contactName]);
 
   const handleNotifyParent = (message) => {
     if (typeof onMessageUpdate === "function" && message) {
@@ -309,6 +334,13 @@ export default function ChatWindow({
           return normalized;
         });
 
+        // Mark room as seen when receiving a message (user is actively viewing)
+        // This ensures hasUnread stays false while user is in the room
+        const isFromOther = incoming.sender?.id && String(incoming.sender.id) !== String(user?.id);
+        if (isFromOther) {
+          websocketService.sendMarkSeen();
+        }
+
         handleNotifyParent(incoming);
         // Auto-scroll on new message (container only)
         ensureScrollBottom(true);
@@ -337,6 +369,14 @@ export default function ChatWindow({
         const statusUserId = data.user_id;
         if (contactId && String(statusUserId) === String(contactId)) {
           setIsContactOnline(data.is_online);
+        }
+      } else if (data.type === "message_seen") {
+        // Handle message seen updates
+        const seenUserId = data.user_id;
+        const currentUserId = user?.id;
+        // Only update if it's from the other person (contact), not from current user
+        if (currentUserId && seenUserId && String(seenUserId) !== String(currentUserId)) {
+          setContactSeenAt(data.seen_at);
         }
       }
     };
@@ -508,6 +548,7 @@ export default function ChatWindow({
           contactName={contactName}
           contactAvatar={contactAvatar}
           isContactOnline={isContactOnline}
+          contactSeenAt={contactSeenAt}
         />
         <div ref={messagesEndRef} />
       </div>

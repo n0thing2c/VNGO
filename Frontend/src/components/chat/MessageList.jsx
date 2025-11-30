@@ -7,6 +7,7 @@ const isSameConversation = (prev, next) =>
   prev.contactName === next.contactName &&
   prev.contactAvatar === next.contactAvatar &&
   prev.isOnline === next.isOnline &&
+  prev.hasUnread === next.hasUnread &&
   prev.lastMessage === next.lastMessage &&
   prev.lastMessageTime === next.lastMessageTime;
 
@@ -55,19 +56,34 @@ const ConversationItem = memo(
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-semibold text-gray-900 truncate">
+              <h3 className={`truncate ${
+                conversation.hasUnread 
+                  ? "font-bold text-gray-900" 
+                  : "font-semibold text-gray-900"
+              }`}>
                 {conversation.contactName || "Unknown"}
               </h3>
-              {conversation.lastMessageTime && (
-                <span className="text-xs text-gray-500 ml-2">
-                  {new Date(conversation.lastMessageTime).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              )}
+              <div className="flex items-center gap-1.5 ml-2">
+                {conversation.hasUnread && (
+                  <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                )}
+                {conversation.lastMessageTime && (
+                  <span className={`text-xs flex-shrink-0 ${
+                    conversation.hasUnread ? "text-blue-500 font-semibold" : "text-gray-500"
+                  }`}>
+                    {new Date(conversation.lastMessageTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                )}
+              </div>
             </div>
-            <p className="text-sm text-gray-500 truncate">
+            <p className={`text-sm truncate ${
+              conversation.hasUnread 
+                ? "text-gray-900 font-semibold" 
+                : "text-gray-500"
+            }`}>
               {conversation.lastMessage || "No message yet"}
             </p>
           </div>

@@ -235,12 +235,19 @@ export default function ChatPage() {
           contactAvatar = selectedContact.contactAvatar || null;
         }
 
+        // Check if this is an incoming message (from other person) - mark as unread
+        // But if user is currently viewing this room, don't mark as unread
+        const isFromOther = message?.sender && String(message.sender.id) !== String(user?.id);
+        const isCurrentRoom = selectedRoom === roomName;
+        const hasUnread = isFromOther && !isCurrentRoom ? true : (existing?.hasUnread || false);
+
         const updatedConversation = {
           room: roomName,
           contactName: otherUserName,
           contactId: otherUserId,
           contactAvatar: contactAvatar,
           isOnline: existing?.isOnline || false,
+          hasUnread: hasUnread,
           nationality:
             existing?.nationality ||
             (message?.sender && message.sender.id !== user?.id
@@ -416,6 +423,13 @@ export default function ChatPage() {
     setSelectedRoom(roomName);
     const contact = normalizedConversations.find((c) => c.room === roomName);
     
+    // Clear unread status for this room when user opens it
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.room === roomName ? { ...conv, hasUnread: false } : conv
+      )
+    );
+    
     // If contact not found, create a temporary contact from room name
     // contactId will be null initially and updated when messages arrive
     if (!contact && roomName) {
@@ -425,6 +439,7 @@ export default function ChatPage() {
         contactName: parsedName || "Unknown contact",
         contactId: null, // Will be updated when first message arrives
         contactAvatar: null,
+        hasUnread: false,
         lastMessage: "No message yet",
         lastMessageTime: null,
         responseTime: "30 minutes",
@@ -433,7 +448,7 @@ export default function ChatPage() {
       };
       setSelectedContact(tempContact);
     } else {
-      setSelectedContact(contact || null);
+      setSelectedContact(contact ? { ...contact, hasUnread: false } : null);
     }
   };
 
@@ -502,6 +517,7 @@ export default function ChatPage() {
         contactId,
         contactAvatar: contactAvatar || existing?.contactAvatar || null,
         isOnline: existing?.isOnline || false,
+        hasUnread: existing?.hasUnread || false,
         nationality: existing?.nationality || null,
         lastMessage: existing?.lastMessage || "No message yet",
         lastMessageTime: existing?.lastMessageTime || new Date().toISOString(),

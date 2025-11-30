@@ -130,7 +130,25 @@ const MessageItem = memo(({ message, isOwnMessage, senderName, senderAvatar, sen
 
 MessageItem.displayName = "MessageItem";
 
-const MessagesList = memo(({ messages, user, roomName, userAvatar, isTyping, contactName, contactAvatar, isContactOnline }) => {
+const MessagesList = memo(({ messages, user, roomName, userAvatar, isTyping, contactName, contactAvatar, isContactOnline, contactSeenAt }) => {
+  // Find the last message that contact has seen (any message, not just own)
+  const lastSeenMessageIndex = useMemo(() => {
+    if (!contactSeenAt) return -1;
+    
+    const seenTime = new Date(contactSeenAt).getTime();
+    
+    // Find the last message with created_at <= seenTime
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      const msgTime = new Date(msg.created_at).getTime();
+      if (msgTime <= seenTime) {
+        return i;
+      }
+    }
+    
+    return -1;
+  }, [messages, contactSeenAt]);
+
   const renderedMessages = useMemo(() => {
     if (messages.length === 0) {
       return (
@@ -186,10 +204,33 @@ const MessagesList = memo(({ messages, user, roomName, userAvatar, isTyping, con
           isContactOnline={isContactOnline}
         />
       );
+
+      // Show seen avatar indicator after the last seen message (like Messenger)
+      if (index === lastSeenMessageIndex) {
+        rendered.push(
+          <div key={`seen-${index}`} className="flex justify-end pr-2 -mt-1">
+            {contactAvatar ? (
+              <img
+                src={contactAvatar}
+                alt={contactName}
+                className="w-4 h-4 rounded-full object-cover border border-gray-200"
+                title={`Seen by ${contactName}`}
+              />
+            ) : (
+              <div 
+                className="w-4 h-4 rounded-full bg-gray-400 flex items-center justify-center text-white text-[8px] font-semibold"
+                title={`Seen by ${contactName}`}
+              >
+                {contactName?.[0]?.toUpperCase() || "?"}
+              </div>
+            )}
+          </div>
+        );
+      }
     });
 
     return rendered;
-  }, [messages, user, roomName, userAvatar, isContactOnline]);
+  }, [messages, user, roomName, userAvatar, isContactOnline, lastSeenMessageIndex, contactAvatar, contactName]);
 
   return (
     <>

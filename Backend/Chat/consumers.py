@@ -28,6 +28,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Broadcast that user joined this room
         await self.broadcast_online_status(True)
+        
+        # Mark room as seen when user connects
+        await self.mark_room_seen()
+        await self.broadcast_seen_status()
 
     async def disconnect(self, close_code):
         try:
@@ -124,6 +128,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 {"type": "chat.message", "payload": payload},
             )
 
+            # Mark room as seen for sender (they just sent a message, so they've seen everything)
+            await self.mark_room_seen()
+            # Broadcast seen status so the other person sees the update
+            await self.broadcast_seen_status()
+
             # Send notifications asynchronously (don't wait)
             await self.send_notifications(payload)
 
@@ -137,6 +146,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 self.group_name,
                 {"type": "chat.typing", "payload": {"user_id": getattr(user, "id", None)}},
             )
+        
+        elif msg_type == "mark_seen":
+            # User scrolled/viewed messages - mark as seen
+            await self.mark_room_seen()
+            await self.broadcast_seen_status()
 
     @database_sync_to_async
     def create_message(self, room, sender, content):
@@ -169,6 +183,42 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def chat_typing(self, event):
         await self.send_json({"type": "typing", **event["payload"]})
+
+    @database_sync_to_async
+    def mark_room_seen(self):
+        """Mark that user has seen messages in this room"""
+        from .last_seen import LastSeenService
+        LastSeenService.mark_room_as_seen(self.user_id, self.room_name)
+        # Invalidate conversations cache so hasUnread updates immediately
+        cache.delete(f"conversations:{self.user_id}")
+
+    @database_sync_to_async
+    def get_room_seen_info(self):
+        """Get seen info for the room"""
+        from .last_seen import LastSeenService
+        seen_at = LastSeenService.get_room_last_seen(self.user_id, self.room_name)
+        return seen_at.isoformat() if seen_at else None
+
+    async def broadcast_seen_status(self):
+        """Broadcast that user has seen messages"""
+        seen_at = await self.get_room_seen_info()
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "message.seen",
+                "payload": {
+                    "type": "message_seen",
+                    "user_id": self.user_id,
+                    "username": self.username,
+                    "room": self.room_name,
+                    "seen_at": seen_at,
+                },
+            },
+        )
+
+    async def message_seen(self, event):
+        """Send seen status update to client"""
+        await self.send_json(event["payload"])
 
     async def handle_bot_response(self, user_text):
         """Process the user's message, ask AI, and send response."""

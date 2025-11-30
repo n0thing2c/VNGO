@@ -34,4 +34,14 @@ export const chatService = {
       return { username, is_online: false };
     }
   },
+
+  // Get room seen status
+  getRoomSeenStatus: async (roomName) => {
+    try {
+      const response = await api.get(`/chat/${roomName}/seen/`);
+      return response.data;
+    } catch (error) {
+      return { room: roomName, contact_seen_at: null };
+    }
+  },
 };
