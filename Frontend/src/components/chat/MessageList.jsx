@@ -91,7 +91,7 @@ function MessageList({
     [conversations, selectedRoom, onSelectRoom]
   );
   return (
-    <div className={`flex flex-col h-[100%]`}>
+    <div className={`flex flex-col h-[100%] relative`}>
       {/* Header */}
       <div className="p-6 border-b">
         <h1 className="text-3xl font-bold mb-4">Messages</h1>
@@ -109,7 +109,7 @@ function MessageList({
       </div>
 
       {/* Conversation List */}
-      <div className="flex-1 overflow-y-auto relative max-h-[70vh]">
+      <div className="flex-1 overflow-y-auto max-h-[65vh]">
         {conversations.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">No conversations yet</p>
@@ -117,15 +117,17 @@ function MessageList({
         ) : (
           <div className="pb-24">{renderedConversations}</div>
         )}
-        <FloatingChatbotButton
-          className="absolute bottom-4 left-4 z-10"
-          onClick={() => {
-            if (onStartChatbot) {
-              onStartChatbot();
-            }
-          }}
-        />
       </div>
+      
+      {/* Floating Chatbot Button - Fixed position */}
+      <FloatingChatbotButton
+        className="absolute bottom-4 left-4 z-10"
+        onClick={() => {
+          if (onStartChatbot) {
+            onStartChatbot();
+          }
+        }}
+      />
     </div>
   );
 }
