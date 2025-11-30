@@ -154,7 +154,7 @@ function AchievementBadge({ variant = "popular", label }) {
       </div>
 
       {/* Label popup */}
-      <span className="absolute left-1/2 -translate-x-1/2 mt-2 w-max opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-xl text-black text-xs px-2 py-1 shadow-lg z-20">
+      <span className=" absolute left-1/2 -translate-x-1/2 mt-2 w-max opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-xl text-black text-xs px-2 py-1 shadow-lg z-20">
         {label}
       </span>
     </div>
