@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import MessageList from "@/components/chat/MessageList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { chatService } from "@/services/chatService";
@@ -47,6 +47,12 @@ export default function ChatPage() {
   const location = useLocation();
   const targetRoom = location.state?.targetRoom;
   const targetUser = location.state?.targetUser;
+  const targetRoomRef = useRef(targetRoom);
+  
+  // Update ref when targetRoom changes
+  useEffect(() => {
+    targetRoomRef.current = targetRoom;
+  }, [targetRoom]);
 
   const resolveRoomMateName = useCallback(
     (roomName) => {
@@ -258,7 +264,8 @@ export default function ChatPage() {
         setConversations(normalized);
 
         // Auto-select first conversation if available and no room is selected
-        if (normalized.length > 0 && !selectedRoom) {
+        // But don't auto-select if we have a targetRoom (it will be handled by the targetRoom useEffect)
+        if (normalized.length > 0 && !selectedRoom && !targetRoomRef.current) {
           setSelectedRoom(normalized[0].room);
           setSelectedContact(normalized[0]);
         }
@@ -284,6 +291,10 @@ export default function ChatPage() {
           const merged = normalizeAndEnhance([...prev, ...normalized]);
           return merged;
         });
+        // Ensure targetRoom remains selected if it exists
+        if (targetRoomRef.current) {
+          setSelectedRoom(targetRoomRef.current);
+        }
       } catch { }
     };
 
@@ -292,7 +303,7 @@ export default function ChatPage() {
       isCancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [normalizeAndEnhance]);
 
   // Realtime notifications for other rooms
   useEffect(() => {
@@ -382,7 +393,9 @@ export default function ChatPage() {
         : targetUser?.username || targetRoom;
     const contactAvatar = targetUser?.avatar || targetUser?.avatar_url || null;
 
+    // Set selectedRoom immediately to prevent auto-selection of latest room
     setSelectedRoom(targetRoom);
+    
     setConversations((prev) => {
       const existing = prev.find((c) => c.room === targetRoom);
       const updatedConversation = {
@@ -392,21 +405,24 @@ export default function ChatPage() {
         contactAvatar: contactAvatar || existing?.contactAvatar || null,
         nationality: existing?.nationality || null,
         lastMessage: existing?.lastMessage || "No message yet",
-        lastMessageTime: existing?.lastMessageTime || null,
+        lastMessageTime: existing?.lastMessageTime || new Date().toISOString(),
         responseTime: existing?.responseTime || "30 minutes",
         rating: existing?.rating ?? 3.5,
         reviewCount: existing?.reviewCount ?? 0,
       };
       const filtered = prev.filter((c) => c.room !== targetRoom);
+      // Put targetRoom conversation first to ensure it's selected even after normalization
       const normalized = normalizeAndEnhance([
-        ...filtered,
         updatedConversation,
+        ...filtered,
       ]);
       const found = normalized.find((c) => c.room === targetRoom);
       setSelectedContact(found || updatedConversation);
+      // Ensure selectedRoom is still set to targetRoom after normalization
+      setSelectedRoom(targetRoom);
       return normalized;
     });
-  }, [targetRoom, targetUser]);
+  }, [targetRoom, targetUser, normalizeAndEnhance]);
 
   return (
     <div>

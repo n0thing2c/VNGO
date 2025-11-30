@@ -92,6 +92,7 @@ class GuidePublicProfileSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(source="pk", read_only=True)
     tours_count = serializers.SerializerMethodField(read_only=True)
+    username = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Guide
@@ -107,6 +108,7 @@ class GuidePublicProfileSerializer(serializers.ModelSerializer):
             # "rating_count",
             "tours_count",
             "bio",
+            "username",
         ]
 
     # def get_average_rating(self, obj):
@@ -117,3 +119,6 @@ class GuidePublicProfileSerializer(serializers.ModelSerializer):
 
     def get_tours_count(self, obj):
         return obj.tours.count()
+
+    def get_username(self, obj):
+        return obj.user.username if obj.user else None
