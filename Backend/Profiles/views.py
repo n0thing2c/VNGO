@@ -287,20 +287,13 @@ def get_homepage_guides(request):
 
 
 class TouristPublicProfileView(APIView):
-    """
-    Public view for displaying a tourist's profile information together with
-    their past tours and the reviews they have written for tours.
-    """
-
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, tourist_id):
         tourist = get_object_or_404(Tourist, pk=tourist_id)
 
-        # Basic profile information
         profile_data = TouristProfileSerializer(tourist).data
 
-        # Past tours completed by this tourist
         past_tours_qs = (
             PastTour.objects.filter(tourist=tourist)
             .select_related("tourist", "guide", "tour")
@@ -311,17 +304,24 @@ class TouristPublicProfileView(APIView):
             past_tours_qs, many=True, context={"request": request}
         ).data
 
-        # All tour ratings written by this tourist
         ratings_qs = TourRating.objects.filter(tourist=tourist).order_by("-created_at")
         ratings_data = []
+
         for rating in ratings_qs:
             serializer = TourRatingSerializer(rating, context={"request": request})
             data = serializer.data
-            # Attach basic tour info so frontend can show which tour was rated
+
+            data["images"] = [
+                request.build_absolute_uri(img.image.url)
+                for img in rating.images.all()
+            ]
+
+            # Attach basic tour info
             data["tour"] = {
                 "id": rating.tour.id,
                 "name": rating.tour.name,
             }
+
             ratings_data.append(data)
 
         return Response(
@@ -331,3 +331,4 @@ class TouristPublicProfileView(APIView):
                 "ratings": ratings_data,
             }
         )
+
