@@ -8,5 +8,6 @@ urlpatterns = [
     ),
     path("guide/public/<int:guide_id>/", views.GuidePublicProfileView.as_view(), name="guide-public-profile"),
     path("guide/achievements/<int:guide_id>/",views.GuideAchievementView.as_view(), name="guide-achievements"),
+    path("guide/homepage/", views.get_homepage_guides, name="guide-homepage"),
     path("tourist/public/<int:tourist_id>/", views.TouristPublicProfileView.as_view(), name="tourist-public-profile"),
 ]

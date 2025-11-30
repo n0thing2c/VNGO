@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
     GET_ALL_PROVINCES: `${API_BASE_URL}/provinces/all/`,
     GET_TOUR_ACHIEVEMENTS: (id) => `${API_BASE_URL}/tour/achievements/${id}/`,
     GET_TOUR_RATINGS: (id) => `${API_BASE_URL}/tour/ratings/${id}/`,
+    GET_HOMEPAGE_GUIDES: 'http://127.0.0.1:8000/profiles/guide/homepage/',
 };
 
 // App routes
@@ -29,4 +30,5 @@ export const ROUTES = {
     TOURIST_PROFILE: '/tourist-profile',
     GUIDE_PROFILE: '/guide-profile',
     PUBLIC_PROFILE: (guideId = ":guideId") => `/public-profile/${guideId}`,
+    TOURIST_PUBLIC_PROFILE: (touristId = ":touristId") => `/tourist-public-profile/${touristId}`,
 };

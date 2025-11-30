@@ -1,11 +1,26 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Languages, MapPin, Star } from "lucide-react";
+import {
+    Calendar,
+    ChevronLeft,
+    ChevronRight,
+    LandPlot,
+    Languages,
+    MapPin,
+    Star,
+    Mail,
+} from "lucide-react";
+import { Mars, Venus } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { profileService } from "@/services/profileService.js";
+import { useAuthStore } from "@/stores/useAuthStore.js";
 import RatingList from "@/components/rating/ratings.jsx";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constant.js";
-import { FieldLabel, FieldSeparator, FieldDescription } from "@/components/ui/field.jsx";
+import {
+    FieldLabel,
+    FieldSeparator,
+    FieldDescription,
+} from "@/components/ui/field.jsx";
 
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
 
@@ -18,7 +33,8 @@ const StarRating = ({ rating = 0 }) => {
                 return (
                     <Star
                         key={idx}
-                        className={`w-4 h-4 ${isFilled ? "text-yellow-400" : "text-gray-300"}`}
+                        className={`w-4 h-4 ${isFilled ? "text-yellow-400" : "text-gray-300"
+                            }`}
                         fill="currentColor"
                     />
                 );
@@ -28,21 +44,25 @@ const StarRating = ({ rating = 0 }) => {
 };
 
 const PastTourCard = ({ tour, onViewTour }) => (
-    <div className="flex flex-col min-w-[240px] w-[240px] h-[280px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
+    <div className="flex flex-col min-w-[240px] w-[240px] h-[360px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
         <img
             src={tour.image}
             alt={tour.title}
-            className="h-32 w-full object-cover"
+            className="h-40 w-full object-cover"
             onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = "https://placehold.co/240x180/4F68C4/ffffff?text=Tour";
             }}
         />
 
-        <div className="flex flex-col p-3 flex-1">
-            <h4 className="font-semibold text-sm truncate">{tour.title}</h4>
-            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                {tour.guideName ? `With guide ${tour.guideName}` : "Completed tour"}
+        <div className="flex flex-col p-4 flex-1 gap-3">
+            <h4 className="font-semibold text-vngo-normal-medium-responsive truncate">
+                {tour.title}
+            </h4>
+            <p className="text-vngo-normal-responsive text-gray-500 line-clamp-1 mt-1">
+                {tour.touristName
+                    ? `With tourist ${tour.touristName}`
+                    : "Attended tour"}
             </p>
 
             <div className="flex items-center gap-2 text-xs text-gray-600 mt-2">
@@ -53,7 +73,7 @@ const PastTourCard = ({ tour, onViewTour }) => (
             {/* Button always at bottom */}
             <div className="mt-auto flex justify-start">
                 <Button
-                    className="px-3 py-1 text-xs rounded-full bg-neutral-900 hover:bg-neutral-800 text-white"
+                    className="btn-vngo-hover-effect px-4 py-2 text-vngo-normal-responsive rounded-full bg-neutral-900 hover:bg-neutral-800 text-white"
                     onClick={() => onViewTour?.(tour.tourId)}
                 >
                     View tour
@@ -64,6 +84,7 @@ const PastTourCard = ({ tour, onViewTour }) => (
 );
 
 export function TouristPublicProfile({ touristId }) {
+    const { user } = useAuthStore();
     const navigate = useNavigate();
     const [tourist, setTourist] = useState(null); // holds tourist profile
     const [tours, setTours] = useState([]); // past tours
@@ -91,7 +112,9 @@ export function TouristPublicProfile({ touristId }) {
         setError("");
 
         try {
-            const profileRes = await profileService.getTouristPublicProfile(touristId);
+            const profileRes = await profileService.getTouristPublicProfile(
+                touristId
+            );
 
             if (profileRes.success && profileRes.data) {
                 const profile = profileRes.data.profile || null;
@@ -135,7 +158,9 @@ export function TouristPublicProfile({ touristId }) {
     };
 
     if (loading)
-        return <div className="py-16 text-center text-gray-600">Loading profile...</div>;
+        return (
+            <div className="py-16 text-center text-gray-600">Loading profile...</div>
+        );
 
     if (error || !tourist)
         return (
@@ -146,13 +171,13 @@ export function TouristPublicProfile({ touristId }) {
 
     return (
         <div className="min-h-screen w-full">
-            <div className="mx-auto w-full md:max-w-4xl px-4 sm:px-6 lg:px-8 pt-8 pb-12 space-y-8">
-                {/* Tourist Info */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="flex flex-col space-y-3 border-b md:border-b-0 md:border-r border-black md:pr-6 pb-4 md:pb-0">
+            <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-8 pt-8 pb-12 space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Profile / Avatar card */}
+                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         {/* Avatar + Name */}
                         <div className="flex flex-col items-center space-y-2">
-                            <div className="relative h-28 w-28 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
+                            <div className="relative h-30 w-30 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
                                 <img
                                     src={tourist.face_image || DEFAULT_AVATAR}
                                     alt={tourist.name}
@@ -163,64 +188,83 @@ export function TouristPublicProfile({ touristId }) {
                                     }}
                                 />
                             </div>
-                            <FieldLabel className="text-xl font-bold text-gray-900 text-center">
+                            <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
                                 {tourist.name}
                             </FieldLabel>
                         </div>
 
                         {/* Other Info */}
-                        <div className="flex items-center text-gray-600 text-sm">
-                            <MapPin className="w-4 h-4 mr-1 text-red-600" />
+                        <div className="flex items-center text-gray-600 text-base md:text-lg">
+                            <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
                             <span>{tourist.nationality || "Nationality not provided"}</span>
                         </div>
-                        <div className="flex items-center text-gray-600 text-sm">
-                            <Languages className="w-4 h-4 mr-1 text-blue-700" />
+                        <div className="flex items-center text-gray-600 text-base md:text-lg">
+                            <Calendar className="w-5 h-5 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0" />
                             <span>
                                 {tourist.age ? `${tourist.age} years old` : "Age not provided"}
-                                {tourist.gender ? ` • ${tourist.gender}` : ""}
                             </span>
                         </div>
-                        <div className="flex items-center pt-1 text-sm text-gray-600">
-                            <span className="font-semibold">{tours.length}</span>
-                            <span className="ml-1">past tour{tours.length === 1 ? "" : "s"}</span>
-                            <span className="mx-2">•</span>
-                            <span className="font-semibold">{reviews.length}</span>
-                            <span className="ml-1">
-                                review{reviews.length === 1 ? "" : "s"} written
+                        <div className="flex items-center text-gray-600 text-base md:text-lg">
+                            {tourist.gender === "Male" && (
+                                <Mars className="w-5 h-5 mr-2 shrink-0" color="#3b82f6" />
+                            )}
+                            {tourist.gender === "Female" && (
+                                <Venus className="w-5 h-5 mr-2 shrink-0" color="#ec4899" />
+                            )}
+                            <span>{tourist.gender ? ` • ${tourist.gender}` : ""}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600 text-base md:text-lg">
+                            <Mail className="w-5 h-5 md:w-5 md:h-5 mr-2 text-green-600 shrink-0" />
+                            <span className="truncate">
+                                {user?.email || "Email not provided"}
                             </span>
                         </div>
                     </div>
 
-                    {/* Simple summary card */}
-                    <div className="md:col-span-2 md:pl-6 flex flex-col justify-center space-y-3">
-                        <FieldLabel className="text-lg font-semibold text-gray-900">
-                            Travel summary
-                        </FieldLabel>
-                        <FieldDescription className="text-gray-700 text-sm sm:text-md break-words">
-                            {tours.length
-                                ? `${tourist.name || "This tourist"} has completed ${tours.length} past tour${tours.length === 1 ? "" : "s"
-                                }.`
-                                : "This tourist has not completed any tours yet."}
-                        </FieldDescription>
-                        <FieldDescription className="text-gray-700 text-sm sm:text-md break-words">
-                            {reviews.length
-                                ? `They have written ${reviews.length} review${reviews.length === 1 ? "" : "s"
-                                } about tours they joined.`
-                                : "No written reviews yet."}
-                        </FieldDescription>
+                    {/* Summary cards */}
+                    <div className="lg:col-span-8 xl:col-span-9 grid grid-cols-1 gap-6">
+                        {/* Past Tours */}
+                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                            <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <Calendar className="w-8 h-8 text-blue-600" />
+                            </div>
+                            <div className="flex flex-col">
+                                <p className="text-gray-600 text-md leading-tight">
+                                    Attended tours
+                                </p>
+                                <p className="text-2xl font-semibold text-gray-900">
+                                    {tours.length}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Hosted Tours */}
+                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                            <div className="p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
+                                <Star className="w-8 h-8 text-yellow-400" />
+                            </div>
+                            <div className="flex flex-col">
+                                <p className="text-gray-600 text-md leading-tight">
+                                    Written reviews
+                                </p>
+                                <p className="text-2xl font-semibold text-gray-900">
+                                    {reviews.length}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Past tours */}
                 <div>
-                    <div className="flex items-center justify-between mt-10">
-                        <FieldLabel className="text-2xl font-semibold text-gray-900">
+                    <div className="flex items-center justify-between mt-2">
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
                             Past tours ({tours.length})
                         </FieldLabel>
                     </div>
                     {tours.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-sm">
-                            This tourist has not completed any tours yet.
+                        <FieldDescription className="text-gray-500 text-sm pt-6">
+                            This tourist has not attended any tours yet.
                         </FieldDescription>
                     ) : (
                         <div className="relative flex items-center p-8">
@@ -235,8 +279,20 @@ export function TouristPublicProfile({ touristId }) {
                                 className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
                             >
                                 {tours.map((tour) => (
-                                    <PastTourCard key={tour.id} tour={tour} onViewTour={handleViewTour} />
+                                    <PastTourCard
+                                        key={tour.id}
+                                        tour={tour}
+                                        onViewTour={handleViewTour}
+                                    />
                                 ))}
+                                <style>
+                                    {`
+                                      /* Hide scrollbar for Chrome, Safari and Opera */
+                                      div::-webkit-scrollbar {
+                                        display: none;
+                                      }
+                                    `}
+                                </style>
                             </div>
                             <Button
                                 className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
@@ -249,25 +305,29 @@ export function TouristPublicProfile({ touristId }) {
                 </div>
 
                 <FieldSeparator className="p-10" />
-
-                {/* Recent reviews */}
+                {/* Guide Reviews */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <FieldLabel className="text-2xl font-semibold text-gray-900">
-                            Recent reviews
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
+                            Written reviews
                         </FieldLabel>
                         {!!reviews.length && (
-                            <FieldDescription className="text-sm text-gray-500">
+                            <FieldDescription className="text-base md:text-lg text-gray-500">
                                 {reviews.length} review{reviews.length === 1 ? "" : "s"}
                             </FieldDescription>
                         )}
                     </div>
                     {reviews.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-sm">
-                            No reviews yet. Be the first to share your experience!
+                        <FieldDescription className="text-gray-500 text-base md:text-lg">
+                            No reviews yet.
                         </FieldDescription>
                     ) : (
-                        <RatingList ratings={reviews} showTourName={true} hideStars={true} />
+                        // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
+                        // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
+                        // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
+                        <div className="text-lg">
+                            <RatingList ratings={reviews} showTourName={true} />
+                        </div>
                     )}
                 </div>
             </div>

@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import MessageList from "@/components/chat/MessageList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { chatService } from "@/services/chatService";
+import { profileService } from "@/services/profileService";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { notificationService } from "@/services/notifyService";
 import { useLocation } from "react-router-dom";
@@ -47,6 +48,12 @@ export default function ChatPage() {
   const location = useLocation();
   const targetRoom = location.state?.targetRoom;
   const targetUser = location.state?.targetUser;
+  const targetRoomRef = useRef(targetRoom);
+  
+  // Update ref when targetRoom changes
+  useEffect(() => {
+    targetRoomRef.current = targetRoom;
+  }, [targetRoom]);
 
   const resolveRoomMateName = useCallback(
     (roomName) => {
@@ -231,6 +238,55 @@ export default function ChatPage() {
           reviewCount: existing?.reviewCount ?? 0,
         };
 
+        // If user is a guide and we don't have nationality yet, fetch it
+        // Skip chatbot - check multiple conditions
+        const otherUserIdLower = otherUserId?.toLowerCase();
+        const otherUserNameLower = otherUserName?.toLowerCase().trim();
+        const roomNameLower = roomName?.toLowerCase();
+        const isChatbot = 
+          otherUserIdLower === "chatbot" ||
+          otherUserNameLower === "chatbot" ||
+          roomNameLower?.endsWith("chatbot") ||
+          roomNameLower?.includes("__chatbot") ||
+          otherUserIdLower?.includes("chatbot");
+
+        if (
+          user?.role === "guide" &&
+          !updatedConversation.nationality &&
+          otherUserId &&
+          otherUserId !== roomName &&
+          !isChatbot
+        ) {
+          // Fetch nationality asynchronously without blocking the update
+          profileService
+            .getTouristPublicProfile(otherUserId)
+            .then((res) => {
+              if (res.success && res.data?.profile?.nationality) {
+                setConversations((prev) => {
+                  return prev.map((conv) => {
+                    if (conv.room === roomName) {
+                      return { ...conv, nationality: res.data.profile.nationality };
+                    }
+                    return conv;
+                  });
+                });
+                
+                // Update selectedContact if it matches
+                if (selectedRoom === roomName) {
+                  setSelectedContact((prev) => {
+                    if (prev?.room === roomName) {
+                      return { ...prev, nationality: res.data.profile.nationality };
+                    }
+                    return prev;
+                  });
+                }
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching tourist nationality:", error);
+            });
+        }
+
         const enhancedConversation = withDisplayName(updatedConversation);
 
         const others = prev.filter((c) => c.room !== roomName);
@@ -258,7 +314,8 @@ export default function ChatPage() {
         setConversations(normalized);
 
         // Auto-select first conversation if available and no room is selected
-        if (normalized.length > 0 && !selectedRoom) {
+        // But don't auto-select if we have a targetRoom (it will be handled by the targetRoom useEffect)
+        if (normalized.length > 0 && !selectedRoom && !targetRoomRef.current) {
           setSelectedRoom(normalized[0].room);
           setSelectedContact(normalized[0]);
         }
@@ -284,6 +341,10 @@ export default function ChatPage() {
           const merged = normalizeAndEnhance([...prev, ...normalized]);
           return merged;
         });
+        // Ensure targetRoom remains selected if it exists
+        if (targetRoomRef.current) {
+          setSelectedRoom(targetRoomRef.current);
+        }
       } catch { }
     };
 
@@ -292,7 +353,7 @@ export default function ChatPage() {
       isCancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [normalizeAndEnhance]);
 
   // Realtime notifications for other rooms
   useEffect(() => {
@@ -382,7 +443,9 @@ export default function ChatPage() {
         : targetUser?.username || targetRoom;
     const contactAvatar = targetUser?.avatar || targetUser?.avatar_url || null;
 
+    // Set selectedRoom immediately to prevent auto-selection of latest room
     setSelectedRoom(targetRoom);
+    
     setConversations((prev) => {
       const existing = prev.find((c) => c.room === targetRoom);
       const updatedConversation = {
@@ -392,21 +455,82 @@ export default function ChatPage() {
         contactAvatar: contactAvatar || existing?.contactAvatar || null,
         nationality: existing?.nationality || null,
         lastMessage: existing?.lastMessage || "No message yet",
-        lastMessageTime: existing?.lastMessageTime || null,
+        lastMessageTime: existing?.lastMessageTime || new Date().toISOString(),
         responseTime: existing?.responseTime || "30 minutes",
         rating: existing?.rating ?? 3.5,
         reviewCount: existing?.reviewCount ?? 0,
       };
-      const filtered = prev.filter((c) => c.room !== targetRoom);
+      const filtered = prev.filter((c) => c.room === targetRoom);
+      // Put targetRoom conversation first to ensure it's selected even after normalization
       const normalized = normalizeAndEnhance([
-        ...filtered,
         updatedConversation,
+        ...filtered,
       ]);
       const found = normalized.find((c) => c.room === targetRoom);
       setSelectedContact(found || updatedConversation);
+      // Ensure selectedRoom is still set to targetRoom after normalization
+      setSelectedRoom(targetRoom);
       return normalized;
     });
-  }, [targetRoom, targetUser]);
+  }, [targetRoom, targetUser, normalizeAndEnhance]);
+
+  // Fetch tourist nationality when guide selects a conversation with a tourist
+  useEffect(() => {
+    // Only fetch if user is a guide and we have a selected contact with an ID
+    if (user?.role !== "guide" || !selectedContact?.contactId) return;
+    
+    // Skip if nationality is already set
+    if (selectedContact.nationality) return;
+    
+    // Skip chatbot - check multiple conditions
+    const contactIdLower = selectedContact.contactId?.toLowerCase();
+    const contactNameLower = selectedContact.contactName?.toLowerCase().trim();
+    const roomName = selectedContact.room?.toLowerCase();
+    
+    if (
+      contactIdLower === "chatbot" ||
+      contactNameLower === "chatbot" ||
+      roomName?.endsWith("chatbot") ||
+      roomName?.includes("__chatbot") ||
+      contactIdLower?.includes("chatbot")
+    ) {
+      return;
+    }
+
+    // Fetch tourist public profile to get nationality
+    const fetchTouristNationality = async () => {
+      try {
+        const res = await profileService.getTouristPublicProfile(selectedContact.contactId);
+        if (res.success && res.data?.profile?.nationality) {
+          const nationality = res.data.profile.nationality;
+          
+          // Update the conversation with nationality
+          setConversations((prev) => {
+            return prev.map((conv) => {
+              if (conv.room === selectedContact.room) {
+                return { ...conv, nationality };
+              }
+              return conv;
+            });
+          });
+          
+          // Update selectedContact if it matches
+          if (selectedContact.room === selectedRoom) {
+            setSelectedContact((prev) => {
+              if (prev?.room === selectedContact.room) {
+                return { ...prev, nationality };
+              }
+              return prev;
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching tourist nationality:", error);
+      }
+    };
+
+    fetchTouristNationality();
+  }, [user?.role, selectedContact?.contactId, selectedContact?.room, selectedContact?.nationality, selectedRoom]);
 
   return (
     <div>

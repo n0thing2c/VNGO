@@ -2,6 +2,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -210,12 +212,19 @@ class GuideAchievementView(APIView):
         avg_rating = agg['avg_rating'] or 0
 
         # Highly Rated: average rating 4+ stars
+        if avg_rating >=3.5:
+            achievements.append("Liked")
         if avg_rating >= 4:
             achievements.append("Loved")
+        if avg_rating >=4.7:
+            achievements.append("People's Choice")
 
         # Multilingual: knows 3+ languages
         if guide.languages and len(guide.languages) >= 3:
             achievements.append("Multilingual")
+
+        if guide.languages and len(guide.languages) >= 5:
+            achievements.append("Polygot")
 
         # Experienced: top 30% in past tours
         all_guides = Guide.objects.annotate(
@@ -223,50 +232,81 @@ class GuideAchievementView(APIView):
         ).order_by('-past_tours_count')
 
         guide_past_count = PastTour.objects.filter(guide=guide).count()
-        total_guides = all_guides.count()
-        if total_guides > 1:
-            guides_less_or_equal = all_guides.filter(past_tours_count__lte=guide_past_count).count()
-            percentile = guides_less_or_equal / total_guides
-            if percentile >= 0.7:
-                achievements.append("Experienced")
 
-        # Crafter: top 30% in number of tours hosted
+        if guide_past_count >= 500:
+            achievements.append("Legendary Guide")
+        if guide_past_count >= 100:
+            achievements.append("Master Guide")
+        if guide_past_count >= 50:
+            achievements.append("Experienced Guide")
+        if guide_past_count >= 10:
+            achievements.append("Rising Guide")
+        if guide_past_count >= 1:
+            achievements.append("Rookie Guide")
+
         guide_tour_count = Tour.objects.filter(guide=guide).count()
-        all_guides_tours = Guide.objects.annotate(
-            tour_count=Count('tours')  # adjust 'tour' if your related_name is different
-        ).order_by('-tour_count')
 
-        if total_guides > 1:
-            guides_less_or_equal_tours = all_guides_tours.filter(tour_count__lte=guide_tour_count).count()
-            percentile_tours = guides_less_or_equal_tours / total_guides
-            if percentile_tours >= 0.7:
-                achievements.append("Crafter")
+        if guide_tour_count >= 100:
+            achievements.append("Master Architect")
+        if guide_tour_count >= 50:
+            achievements.append("Master Artist")
+        if guide_tour_count >= 30:
+            achievements.append("Skilled Artist")
+        if guide_tour_count >= 10:
+            achievements.append("Apprentice Crafter")
+        if guide_tour_count >= 1:
+            achievements.append("Rookie Crafter")
 
-        # Optional: other stats
-        stats = {
-            "total_past_tours": guide_past_count,
-            "total_tours": guide_tour_count,
-            "achievement_count": len(achievements)
-        }
+            # Optional: other stats
+            stats = {
+                "total_past_tours": guide_past_count,
+                "total_tours": guide_tour_count,
+                "achievement_count": len(achievements)
+            }
 
-        return Response({"success": True, "achievements": achievements, "stats": stats})
+            return Response({"success": True, "achievements": achievements, "stats": stats})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_homepage_guides(request):
+    """
+    Get a list of guides for the homepage (e.g., top rated or random).
+    """
+    try:
+        # Annotate guides with average rating of their tours
+        # Note: TourRating is linked to Tour, and Tour is linked to Guide.
+        # So we follow: guide -> tours -> ratings
+        guides = Guide.objects.annotate(
+            avg_rating=Avg('tours__ratings__rating'),
+            total_reviews=Count('tours__ratings')
+        ).order_by('-avg_rating', '-total_reviews')[:6]  # Get top 6
+
+        data = []
+        for guide in guides:
+            data.append({
+                "id": guide.pk,
+                "name": guide.name,
+                "description": guide.bio or "A passionate local guide ready to show you the best of Vietnam.",
+                "image": guide.face_image or "https://images.unsplash.com/photo-1597890928584-23b06b3af251?w=500&h=400&fit=crop",
+                "rating": round(guide.avg_rating, 1) if guide.avg_rating else 0,
+                "reviews": guide.total_reviews
+            })
+
+        return Response({"success": True, "guides": data}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TouristPublicProfileView(APIView):
-    """
-    Public view for displaying a tourist's profile information together with
-    their past tours and the reviews they have written for tours.
-    """
-
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, tourist_id):
         tourist = get_object_or_404(Tourist, pk=tourist_id)
 
-        # Basic profile information
         profile_data = TouristProfileSerializer(tourist).data
 
-        # Past tours completed by this tourist
         past_tours_qs = (
             PastTour.objects.filter(tourist=tourist)
             .select_related("tourist", "guide", "tour")
@@ -277,17 +317,24 @@ class TouristPublicProfileView(APIView):
             past_tours_qs, many=True, context={"request": request}
         ).data
 
-        # All tour ratings written by this tourist
         ratings_qs = TourRating.objects.filter(tourist=tourist).order_by("-created_at")
         ratings_data = []
+
         for rating in ratings_qs:
             serializer = TourRatingSerializer(rating, context={"request": request})
             data = serializer.data
-            # Attach basic tour info so frontend can show which tour was rated
+
+            data["images"] = [
+                request.build_absolute_uri(img.image.url)
+                for img in rating.images.all()
+            ]
+
+            # Attach basic tour info
             data["tour"] = {
                 "id": rating.tour.id,
                 "name": rating.tour.name,
             }
+
             ratings_data.append(data)
 
         return Response(
@@ -297,3 +344,4 @@ class TouristPublicProfileView(APIView):
                 "ratings": ratings_data,
             }
         )
+
