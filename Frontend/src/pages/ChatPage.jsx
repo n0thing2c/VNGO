@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import MessageList from "@/components/chat/MessageList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { chatService } from "@/services/chatService";
+import { profileService } from "@/services/profileService";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { notificationService } from "@/services/notifyService";
 import { useLocation } from "react-router-dom";
@@ -237,6 +238,44 @@ export default function ChatPage() {
           reviewCount: existing?.reviewCount ?? 0,
         };
 
+        // If user is a guide and we don't have nationality yet, fetch it
+        if (
+          user?.role === "guide" &&
+          !updatedConversation.nationality &&
+          otherUserId &&
+          otherUserId !== "chatbot" &&
+          otherUserId !== roomName
+        ) {
+          // Fetch nationality asynchronously without blocking the update
+          profileService
+            .getTouristPublicProfile(otherUserId)
+            .then((res) => {
+              if (res.success && res.data?.profile?.nationality) {
+                setConversations((prev) => {
+                  return prev.map((conv) => {
+                    if (conv.room === roomName) {
+                      return { ...conv, nationality: res.data.profile.nationality };
+                    }
+                    return conv;
+                  });
+                });
+                
+                // Update selectedContact if it matches
+                if (selectedRoom === roomName) {
+                  setSelectedContact((prev) => {
+                    if (prev?.room === roomName) {
+                      return { ...prev, nationality: res.data.profile.nationality };
+                    }
+                    return prev;
+                  });
+                }
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching tourist nationality:", error);
+            });
+        }
+
         const enhancedConversation = withDisplayName(updatedConversation);
 
         const others = prev.filter((c) => c.room !== roomName);
@@ -410,7 +449,7 @@ export default function ChatPage() {
         rating: existing?.rating ?? 3.5,
         reviewCount: existing?.reviewCount ?? 0,
       };
-      const filtered = prev.filter((c) => c.room !== targetRoom);
+      const filtered = prev.filter((c) => c.room === targetRoom);
       // Put targetRoom conversation first to ensure it's selected even after normalization
       const normalized = normalizeAndEnhance([
         updatedConversation,
@@ -423,6 +462,58 @@ export default function ChatPage() {
       return normalized;
     });
   }, [targetRoom, targetUser, normalizeAndEnhance]);
+
+  // Fetch tourist nationality when guide selects a conversation with a tourist
+  useEffect(() => {
+    // Only fetch if user is a guide and we have a selected contact with an ID
+    if (user?.role !== "guide" || !selectedContact?.contactId) return;
+    
+    // Skip if nationality is already set
+    if (selectedContact.nationality) return;
+    
+    // Skip chatbot
+    if (
+      selectedContact.contactId === "chatbot" ||
+      selectedContact.contactName?.toLowerCase().trim() === "chatbot" ||
+      selectedContact.room?.endsWith("chatbot")
+    ) {
+      return;
+    }
+
+    // Fetch tourist public profile to get nationality
+    const fetchTouristNationality = async () => {
+      try {
+        const res = await profileService.getTouristPublicProfile(selectedContact.contactId);
+        if (res.success && res.data?.profile?.nationality) {
+          const nationality = res.data.profile.nationality;
+          
+          // Update the conversation with nationality
+          setConversations((prev) => {
+            return prev.map((conv) => {
+              if (conv.room === selectedContact.room) {
+                return { ...conv, nationality };
+              }
+              return conv;
+            });
+          });
+          
+          // Update selectedContact if it matches
+          if (selectedContact.room === selectedRoom) {
+            setSelectedContact((prev) => {
+              if (prev?.room === selectedContact.room) {
+                return { ...prev, nationality };
+              }
+              return prev;
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching tourist nationality:", error);
+      }
+    };
+
+    fetchTouristNationality();
+  }, [user?.role, selectedContact?.contactId, selectedContact?.room, selectedContact?.nationality, selectedRoom]);
 
   return (
     <div>
