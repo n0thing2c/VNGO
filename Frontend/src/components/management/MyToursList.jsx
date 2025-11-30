@@ -2,8 +2,19 @@ import TourManagementCard from "./TourManagementCard";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { PlusCircle } from "lucide-react";
+import { tourService } from "@/services/tourService";
+export default function MyToursList({ tours, refreshTours }) {
+    const handleDelete = async (tourId) => {
+    if (!window.confirm("Are you sure you want to delete this tour?")) return;
 
-export default function MyToursList({ tours }) {
+    const res = await tourService.deleteTour(tourId);
+    if (res.success) {
+      alert("Tour deleted successfully");
+      refreshTours?.(); // Optional: refresh list after deletion
+    } else {
+      alert("Failed to delete tour");
+    }
+  };
   if (!tours || tours.length === 0) {
     return (
       <div className="text-center py-20">
@@ -41,7 +52,7 @@ export default function MyToursList({ tours }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {tours.map((tour) => (
-          <TourManagementCard key={tour.id} tour={tour} />
+          <TourManagementCard key={tour.id} tour={tour} onDelete={handleDelete}/>
         ))}
       </div>
     </div>

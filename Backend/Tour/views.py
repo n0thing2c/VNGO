@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view, parser_classes, permission_class
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny
-
-from Management.models import Booking, PastTour
+from django.utils import timezone
+from Management.models import Booking, PastTour, BookingStatus
 from Profiles.models import Guide
 from .models import Tour, Place, TourImage
 from .serializers import TourSerializer
@@ -125,6 +125,29 @@ def tour_put(request, tour_id):
     if not hasattr(request.user, 'guide_profile'):
         return Response({'success': False, 'error': 'Permission denied'}, status=403)
 
+    now = timezone.now()
+
+    has_locked_bookings = tour.bookings.filter(
+        Q(status=BookingStatus.PENDING) |
+        Q(
+            status=BookingStatus.ACCEPTED,
+            tour_date__gt=now.date()  # Future date
+        ) |
+        Q(
+            status=BookingStatus.ACCEPTED,
+            tour_date=now.date(),
+            tour_time__gte=now.time()  # Same day but time still upcoming
+        )
+    ).exists()
+
+    if has_locked_bookings:
+        return Response(
+            {
+                'success': False,
+                'error': 'This tour cannot be edited because it has upcoming pending or accepted bookings.'
+            },
+            status=403
+        )
 
     data = request.data.copy()
     images = request.FILES.getlist('images')
@@ -301,6 +324,24 @@ def tour_get(request, tour_id):
         return Response({'success': False, 'error': 'Tour not found'}, status=404)
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=400)
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def tour_delete(request, tour_id):
+    try:
+        tour = Tour.objects.get(pk=tour_id)
+    except Tour.DoesNotExist:
+        return Response({'success': False, 'error': 'Tour not found'}, status=404)
+
+    # Only guide who owns the tour can delete
+    if not hasattr(request.user, 'guide_profile') or tour.guide != request.user.guide_profile:
+        return Response({'success': False, 'error': 'Permission denied'}, status=403)
+
+    # --- Force delete the tour (cascades to related objects) ---
+    tour.delete()
+
+    return Response({'success': True, 'message': 'Tour deleted successfully.'}, status=200)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

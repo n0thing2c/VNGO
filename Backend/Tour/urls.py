@@ -6,6 +6,7 @@ urlpatterns = [
     path("tour/post/", views.tour_post, name="make_new_tour"),
     path("tour/get/<int:tour_id>/", views.tour_get, name="get_tour_info"),
     path("tour/put/<int:tour_id>/", views.tour_put, name="put_tour_info"),
+    path("tour/delete/<int:tour_id>/", views.tour_delete, name="delete_tour_info"),
     path("tour/get/all/", views.get_all_tours, name='api-get-all-tours'),
     path("tour/my-tours/", views.get_my_tours, name="get_my_tours"),  # NEW: For Guide Management
     path("tour/guide/<int:guide_id>/all/", views.guide_get_all_tours, name="guide-get-all-tours"),

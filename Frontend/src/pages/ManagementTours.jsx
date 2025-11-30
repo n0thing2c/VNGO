@@ -136,7 +136,7 @@ export default function ManagementTours() {
               {isGuide && (
                 <>
                   <TabsContent value="my-tours" className="p-8">
-                    <MyToursList tours={myTours} />
+                    <MyToursList tours={myTours} refreshTours={refreshData} />
                   </TabsContent>
                   <TabsContent value="incoming" className="p-8">
                     <IncomingRequests incomingRequests={managementData.incomingRequests} refreshData={refreshData} />

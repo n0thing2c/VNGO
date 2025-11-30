@@ -200,6 +200,37 @@ export const tourService = {
             return {success: false, error: err};
         }
     },
+    deleteTour: async (tourId) => {
+    if (!tourId) {
+        toast.error("Tour ID is required!");
+        return { success: false };
+    }
+
+    try {
+        const res = await api.delete(`/api/tour/delete/${tourId}/`);
+
+        if (res.data.success) {
+            toast.success("Tour deleted successfully!");
+            return { success: true, data: res.data };
+        } else {
+            toast.error(res.data.error || "Failed to delete tour");
+            return { success: false };
+        }
+    } catch (err) {
+        console.error("Error deleting tour:", err);
+        if (err.response?.data) {
+            toast.error("Failed to delete tour", {
+                description: err.response.data.detail || err.response.data.error || "Unknown error",
+            });
+        } else {
+            toast.error("Unable to connect to the server.");
+        }
+        return { success: false, error: err };
+    }
+},
+
+
+
     getAllToursByGuide: async (guideId) => {
         if (!guideId) {
             toast.error("Guide ID is required!");

@@ -3,9 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Clock, Users, Star, DollarSign, BookOpen, CheckCircle, AlertCircle } from "lucide-react";
 
-export default function TourManagementCard({ tour }) {
+export default function TourManagementCard({ tour, onDelete}) {
+    const handleCardClick = () => {
+    // Navigate to view page
+    window.location.href = `/tour/${tour.id}`;
+  };
+
+  const handleEditClick = (e) => {
+    e.stopPropagation(); // Prevent triggering card click
+    window.location.href = `/tour/edit/${tour.id}`;
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation(); // Prevent triggering card click
+    onDelete?.(tour.id);
+  };
   return (
-    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
+    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white"
+    onClick={handleCardClick}
+    >
       {/* Full width image - no gap at top */}
       <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
         <img
@@ -97,11 +113,18 @@ export default function TourManagementCard({ tour }) {
 
         {/* Actions - push to bottom */}
         <div className="flex gap-2 mt-auto">
-          <Button asChild className="flex-1 bg-green-600 hover:bg-green-700 rounded-full h-11">
-            <Link to={`/tour/edit/${tour.id}`}>Edit</Link>
+          <Button
+            onClick={handleEditClick}
+            className="flex-1 bg-green-600 hover:bg-green-700 rounded-full h-11"
+          >
+            Edit
           </Button>
-          <Button asChild variant="outline" className="flex-1 rounded-full h-11">
-            <Link to={`/tour/${tour.id}`}>View</Link>
+          <Button
+            onClick={handleDeleteClick}
+            variant="outline"
+            className="flex-1 rounded-full h-11"
+          >
+            Delete
           </Button>
         </div>
       </div>
