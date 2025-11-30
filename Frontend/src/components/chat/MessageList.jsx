@@ -109,7 +109,7 @@ function MessageList({
       </div>
 
       {/* Conversation List */}
-      <div className="flex-1 overflow-y-auto relative ">
+      <div className="flex-1 overflow-y-auto relative max-h-[70vh]">
         {conversations.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">No conversations yet</p>
