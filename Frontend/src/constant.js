@@ -30,4 +30,5 @@ export const ROUTES = {
     TOURIST_PROFILE: '/tourist-profile',
     GUIDE_PROFILE: '/guide-profile',
     PUBLIC_PROFILE: (guideId = ":guideId") => `/public-profile/${guideId}`,
+    TOURIST_PUBLIC_PROFILE: (touristId = ":touristId") => `/tourist-public-profile/${touristId}`,
 };

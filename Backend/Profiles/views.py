@@ -254,7 +254,6 @@ class GuideAchievementView(APIView):
         return Response({"success": True, "achievements": achievements, "stats": stats})
 
 
-<<<<<<< HEAD
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_homepage_guides(request):
@@ -285,7 +284,8 @@ def get_homepage_guides(request):
 
     except Exception as e:
         return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-=======
+
+
 class TouristPublicProfileView(APIView):
     """
     Public view for displaying a tourist's profile information together with
@@ -331,4 +331,3 @@ class TouristPublicProfileView(APIView):
                 "ratings": ratings_data,
             }
         )
->>>>>>> e1bf39229904cf6d224c6ec125af770a3c6fcad4
