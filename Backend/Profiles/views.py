@@ -2,6 +2,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -249,3 +251,35 @@ class GuideAchievementView(APIView):
         }
 
         return Response({"success": True, "achievements": achievements, "stats": stats})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_homepage_guides(request):
+    """
+    Get a list of guides for the homepage (e.g., top rated or random).
+    """
+    try:
+        # Annotate guides with average rating of their tours
+        # Note: TourRating is linked to Tour, and Tour is linked to Guide.
+        # So we follow: guide -> tours -> ratings
+        guides = Guide.objects.annotate(
+            avg_rating=Avg('tours__ratings__rating'),
+            total_reviews=Count('tours__ratings')
+        ).order_by('-avg_rating', '-total_reviews')[:6]  # Get top 6
+
+        data = []
+        for guide in guides:
+            data.append({
+                "id": guide.pk,
+                "name": guide.name,
+                "description": guide.bio or "A passionate local guide ready to show you the best of Vietnam.",
+                "image": guide.face_image or "https://images.unsplash.com/photo-1597890928584-23b06b3af251?w=500&h=400&fit=crop",
+                "rating": round(guide.avg_rating, 1) if guide.avg_rating else 0,
+                "reviews": guide.total_reviews
+            })
+
+        return Response({"success": True, "guides": data}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
