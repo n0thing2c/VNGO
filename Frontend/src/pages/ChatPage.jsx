@@ -239,12 +239,23 @@ export default function ChatPage() {
         };
 
         // If user is a guide and we don't have nationality yet, fetch it
+        // Skip chatbot - check multiple conditions
+        const otherUserIdLower = otherUserId?.toLowerCase();
+        const otherUserNameLower = otherUserName?.toLowerCase().trim();
+        const roomNameLower = roomName?.toLowerCase();
+        const isChatbot = 
+          otherUserIdLower === "chatbot" ||
+          otherUserNameLower === "chatbot" ||
+          roomNameLower?.endsWith("chatbot") ||
+          roomNameLower?.includes("__chatbot") ||
+          otherUserIdLower?.includes("chatbot");
+
         if (
           user?.role === "guide" &&
           !updatedConversation.nationality &&
           otherUserId &&
-          otherUserId !== "chatbot" &&
-          otherUserId !== roomName
+          otherUserId !== roomName &&
+          !isChatbot
         ) {
           // Fetch nationality asynchronously without blocking the update
           profileService
@@ -471,11 +482,17 @@ export default function ChatPage() {
     // Skip if nationality is already set
     if (selectedContact.nationality) return;
     
-    // Skip chatbot
+    // Skip chatbot - check multiple conditions
+    const contactIdLower = selectedContact.contactId?.toLowerCase();
+    const contactNameLower = selectedContact.contactName?.toLowerCase().trim();
+    const roomName = selectedContact.room?.toLowerCase();
+    
     if (
-      selectedContact.contactId === "chatbot" ||
-      selectedContact.contactName?.toLowerCase().trim() === "chatbot" ||
-      selectedContact.room?.endsWith("chatbot")
+      contactIdLower === "chatbot" ||
+      contactNameLower === "chatbot" ||
+      roomName?.endsWith("chatbot") ||
+      roomName?.includes("__chatbot") ||
+      contactIdLower?.includes("chatbot")
     ) {
       return;
     }
