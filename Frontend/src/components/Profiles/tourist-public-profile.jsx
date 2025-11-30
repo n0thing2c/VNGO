@@ -1,25 +1,40 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Calendar, ChevronLeft, ChevronRight, LandPlot, Languages, MapPin, Star,} from "lucide-react";
-import {Mars, Venus} from "lucide-react";
-import {Button} from "@/components/ui/button.jsx";
-import {profileService} from "@/services/profileService.js";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+    Calendar,
+    ChevronLeft,
+    ChevronRight,
+    LandPlot,
+    Languages,
+    MapPin,
+    Star,
+    Mail,
+} from "lucide-react";
+import { Mars, Venus } from "lucide-react";
+import { Button } from "@/components/ui/button.jsx";
+import { profileService } from "@/services/profileService.js";
+import { useAuthStore } from "@/stores/useAuthStore.js";
 import RatingList from "@/components/rating/ratings.jsx";
-import {useNavigate} from "react-router-dom";
-import {ROUTES} from "@/constant.js";
-import {FieldLabel, FieldSeparator, FieldDescription} from "@/components/ui/field.jsx";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constant.js";
+import {
+    FieldLabel,
+    FieldSeparator,
+    FieldDescription,
+} from "@/components/ui/field.jsx";
 
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
 
-const StarRating = ({rating = 0}) => {
+const StarRating = ({ rating = 0 }) => {
     const value = Number(rating) || 0;
     return (
         <div className="flex items-center space-x-0.5">
-            {Array.from({length: 5}).map((_, idx) => {
+            {Array.from({ length: 5 }).map((_, idx) => {
                 const isFilled = idx + 1 <= Math.round(value);
                 return (
                     <Star
                         key={idx}
-                        className={`w-4 h-4 ${isFilled ? "text-yellow-400" : "text-gray-300"}`}
+                        className={`w-4 h-4 ${isFilled ? "text-yellow-400" : "text-gray-300"
+                            }`}
                         fill="currentColor"
                     />
                 );
@@ -28,9 +43,8 @@ const StarRating = ({rating = 0}) => {
     );
 };
 
-const PastTourCard = ({tour, onViewTour}) => (
-    <div
-        className="flex flex-col min-w-[240px] w-[240px] h-[360px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
+const PastTourCard = ({ tour, onViewTour }) => (
+    <div className="flex flex-col min-w-[240px] w-[240px] h-[360px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
         <img
             src={tour.image}
             alt={tour.title}
@@ -42,13 +56,17 @@ const PastTourCard = ({tour, onViewTour}) => (
         />
 
         <div className="flex flex-col p-4 flex-1 gap-3">
-            <h4 className="font-semibold text-vngo-normal-medium-responsive truncate">{tour.title}</h4>
+            <h4 className="font-semibold text-vngo-normal-medium-responsive truncate">
+                {tour.title}
+            </h4>
             <p className="text-vngo-normal-responsive text-gray-500 line-clamp-1 mt-1">
-                {tour.guideName ? `With guide ${tour.guideName}` : "Completed tour"}
+                {tour.touristName
+                    ? `With tourist ${tour.touristName}`
+                    : "Attended tour"}
             </p>
 
             <div className="flex items-center gap-2 text-xs text-gray-600 mt-2">
-                <StarRating rating={tour.rating || 0}/>
+                <StarRating rating={tour.rating || 0} />
                 <span>{tour.rating ? tour.rating.toFixed(1) : "No rating"}</span>
             </div>
 
@@ -65,9 +83,10 @@ const PastTourCard = ({tour, onViewTour}) => (
     </div>
 );
 
-export function TouristPublicProfile({touristId}) {
+export function TouristPublicProfile({ touristId }) {
+    const { user } = useAuthStore();
     const navigate = useNavigate();
-    const [guide, setGuide] = useState(null); // holds tourist profile
+    const [tourist, setTourist] = useState(null); // holds tourist profile
     const [tours, setTours] = useState([]); // past tours
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -78,7 +97,7 @@ export function TouristPublicProfile({touristId}) {
         return (data || []).map((r) => ({
             ...r,
             review_tags: Array.isArray(r.review_tags) ? r.review_tags : [],
-            tourist: r.tourist || {username: "Anonymous", avatar: null},
+            tourist: r.tourist || { username: "Anonymous", avatar: null },
         }));
     };
 
@@ -93,20 +112,22 @@ export function TouristPublicProfile({touristId}) {
         setError("");
 
         try {
-            const profileRes = await profileService.getTouristPublicProfile(touristId);
+            const profileRes = await profileService.getTouristPublicProfile(
+                touristId
+            );
 
             if (profileRes.success && profileRes.data) {
                 const profile = profileRes.data.profile || null;
                 const pastTours = profileRes.data.past_tours || [];
                 const ratings = profileRes.data.ratings || [];
 
-                setGuide(profile);
+                setTourist(profile);
                 setTours(pastTours);
 
                 const normalized = normalizeReviews(ratings);
                 setReviews(normalized);
             } else {
-                setGuide(null);
+                setTourist(null);
                 setTours([]);
                 setReviews([]);
             }
@@ -137,9 +158,11 @@ export function TouristPublicProfile({touristId}) {
     };
 
     if (loading)
-        return <div className="py-16 text-center text-gray-600">Loading profile...</div>;
+        return (
+            <div className="py-16 text-center text-gray-600">Loading profile...</div>
+        );
 
-    if (error || !guide)
+    if (error || !tourist)
         return (
             <div className="py-16 text-center text-red-500">
                 {error || "Tourist not found."}
@@ -151,15 +174,13 @@ export function TouristPublicProfile({touristId}) {
             <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-8 pt-8 pb-12 space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Profile / Avatar card */}
-                    <div
-                        className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         {/* Avatar + Name */}
                         <div className="flex flex-col items-center space-y-2">
-                            <div
-                                className="relative h-30 w-30 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
+                            <div className="relative h-30 w-30 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
                                 <img
-                                    src={guide.face_image || DEFAULT_AVATAR}
-                                    alt={guide.name}
+                                    src={tourist.face_image || DEFAULT_AVATAR}
+                                    alt={tourist.name}
                                     className="h-full w-full object-cover"
                                     onError={(e) => {
                                         e.target.onerror = null;
@@ -168,58 +189,71 @@ export function TouristPublicProfile({touristId}) {
                                 />
                             </div>
                             <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
-                                {guide.name}
+                                {tourist.name}
                             </FieldLabel>
                         </div>
 
                         {/* Other Info */}
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0"/>
-                            <span>{guide.nationality || "Nationality not provided"}</span>
+                            <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
+                            <span>{tourist.nationality || "Nationality not provided"}</span>
                         </div>
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <Calendar className="w-5 h-5 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0"/>
-                            <span>{guide.age ? `${guide.age} years old` : "Age not provided"}</span>
+                            <Calendar className="w-5 h-5 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0" />
+                            <span>
+                                {tourist.age ? `${tourist.age} years old` : "Age not provided"}
+                            </span>
                         </div>
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            {guide.gender === "Male" && (
-                                <Mars className="w-5 h-5 mr-2 shrink-0" color="#3b82f6"/>
+                            {tourist.gender === "Male" && (
+                                <Mars className="w-5 h-5 mr-2 shrink-0" color="#3b82f6" />
                             )}
-                            {guide.gender === "Female" && (
-                                <Venus className="w-5 h-5 mr-2 shrink-0" color="#ec4899"/>
+                            {tourist.gender === "Female" && (
+                                <Venus className="w-5 h-5 mr-2 shrink-0" color="#ec4899" />
                             )}
-                            <span>{guide.gender ? ` • ${guide.gender}` : ""}</span>
+                            <span>{tourist.gender ? ` • ${tourist.gender}` : ""}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600 text-base md:text-lg">
+                            <Mail className="w-5 h-5 md:w-5 md:h-5 mr-2 text-green-600 shrink-0" />
+                            <span className="truncate">
+                                {user?.email || "Email not provided"}
+                            </span>
                         </div>
                     </div>
 
                     {/* Summary cards */}
-                    <div className="lg:col-span-8 xl:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="lg:col-span-8 xl:col-span-9 grid grid-cols-1 gap-6">
                         {/* Past Tours */}
-                        <div
-                            className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
                             <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <Calendar className="w-8 h-8 text-blue-600"/>
+                                <Calendar className="w-8 h-8 text-blue-600" />
                             </div>
                             <div className="flex flex-col">
-                                <p className="text-gray-600 text-md leading-tight">Completed tours</p>
-                                <p className="text-2xl font-semibold text-gray-900">{tours.length}</p>
+                                <p className="text-gray-600 text-md leading-tight">
+                                    Attended tours
+                                </p>
+                                <p className="text-2xl font-semibold text-gray-900">
+                                    {tours.length}
+                                </p>
                             </div>
                         </div>
 
                         {/* Hosted Tours */}
-                        <div
-                            className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
                             <div className="p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
-                                <Star className="w-8 h-8 text-yellow-400"/>
+                                <Star className="w-8 h-8 text-yellow-400" />
                             </div>
                             <div className="flex flex-col">
-                                <p className="text-gray-600 text-md leading-tight">Reviews</p>
-                                <p className="text-2xl font-semibold text-gray-900">{reviews.length}</p>
+                                <p className="text-gray-600 text-md leading-tight">
+                                    Written reviews
+                                </p>
+                                <p className="text-2xl font-semibold text-gray-900">
+                                    {reviews.length}
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
-
 
                 {/* Past tours */}
                 <div>
@@ -229,8 +263,8 @@ export function TouristPublicProfile({touristId}) {
                         </FieldLabel>
                     </div>
                     {tours.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-sm">
-                            This tourist has not completed any tours yet.
+                        <FieldDescription className="text-gray-500 text-sm pt-6">
+                            This tourist has not attended any tours yet.
                         </FieldDescription>
                     ) : (
                         <div className="relative flex items-center p-8">
@@ -238,14 +272,18 @@ export function TouristPublicProfile({touristId}) {
                                 className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("left")}
                             >
-                                <ChevronLeft className="w-5 h-5 text-gray-700"/>
+                                <ChevronLeft className="w-5 h-5 text-gray-700" />
                             </Button>
                             <div
                                 ref={tourListRef}
                                 className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
                             >
                                 {tours.map((tour) => (
-                                    <PastTourCard key={tour.id} tour={tour} onViewTour={handleViewTour}/>
+                                    <PastTourCard
+                                        key={tour.id}
+                                        tour={tour}
+                                        onViewTour={handleViewTour}
+                                    />
                                 ))}
                                 <style>
                                     {`
@@ -260,18 +298,19 @@ export function TouristPublicProfile({touristId}) {
                                 className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
                                 onClick={() => scrollTours("right")}
                             >
-                                <ChevronRight className="w-5 h-5 text-gray-700"/>
+                                <ChevronRight className="w-5 h-5 text-gray-700" />
                             </Button>
                         </div>
                     )}
                 </div>
 
-                <FieldSeparator className="p-10"/>
+                <FieldSeparator className="p-10" />
                 {/* Guide Reviews */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">Recent
-                            reviews</FieldLabel>
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
+                            Written reviews
+                        </FieldLabel>
                         {!!reviews.length && (
                             <FieldDescription className="text-base md:text-lg text-gray-500">
                                 {reviews.length} review{reviews.length === 1 ? "" : "s"}
@@ -280,14 +319,14 @@ export function TouristPublicProfile({touristId}) {
                     </div>
                     {reviews.length === 0 ? (
                         <FieldDescription className="text-gray-500 text-base md:text-lg">
-                            No reviews yet. Be the first to share your experience!
+                            No reviews yet.
                         </FieldDescription>
                     ) : (
                         // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
                         // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
                         // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
                         <div className="text-lg">
-                            <RatingList ratings={reviews} showTourName={true}/>
+                            <RatingList ratings={reviews} showTourName={true} />
                         </div>
                     )}
                 </div>
