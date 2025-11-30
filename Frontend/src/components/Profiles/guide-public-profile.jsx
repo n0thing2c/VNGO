@@ -101,7 +101,7 @@ const TourCard = ({tour, onViewTour}) => (
 
             <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
                 <StarRating rating={tour.rating}/>
-                <span classname="font-medium">
+                <span className="font-medium">
           {(tour.rating || 0).toFixed(1)} ({tour.reviews || 0})
         </span>
             </div>
@@ -253,7 +253,7 @@ export function GuidePublicProfile({guideId}) {
                         {/* Avatar + Name */}
                         <div className="flex flex-col items-center space-y-2">
                             <div
-                                className="relative h-40 w-40 md:h-48 md:w-48 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
+                                className="relative h-30 w-30 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
                                 <img
                                     src={guide.face_image || DEFAULT_AVATAR}
                                     alt={guide.name}
@@ -273,25 +273,25 @@ export function GuidePublicProfile({guideId}) {
                         <div className="flex items-center justify-center pt-1">
                             <HeartRating rating={averageRating}/>
                             <span className="text-sm md:text-base text-gray-600 ml-2 whitespace-nowrap">
-                {averageRating.toFixed(1)} ({reviews.length} review
-                                {reviews.length === 1 ? "" : "s"})
-              </span>
+                                {averageRating.toFixed(1)} ({reviews.length} review
+                                                {reviews.length === 1 ? "" : "s"})
+                              </span>
                         </div>
 
                         {/* Other Info (left-aligned) */}
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
                             <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0"/>
                             <span className="truncate">
-                {guide.location || "Location not provided"}
-              </span>
+                                {guide.location || "Location not provided"}
+                              </span>
                         </div>
                         <div className="flex items-center text-gray-600 text-base md:text-lg">
                             <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0"/>
                             <span className="truncate">
-                {guide.languages?.length
-                    ? guide.languages.join(", ")
-                    : "Languages not set"}
-              </span>
+                                {guide.languages?.length
+                                    ? guide.languages.join(", ")
+                                    : "Languages not set"}
+                              </span>
                         </div>
 
                         {/* Message Button (Visible to all, clickable only for tourists) */}
@@ -320,19 +320,18 @@ export function GuidePublicProfile({guideId}) {
                             {/* Achievements badges */}
                             {/* Achievements badges */}
                             <div className="grid grid-cols-10 gap-3 mb-10 w-full max-w-full justify-center">
-                              {achievements?.length > 0 ? (
-                                achievements.map((ach, idx) => (
-                                  <div key={idx} className="flex justify-center relative">
-                                    <AchievementBadge variant={ach.toLowerCase()} label={ach} />
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-gray-500 text-lg col-span-10 text-center">
-                                  No achievements yet.
-                                </p>
-                              )}
+                                {achievements?.length > 0 ? (
+                                    achievements.map((ach, idx) => (
+                                        <div key={idx} className="flex justify-center relative">
+                                            <AchievementBadge variant={ach.toLowerCase()} label={ach}/>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-lg col-span-10 text-center">
+                                        No achievements yet.
+                                    </p>
+                                )}
                             </div>
-
 
 
                             {/* Progress bar */}
@@ -364,7 +363,7 @@ export function GuidePublicProfile({guideId}) {
                                     </div>
                                     <div className="flex flex-col h-full">
                                         <p className="text-gray-600  justify-center text-md leading-tight">
-                                            Past tours
+                                            Completed tours
                                         </p>
                                         <p className="text-2xl font-semibold text-gray-900">
                                             {guide.stats.total_past_tours}
@@ -380,7 +379,7 @@ export function GuidePublicProfile({guideId}) {
                                     </div>
                                     <div className="flex flex-col h-full">
                                         <p className="text-gray-600 justify-center text-md leading-tight">
-                                            Hosted tours
+                                            Offered tours
                                         </p>
                                         <p className="text-2xl font-semibold text-gray-900">
                                             {guide.stats.total_tours}
