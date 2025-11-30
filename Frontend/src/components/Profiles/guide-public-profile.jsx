@@ -57,26 +57,26 @@ const HeartRating = ({ rating = 0 }) => {
 
 const TourCard = ({ tour, onViewTour }) => (
     <div
-        className="flex flex-col min-w-[240px] w-[240px] h-[280px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
+        className="flex flex-col min-w-[240px] w-[240px] h-[360px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
         <img
             src={tour.image}
             alt={tour.title}
-            className="h-32 w-full object-cover"
+            className="h-40 w-full object-cover"
             onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = "https://placehold.co/240x180/4F68C4/ffffff?text=Tour";
             }}
         />
 
-        <div className="flex flex-col p-3 flex-1">
-            <h4 className="font-semibold text-sm truncate">{tour.title}</h4>
-            <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+        <div className="flex flex-col p-4 flex-1 gap-3">
+            <h4 className="font-semibold text-vngo-normal-medium-responsive truncate">{tour.title}</h4>
+            <p className="text-vngo-normal-small-responsive text-gray-500 line-clamp-2 mt-1">
                 {tour.description || "No description provided."}
             </p>
 
-            <div className="flex items-center gap-2 text-xs text-gray-600 mt-2">
+            <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
                 <StarRating rating={tour.rating} />
-                <span>
+                <span classname="font-medium">
                     {(tour.rating || 0).toFixed(1)} ({tour.reviews || 0})
                 </span>
             </div>
@@ -84,7 +84,7 @@ const TourCard = ({ tour, onViewTour }) => (
             {/* Button always at bottom */}
             <div className="mt-auto flex justify-start">
                 <Button
-                    className="px-3 py-1 text-xs rounded-full bg-neutral-900 hover:bg-neutral-800 text-white"
+                    className="btn-vngo-hover-effect px-4 py-2 text-vngo-normal-responsive rounded-full bg-neutral-900 hover:bg-neutral-800 text-white"
                     onClick={() => onViewTour?.(tour.id)}
                 >
                     View tour
@@ -107,7 +107,7 @@ export function GuidePublicProfile({ guideId }) {
     const tourListRef = useRef(null);
     const [achievements, setAchievements] = useState([]);
     const canRateGuide = user?.role === "tourist";
-    const [activeTab, setActiveTab] = useState("bio"); // "bio" or "achievements"
+    // const [activeTab, setActiveTab] = useState("bio"); // "bio" or "achievements"
     const [averageRating, setAverageRating] = useState(0);
 
     const normalizeReviews = (data) => {
@@ -143,14 +143,14 @@ export function GuidePublicProfile({ guideId }) {
             if (toursRes.success) setTours(toursRes.data || []);
             else setTours([]);
 
-            if (reviewsRes.success) setReviews(normalizeReviews(reviewsRes.data));
-            else setReviews([]);
+            // if (reviewsRes.success) setReviews(normalizeReviews(reviewsRes.data));
+            // else setReviews([]);
 
-            if (profileRes.success) setGuide(profileRes.data);
-            else setGuide(null);
+            // if (profileRes.success) setGuide(profileRes.data);
+            // else setGuide(null);
 
-            if (toursRes.success) setTours(toursRes.data || []);
-            else setTours([]);
+            // if (toursRes.success) setTours(toursRes.data || []);
+            // else setTours([]);
 
 
             if (reviewsRes.success) {
@@ -212,15 +212,20 @@ export function GuidePublicProfile({ guideId }) {
 
     return (
         <div className="min-h-screen w-full">
-            <div className="mx-auto w-full md:max-w-4xl px-4 sm:px-6 lg:px-8 pt-8 pb-12 space-y-8">
-                {/* Guide Info */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div
-                        className="flex flex-col space-y-3 border-b md:border-b-0 md:border-r-1 border-black md:pr-6 pb-4 md:pb-0">
+            {/* THAY ĐỔI LAYOUT CHÍNH: 
+                - w-full: chiếm hết chiều ngang 
+                - max-w-[1440px]: Chặn lại khi màn hình quá to (hoặc zoom out)
+                - px-4 sm:px-8: Padding 2 bên để không dính sát lề
+            */}
+            <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-8 pt-8 pb-12 space-y-8">
+                {/* Top Section: Info and Achievements */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Left: Info Block */}
+                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         {/* Avatar + Name */}
                         <div className="flex flex-col items-center space-y-2">
                             <div
-                                className="relative h-28 w-28 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
+                                className="relative h-40 w-40 md:h-48 md:w-48 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
                                 <img
                                     src={guide.face_image || DEFAULT_AVATAR}
                                     alt={guide.name}
@@ -231,117 +236,101 @@ export function GuidePublicProfile({ guideId }) {
                                     }}
                                 />
                             </div>
-                            <FieldLabel className="text-xl font-bold text-gray-900 text-center">
+                            <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
                                 {guide.name}
                             </FieldLabel>
                         </div>
 
-                        {/* Other Info (left-aligned) */}
-                        <div className="flex items-center text-gray-600 text-sm">
-                            <MapPin className="w-4 h-4 mr-1 text-red-600" />
-                            <span>{guide.location || "Location not provided"}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600 text-sm">
-                            <Languages className="w-4 h-4 mr-1 text-blue-700" />
-                            <span>{guide.languages?.length ? guide.languages.join(", ") : "Languages not set"}</span>
-                        </div>
-                        <div className="flex items-center pt-1">
+                        {/* Rating (Moved below name) */}
+                        <div className="flex items-center justify-center pt-1">
                             <HeartRating rating={averageRating} />
-                            <span className="text-sm text-gray-600 ml-2">
+                            <span className="text-sm md:text-base text-gray-600 ml-2 whitespace-nowrap">
                                 {averageRating.toFixed(1)} ({reviews.length} review{reviews.length === 1 ? "" : "s"})
                             </span>
                         </div>
 
-
-                        {/*                {userRole !== "guide" && (*/}
-                        {/*  <Button*/}
-                        {/*    className="bg-[#068F64] rounded-2xl w-auto h-auto text-[9px] flex items-center gap-1"*/}
-                        {/*    onClick={handleMessageClick}*/}
-                        {/*  >*/}
-                        {/*    <MessageCircleMore /> Message{" "}*/}
-                        {/*    {guide.name*/}
-                        {/*      ? guide.name.trim().split(" ").slice(-1).join(" ")*/}
-                        {/*      : guide.username}*/}
-                        {/*  </Button>*/}
-                        {/*)}*/}
-                    </div>
-
-
-                    {/* Bio + Achievements Tabs */}
-                    <div className="md:col-span-2 md:pl-6">
-                        <div className="flex border-b border-gray-300 mb-4">
-                            <button
-                                className={`w-1/2 text-center px-4 py-2 text-sm font-medium ${activeTab === "bio"
-                                        ? "border-b-2 border-gray-900 text-black"
-                                        : "text-gray-600"
-                                    }`}
-                                onClick={() => setActiveTab("bio")}
-                            >
-                                About me
-                            </button>
-
-                            <button
-                                className={`w-1/2 text-center px-4 py-2 text-sm font-medium ${activeTab === "achievements"
-                                        ? "border-b-2 border-gray-900 text-black"
-                                        : "text-gray-600"
-                                    }`}
-                                onClick={() => setActiveTab("achievements")}
-                            >
-                                Achievements
-                            </button>
+                        {/* Other Info (left-aligned) */}
+                        <div className="flex items-center text-gray-600 text-base md:text-lg">
+                            <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
+                            <span className="truncate">{guide.location || "Location not provided"}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600 text-base md:text-lg">
+                            <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0" />
+                            <span className="truncate">{guide.languages?.length ? guide.languages.join(", ") : "Languages not set"}</span>
                         </div>
 
-
-                        {/* Tabs content */}
-                        {activeTab === "bio" && (
-                            <FieldDescription className="text-gray-700 leading-loose text-sm sm:text-md break-words">
-                                {guide.bio || "This guide has not added a bio yet. Check their tours and reviews below."}
-                            </FieldDescription>
-                        )}
-
-                        {activeTab === "achievements" && (
-                            <div className="mt-2 space-y-2">
-                                {/* Achievements badges */}
-                                <div className="flex flex-wrap gap-5 justify-center mt-15">
-                                    {achievements?.length > 0 ? (
-                                        achievements.map((ach, idx) => (
-                                            <AchievementBadge key={idx} variant={ach.toLowerCase()} label={ach} />
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-500 text-sm">No achievements yet.</p>
-                                    )}
-                                </div>
-
-                                {/* Stats line with highlighted numbers and separators */}
-                                {guide.stats && (
-                                    <p className="text-gray-600 text-sm mt-15 text-center">
-                                        <span className="text-gray-600 font-normal">
-                                            Past tours: <span
-                                                className="text-black font-semibold">{guide.stats.total_past_tours}</span>
-                                        </span>
-                                        <span className="mx-5">|</span>
-                                        <span className="text-black font-normal">
-                                            Hosted tours: <span
-                                                className="text-black font-semibold">{guide.stats.total_tours}</span>
-                                        </span>
-                                        <span className="mx-5">|</span>
-                                        <span className="text-gray-600 font-normal">
-                                            Achievements: <span
-                                                className="text-black font-semibold">{guide.stats.achievement_count} / 5</span>
-                                        </span>
-                                    </p>
-                                )}
-
-                            </div>
-                        )}
-
+                        {/* Message Button (Visible to all, clickable only for tourists) */}
+                        <Button
+                            className={`w-full mt-4 rounded-full flex items-center justify-center gap-2 btn-vngo-hover-effect ${userRole === "tourist"
+                                    ? "bg-[#068F64] text-white"
+                                    : "bg-gray-300 text-gray-500 cursor-not-allowed hover:scale-100 hover:shadow-none"
+                                }`}
+                            onClick={() => userRole === "tourist" && navigate(ROUTES.CHAT)}
+                            disabled={userRole !== "tourist"}
+                        >
+                            <MessageCircleMore className="w-4 h-4" />
+                            Message
+                        </Button>
                     </div>
+
+                    {/* Right: Achievements Section (Moved Up) */}
+                    <div className="lg:col-span-8 xl:col-span-9 w-full p-6 bg-white rounded-xl shadow-sm border border-gray-200 h-full">
+                        <h3 className="text-vngo-primary text-2xl md:text-3xl font-semibold border-b border-gray-200 pb-2 mb-4">
+                            Achievements
+                        </h3>
+                        <div className="flex flex-col justify-center items-center space-y-32">
+                            {/* 👆 căn giữa theo chiều dọc + chiều ngang, tạo khoảng cách giữa 2 phần */}
+                            {/* Achievements badges */}
+                            <div className="flex flex-wrap gap-6 md:scale-200 justify-center">
+                                {achievements?.length > 0 ? (
+                                    achievements.map((ach, idx) => (
+                                        <AchievementBadge key={idx} variant={ach.toLowerCase()} label={ach} />
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-lg">No achievements yet.</p>
+                                )}
+                            </div>
+
+                            {/* Stats line with highlighted numbers and separators */}
+                            {guide.stats && (
+                                <p className="text-gray-600
+                                    text-lg sm:text-xl md:text-2xl
+                                    font-normal
+                                    text-center
+                                    mt-10
+                                ">
+                                    <span className="text-gray-600 font-normal">
+                                        Past tours: <span
+                                            className="text-black font-semibold">{guide.stats.total_past_tours}</span>
+                                    </span>
+                                    <span className="mx-5">|</span>
+                                    <span className="text-black font-normal">
+                                        Hosted tours: <span
+                                            className="text-black font-semibold">{guide.stats.total_tours}</span>
+                                    </span>
+                                    <span className="mx-5">|</span>
+                                    <span className="text-gray-600 font-normal">
+                                        Achievements: <span
+                                            className="text-black font-semibold">{guide.stats.achievement_count} / 5</span>
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* About Me (Moved Down, Full Width) */}
+                <div className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">About me</h3>
+                    <FieldDescription className="text-gray-700 leading-loose text-base md:text-lg break-words">
+                        {guide.bio || "This guide has not added a bio yet. Check their tours and reviews below."}
+                    </FieldDescription>
                 </div>
 
                 {/* Tours */}
                 <div>
-                    <div className="flex items-center justify-between mt-10">
-                        <FieldLabel className="text-2xl font-semibold text-gray-900">
+                    <div className="flex items-center justify-between mt-2">
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
                             Tours ({tours.length})
                         </FieldLabel>
                     </div>
@@ -379,24 +368,27 @@ export function GuidePublicProfile({ guideId }) {
                 {/* Guide Reviews */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <FieldLabel className="text-2xl font-semibold text-gray-900">Recent reviews</FieldLabel>
+                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">Recent reviews</FieldLabel>
                         {!!reviews.length && (
-                            <FieldDescription className="text-sm text-gray-500">
+                            <FieldDescription className="text-base md:text-lg text-gray-500">
                                 {reviews.length} review{reviews.length === 1 ? "" : "s"}
                             </FieldDescription>
                         )}
                     </div>
                     {reviews.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-sm">
+                        <FieldDescription className="text-gray-500 text-base md:text-lg">
                             No reviews yet. Be the first to share your experience!
                         </FieldDescription>
                     ) : (
-                        <RatingList ratings={reviews} showTourName={true} />
+                        // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
+                        // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
+                        // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
+                        <div className="text-lg"> 
+                            <RatingList ratings={reviews} showTourName={true} />
+                        </div>
                     )}
                 </div>
             </div>
         </div>
-
-
     );
 }

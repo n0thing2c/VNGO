@@ -162,6 +162,18 @@
     color: #020765;
   }
 
+  .text-vngo-normal-large-responsive {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  .text-vngo-normal-medium-responsive {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+
+  .text-vngo-normal-small-responsive {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+
   /* 2. Class cho màu nền: bg-primary */
   .bg-vngo-primary {
     background-color: #068F64;
