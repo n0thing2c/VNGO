@@ -65,7 +65,7 @@ const PastTourCard = ({ tour, onViewTour }) => (
 
 export function TouristPublicProfile({ touristId }) {
     const navigate = useNavigate();
-    const [guide, setGuide] = useState(null); // holds tourist profile
+    const [tourist, setTourist] = useState(null); // holds tourist profile
     const [tours, setTours] = useState([]); // past tours
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -98,13 +98,13 @@ export function TouristPublicProfile({ touristId }) {
                 const pastTours = profileRes.data.past_tours || [];
                 const ratings = profileRes.data.ratings || [];
 
-                setGuide(profile);
+                setTourist(profile);
                 setTours(pastTours);
 
                 const normalized = normalizeReviews(ratings);
                 setReviews(normalized);
             } else {
-                setGuide(null);
+                setTourist(null);
                 setTours([]);
                 setReviews([]);
             }
@@ -137,7 +137,7 @@ export function TouristPublicProfile({ touristId }) {
     if (loading)
         return <div className="py-16 text-center text-gray-600">Loading profile...</div>;
 
-    if (error || !guide)
+    if (error || !tourist)
         return (
             <div className="py-16 text-center text-red-500">
                 {error || "Tourist not found."}
@@ -154,8 +154,8 @@ export function TouristPublicProfile({ touristId }) {
                         <div className="flex flex-col items-center space-y-2">
                             <div className="relative h-28 w-28 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
                                 <img
-                                    src={guide.face_image || DEFAULT_AVATAR}
-                                    alt={guide.name}
+                                    src={tourist.face_image || DEFAULT_AVATAR}
+                                    alt={tourist.name}
                                     className="h-full w-full object-cover"
                                     onError={(e) => {
                                         e.target.onerror = null;
@@ -164,20 +164,20 @@ export function TouristPublicProfile({ touristId }) {
                                 />
                             </div>
                             <FieldLabel className="text-xl font-bold text-gray-900 text-center">
-                                {guide.name}
+                                {tourist.name}
                             </FieldLabel>
                         </div>
 
                         {/* Other Info */}
                         <div className="flex items-center text-gray-600 text-sm">
                             <MapPin className="w-4 h-4 mr-1 text-red-600" />
-                            <span>{guide.nationality || "Nationality not provided"}</span>
+                            <span>{tourist.nationality || "Nationality not provided"}</span>
                         </div>
                         <div className="flex items-center text-gray-600 text-sm">
                             <Languages className="w-4 h-4 mr-1 text-blue-700" />
                             <span>
-                                {guide.age ? `${guide.age} years old` : "Age not provided"}
-                                {guide.gender ? ` • ${guide.gender}` : ""}
+                                {tourist.age ? `${tourist.age} years old` : "Age not provided"}
+                                {tourist.gender ? ` • ${tourist.gender}` : ""}
                             </span>
                         </div>
                         <div className="flex items-center pt-1 text-sm text-gray-600">
@@ -198,7 +198,7 @@ export function TouristPublicProfile({ touristId }) {
                         </FieldLabel>
                         <FieldDescription className="text-gray-700 text-sm sm:text-md break-words">
                             {tours.length
-                                ? `${guide.name || "This tourist"} has completed ${tours.length} past tour${tours.length === 1 ? "" : "s"
+                                ? `${tourist.name || "This tourist"} has completed ${tours.length} past tour${tours.length === 1 ? "" : "s"
                                 }.`
                                 : "This tourist has not completed any tours yet."}
                         </FieldDescription>
