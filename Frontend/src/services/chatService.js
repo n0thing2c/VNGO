@@ -14,4 +14,24 @@ export const chatService = {
     });
     return response.data;
   },
+
+  // Get user online status by ID
+  getUserOnlineStatus: async (userId) => {
+    try {
+      const response = await api.get(`/chat/user/${userId}/status/`);
+      return response.data;
+    } catch (error) {
+      return { user_id: userId, is_online: false };
+    }
+  },
+
+  // Get user online status by username
+  getUserOnlineStatusByUsername: async (username) => {
+    try {
+      const response = await api.get(`/chat/username/${username}/status/`);
+      return response.data;
+    } catch (error) {
+      return { username, is_online: false };
+    }
+  },
 };

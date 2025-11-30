@@ -240,6 +240,7 @@ export default function ChatPage() {
           contactName: otherUserName,
           contactId: otherUserId,
           contactAvatar: contactAvatar,
+          isOnline: existing?.isOnline || false,
           nationality:
             existing?.nationality ||
             (message?.sender && message.sender.id !== user?.id
@@ -500,6 +501,7 @@ export default function ChatPage() {
         contactName,
         contactId,
         contactAvatar: contactAvatar || existing?.contactAvatar || null,
+        isOnline: existing?.isOnline || false,
         nationality: existing?.nationality || null,
         lastMessage: existing?.lastMessage || "No message yet",
         lastMessageTime: existing?.lastMessageTime || new Date().toISOString(),

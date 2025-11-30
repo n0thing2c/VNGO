@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.db.models import Max, Prefetch
 from django.core.cache import cache
 from .models import Message
@@ -96,6 +97,9 @@ class ConversationListView(generics.GenericAPIView):
             if other_msg:
                 other_user_messages[room_name] = other_msg
 
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
         conversations = []
         for entry in room_entries:
             room_name = entry["room"]
@@ -105,25 +109,52 @@ class ConversationListView(generics.GenericAPIView):
             contact_name = f"Room: {room_name}"
             contact_id = None
             contact_avatar = None
+            contact_user = None
 
+            # Try to get contact info from other user's message first
             if other_user_message and other_user_message.sender:
-                sender_user = other_user_message.sender
-                contact_name = sender_user.username or contact_name
-                contact_id = str(sender_user.id)
+                contact_user = other_user_message.sender
+            else:
+                # If no message from other user, parse room name to find them
+                # Room name format: username1__username2
+                if "__" in room_name:
+                    parts = room_name.split("__")
+                    other_username = None
+                    for part in parts:
+                        if part and part.lower() != user_username.lower():
+                            other_username = part
+                            break
+                    
+                    if other_username:
+                        try:
+                            contact_user = User.objects.select_related(
+                                'tourist_profile', 'guide_profile'
+                            ).get(username__iexact=other_username)
+                        except User.DoesNotExist:
+                            pass
 
-                # Get avatar
-                if hasattr(sender_user,
-                           "tourist_profile") and sender_user.tourist_profile and sender_user.tourist_profile.face_image:
-                    contact_avatar = sender_user.tourist_profile.face_image
-                elif hasattr(sender_user,
-                             "guide_profile") and sender_user.guide_profile and sender_user.guide_profile.face_image:
-                    contact_avatar = sender_user.guide_profile.face_image
+            # Extract contact info from contact_user
+            if contact_user:
+                contact_name = contact_user.username or contact_name
+                contact_id = str(contact_user.id)
+
+                # Get avatar from tourist or guide profile
+                if hasattr(contact_user, "tourist_profile") and contact_user.tourist_profile and contact_user.tourist_profile.face_image:
+                    contact_avatar = contact_user.tourist_profile.face_image
+                elif hasattr(contact_user, "guide_profile") and contact_user.guide_profile and contact_user.guide_profile.face_image:
+                    contact_avatar = contact_user.guide_profile.face_image
+
+            # Check if contact is online
+            is_online = False
+            if contact_id:
+                is_online = bool(cache.get(f"user_online:{contact_id}", False))
 
             conversations.append({
                 "room": room_name,
                 "contactName": contact_name,
                 "contactId": contact_id,
                 "contactAvatar": contact_avatar,
+                "isOnline": is_online,
                 "lastMessage": last_message.content if last_message else "No message yet",
                 "lastMessageTime": last_message.created_at.isoformat() if last_message else None,
                 "responseTime": "30 minutes",
@@ -131,7 +162,41 @@ class ConversationListView(generics.GenericAPIView):
                 "reviewCount": 0,
             })
 
-        # Cache for 30 seconds
-        cache.set(cache_key, conversations, timeout=30)
+        # Cache for 5 seconds (match frontend polling interval)
+        cache.set(cache_key, conversations, timeout=20)
 
         return Response(conversations)
+
+
+class UserOnlineStatusView(APIView):
+    """API endpoint to check if a user is online"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id):
+        cache_key = f"user_online:{user_id}"
+        is_online = cache.get(cache_key, False)
+        return Response({"user_id": user_id, "is_online": bool(is_online)})
+
+
+class UserOnlineStatusByUsernameView(APIView):
+    """API endpoint to check if a user is online by username"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, username):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        try:
+            user = User.objects.get(username__iexact=username)
+            cache_key = f"user_online:{user.id}"
+            is_online = cache.get(cache_key, False)
+            return Response({
+                "user_id": str(user.id),
+                "username": user.username,
+                "is_online": bool(is_online)
+            })
+        except User.DoesNotExist:
+            return Response({
+                "username": username,
+                "is_online": False
+            })

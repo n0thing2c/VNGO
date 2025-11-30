@@ -18,6 +18,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         self.group_name = f"chat_{self.room_name}"
         self.user_id = getattr(user, "id", None)
+        self.username = getattr(user, "username", "")
 
         # Cache room participants in Redis
         await self.add_user_to_room(self.room_name, self.user_id)
@@ -25,11 +26,44 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
+        # Broadcast that user joined this room
+        await self.broadcast_online_status(True)
+
     async def disconnect(self, close_code):
         try:
+            # Broadcast that user left this room
+            await self.broadcast_online_status(False)
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
         except Exception:
             pass
+
+    @database_sync_to_async
+    def is_user_online(self, user_id):
+        """Check if user is online"""
+        if user_id:
+            return bool(cache.get(f"user_online:{user_id}", False))
+        return False
+
+    async def broadcast_online_status(self, is_in_room):
+        """Broadcast user online status to the room"""
+        # Check actual online status from cache
+        is_online = await self.is_user_online(self.user_id)
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "user.status",
+                "payload": {
+                    "type": "user_status",
+                    "user_id": self.user_id,
+                    "username": self.username,
+                    "is_online": is_online,
+                },
+            },
+        )
+
+    async def user_status(self, event):
+        """Send user status update to client"""
+        await self.send_json(event["payload"])
 
     @database_sync_to_async
     def add_user_to_room(self, room_name, user_id):
@@ -183,15 +217,34 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         if user is None or getattr(user, "is_anonymous", True):
             await self.close()
             return
-        self.group_name = f"notify_user_{getattr(user, 'id', 'anon')}"
+        
+        self.user_id = getattr(user, "id", None)
+        self.username = getattr(user, "username", "")
+        self.group_name = f"notify_user_{self.user_id or 'anon'}"
+        
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
+        
+        # Set user as online when they connect to the app
+        await self.set_user_online(True)
 
     async def disconnect(self, close_code):
         try:
+            # Set user as offline when they disconnect from the app
+            await self.set_user_online(False)
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
         except Exception:
             pass
+
+    @database_sync_to_async
+    def set_user_online(self, is_online):
+        """Set user online status in cache"""
+        if self.user_id:
+            cache_key = f"user_online:{self.user_id}"
+            if is_online:
+                cache.set(cache_key, True, timeout=300)  # 5 minutes timeout
+            else:
+                cache.delete(cache_key)
 
     async def chat_notification(self, event):
         await self.send_json(event["payload"])
