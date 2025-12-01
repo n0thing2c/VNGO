@@ -286,6 +286,16 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         except Exception:
             pass
 
+    async def receive_json(self, content, **kwargs):
+        """Handle incoming messages from client"""
+        msg_type = content.get("type")
+        
+        if msg_type == "heartbeat":
+            # Refresh online status when receiving heartbeat
+            await self.set_user_online(True)
+            # Send acknowledgment back
+            await self.send_json({"type": "heartbeat_ack"})
+
     @database_sync_to_async
     def set_user_online(self, is_online):
         """Set user online status in cache"""

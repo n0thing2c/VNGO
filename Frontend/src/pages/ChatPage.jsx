@@ -382,6 +382,9 @@ export default function ChatPage() {
       } catch { }
     };
 
+    // Fetch immediately to sync with ChatWindow header timing
+    tick();
+    
     const id = setInterval(tick, 5000); // 5s refresh
     return () => {
       isCancelled = true;
@@ -706,6 +709,7 @@ export default function ChatPage() {
               contactId={selectedContact.contactId}
               contactAvatar={selectedContact.contactAvatar}
               contactNationality={selectedContact.nationality}
+              contactIsOnline={selectedContact.isOnline}
               responseTime={selectedContact.responseTime}
               rating={selectedContact.rating}
               reviewCount={selectedContact.reviewCount}

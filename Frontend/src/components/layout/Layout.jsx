@@ -6,15 +6,15 @@ import { useAuthStore } from "@/stores/useAuthStore"
 import { notificationService } from "@/services/notifyService"
 
 export default function Layout() {
-  const { isAuthenticated } = useAuthStore();
+  const { accessToken } = useAuthStore();
 
   // Connect to notification service when user is authenticated
   // This sets the user as "online" in the system
   useEffect(() => {
-    if (isAuthenticated) {
+    if (accessToken) {
       notificationService.connect();
     }
-  }, [isAuthenticated]);
+  }, [accessToken]);
 
   return (
     <>

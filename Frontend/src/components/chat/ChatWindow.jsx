@@ -92,6 +92,7 @@ export default function ChatWindow({
   contactId,
   contactAvatar,
   contactNationality,
+  contactIsOnline: contactIsOnlineProp,
   responseTime,
   onMessageUpdate,
   heightClass = "max-h-[70vh]",
@@ -161,7 +162,7 @@ export default function ChatWindow({
     fetchGuideRating();
   }, [contactId, contactName, user?.role, roomName]);
 
-  // Fetch and poll online status for contact
+  // Sync online status from parent prop (conversation list already polls this)
   useEffect(() => {
     const isChatbot = contactName?.toLowerCase().trim() === "chatbot" || 
                       contactId === "chatbot" || 
@@ -171,41 +172,11 @@ export default function ChatWindow({
       return;
     }
 
-    const fetchOnlineStatus = async () => {
-      // If we have contactId, use it
-      if (contactId) {
-        const status = await chatService.getUserOnlineStatus(contactId);
-        setIsContactOnline(status.is_online);
-        return;
-      }
-      
-      // If no contactId, try to parse username from roomName
-      // Room name format: username1__username2
-      if (roomName && roomName.includes("__")) {
-        const parts = roomName.split("__");
-        const currentUsername = user?.username?.toLowerCase();
-        const otherUsername = parts.find(
-          (part) => part && part.toLowerCase() !== currentUsername
-        );
-        
-        if (otherUsername) {
-          const status = await chatService.getUserOnlineStatusByUsername(otherUsername);
-          setIsContactOnline(status.is_online);
-          return;
-        }
-      }
-      
-      setIsContactOnline(false);
-    };
-
-    // Fetch immediately
-    fetchOnlineStatus();
-
-    // Poll every 5 seconds to keep status updated
-    const intervalId = setInterval(fetchOnlineStatus, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [contactId, contactName, roomName, user?.username]);
+    // Use prop value from parent (synced with conversation list)
+    if (contactIsOnlineProp !== undefined) {
+      setIsContactOnline(contactIsOnlineProp);
+    }
+  }, [contactId, contactName, roomName, contactIsOnlineProp]);
 
   // Fetch initial seen status for room
   useEffect(() => {
