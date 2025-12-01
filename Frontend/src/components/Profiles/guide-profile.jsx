@@ -1,15 +1,15 @@
-import {Button} from "@/components/ui/button.jsx";
-import {Card, CardContent} from "@/components/ui/card.jsx";
-import {Input} from "@/components/ui/input.jsx";
-import {toast} from "sonner";
-// import {useNavigate} from "react-router";
-import {useEffect, useMemo, useState} from "react";
+import { Button } from "@/components/ui/button.jsx";
+import { Card, CardContent } from "@/components/ui/card.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
+import { useEffect, useMemo, useState } from "react";
 import ImageUploader from "@/components/imageuploader.jsx";
-import {useAuthStore} from "@/stores/useAuthStore.js";
-import {profileService} from "@/services/profileService.js";
-import {Combobox} from "@/components/ui/combobox.jsx";
-import {LanguageSelector} from "@/components/lang_selector.jsx";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.jsx";
+import { useAuthStore } from "@/stores/useAuthStore.js";
+import { profileService } from "@/services/profileService.js";
+import { Combobox } from "@/components/ui/combobox.jsx";
+import { LanguageSelector } from "@/components/lang_selector.jsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx";
 import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/constant.js";
@@ -69,13 +69,13 @@ const FormField = ({ label, children }) => (
     </div>
 );
 
-export function GuideProfile({className}) {
+export function GuideProfile({ className }) {
     const [profileId, setProfileId] = useState(null);
     const [profile, setProfile] = useState(initialProfile);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [avatarImages, setAvatarImages] = useState([]);
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const refreshUser = useAuthStore((state) => state.refreshUser);
     const user = useAuthStore((state) => state.user);
 
@@ -195,7 +195,10 @@ export function GuideProfile({className}) {
             });
             await refreshUser();
             toast.success("Profile saved successfully!");
-            // navigate("/", {replace: true});
+            // If this was the first time (registration), navigate to home
+            if (!user?.profile_completed) {
+                navigate("/", { replace: true });
+            }
         } catch (error) {
             toast.error(
                 error?.response?.data?.detail || "Failed to save profile. Please try again."
@@ -384,11 +387,11 @@ export function GuideProfile({className}) {
                         {/* Action Buttons are kept outside the rounded border for clarity */}
                         <div className="flex justify-end gap-3 pt-4">
                             <Link
-                              to={profileId ? ROUTES.PUBLIC_PROFILE(profileId) : "#"}
-                              className={`inline-block ${!profileId ? 'pointer-events-none opacity-50' : ''}`}
+                                to={profileId ? ROUTES.PUBLIC_PROFILE(profileId) : "#"}
+                                className={`inline-block ${!profileId ? 'pointer-events-none opacity-50' : ''}`}
                             >
-                                <Button 
-                                    type="button" 
+                                <Button
+                                    type="button"
                                     variant="outline"
                                     className="h-10 px-4 text-sm rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                                 >
@@ -396,7 +399,7 @@ export function GuideProfile({className}) {
                                     View Public Profile
                                 </Button>
                             </Link>
-                            
+
                             <Button
                                 className="h-10 px-6 text-sm rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg transition duration-150 ease-in-out"
                                 type="submit"

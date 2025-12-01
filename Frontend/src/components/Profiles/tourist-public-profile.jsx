@@ -21,6 +21,13 @@ import {
     FieldSeparator,
     FieldDescription,
 } from "@/components/ui/field.jsx";
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog.jsx";
 
 const DEFAULT_AVATAR = "https://placehold.co/112x112/A0A0A0/ffffff?text=User";
 
@@ -177,17 +184,38 @@ export function TouristPublicProfile({ touristId }) {
                     <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         {/* Avatar + Name */}
                         <div className="flex flex-col items-center space-y-2">
-                            <div className="relative h-30 w-30 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300">
-                                <img
-                                    src={tourist.face_image || DEFAULT_AVATAR}
-                                    alt={tourist.name}
-                                    className="h-full w-full object-cover"
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = DEFAULT_AVATAR;
-                                    }}
-                                />
-                            </div>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <div className="relative h-35 w-35 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300 cursor-pointer">
+                                        <img
+                                            src={tourist.face_image || DEFAULT_AVATAR}
+                                            alt={tourist.name}
+                                            className="h-full w-full object-cover"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = DEFAULT_AVATAR;
+                                            }}
+                                        />
+                                    </div>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[600px] p-0 bg-transparent border-none shadow-none flex justify-center items-center">
+                                    {/*Full avatar*/}
+                                    <div className="sr-only">
+                                        <DialogTitle>{tourist.name}'s Profile Picture</DialogTitle>
+                                        <DialogDescription>Full size view of the profile picture</DialogDescription>
+                                    </div>
+                                    
+                                    <img
+                                        src={tourist.face_image || DEFAULT_AVATAR}
+                                        alt={tourist.name}
+                                        className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = DEFAULT_AVATAR;
+                                        }}
+                                    />
+                                </DialogContent>
+                            </Dialog>
                             <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
                                 {tourist.name}
                             </FieldLabel>

@@ -386,7 +386,10 @@ export function TouristProfile({ className }) {
             }
 
             toast.success("Profile saved successfully!");
-            // navigate("/", {replace: true});
+            // If this was the first time (registration), navigate to home
+            if (!user?.profile_completed) {
+                navigate("/", { replace: true });
+            }
         } catch (error) {
             toast.error(
                 error?.response?.data?.detail ||

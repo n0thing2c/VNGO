@@ -1,6 +1,6 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-export default function TourStopsTimeline({stops = []}) {
+export default function TourStopsTimeline({ stops = [] }) {
     const [scrollProgress, setScrollProgress] = useState(0);
     const containerRef = useRef(null);
     const stopRefs = useRef([]);
@@ -19,7 +19,7 @@ export default function TourStopsTimeline({stops = []}) {
         Math.floor(scrollProgress * (stops.length - 1) + 0.1), // +0.1 để fix lỗi làm tròn
         stops.length - 1
     );
-    
+
     // Lấy description thật, nếu không có thì hiện fallback text
     const currentDescription = stops[currentIndex]?.description || "No description available for this stop.";
 
@@ -132,19 +132,17 @@ export default function TourStopsTimeline({stops = []}) {
                                     {isTop && (
                                         <div className="absolute bottom-full mb-2 max-w-[300px] truncate">
                                             <span
-                                                className={`font-bold whitespace-nowrap transition-all duration-300 ${
-                                                    isActive ? "text-[#00c295] text-lg" : "text-neutral-600"
-                                                }`}
+                                                className={`font-bold whitespace-nowrap transition-all duration-300 ${isActive ? "text-[#00c295] text-lg" : "text-neutral-600"
+                                                    }`}
                                             >
-                                              {stopName}
+                                                {stopName}
                                             </span>
                                         </div>
                                     )}
 
                                     <div
-                                        className={`w-9 h-9 z-10 rounded-full flex items-center justify-center border-4 border-white font-bold text-white transition-all duration-300 ${
-                                            isActive ? "bg-[#00c295] scale-125 shadow-lg" : "bg-neutral-400"
-                                        }`}
+                                        className={`w-9 h-9 z-10 rounded-full flex items-center justify-center border-4 border-white font-bold text-white transition-all duration-300 ${isActive ? "bg-[#00c295] scale-125 shadow-lg" : "bg-neutral-400"
+                                            }`}
                                     >
                                         {idx + 1}
                                     </div>
@@ -152,11 +150,10 @@ export default function TourStopsTimeline({stops = []}) {
                                     {!isTop && (
                                         <div className="absolute top-full mt-2 max-w-[300px] truncate">
                                             <span
-                                                className={`font-bold whitespace-nowrap transition-all duration-300 ${
-                                                    isActive ? "text-[#00c295] text-lg" : "text-neutral-600"
-                                                }`}
+                                                className={`font-bold whitespace-nowrap transition-all duration-300 ${isActive ? "text-[#00c295] text-lg" : "text-neutral-600"
+                                                    }`}
                                             >
-                                              {stopName}
+                                                {stopName}
                                             </span>
                                         </div>
                                     )}
@@ -169,7 +166,7 @@ export default function TourStopsTimeline({stops = []}) {
                                         <div
                                             ref={(el) => (segmentRefs.current[idx] = el)}
                                             className="absolute top-0 left-0 h-full bg-[#00c295] transition-[width] duration-75"
-                                            style={{width: "0%"}}
+                                            style={{ width: "0%" }}
                                         />
                                     </div>
                                 )}
@@ -181,7 +178,7 @@ export default function TourStopsTimeline({stops = []}) {
             </div>
 
             <div className="mt-8 px-4">
-                <p className="text-neutral-700 text-md max-w-3xl mx-auto leading-relaxed text-start">
+                <p className="text-neutral-700 text-md max-w-3xl mx-auto leading-relaxed text-start whitespace-pre-wrap">
                     {/* {mockDescriptions[Math.floor(scrollProgress * totalSegments)]} */}
                     {currentDescription}
                 </p>
