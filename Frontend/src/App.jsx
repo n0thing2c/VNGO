@@ -17,12 +17,14 @@ import TouristProfilePage from "./pages/TouristProfilePage";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
 import ManagementTours from "./pages/ManagementTours";
+import { CallProvider } from "@/components/call/CallProvider";
 
 function App() {
   return (
     <>
       <Toaster position="top-center" richColors />
       <BrowserRouter>
+        <CallProvider>
         <ScrollToTop />
         <Routes>
           {/*public routes*/}
@@ -67,6 +69,7 @@ function App() {
             </Route>
           </Route>
         </Routes>
+        </CallProvider>
       </BrowserRouter>
     </>
   );

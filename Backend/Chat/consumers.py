@@ -29,9 +29,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Broadcast that user joined this room
         await self.broadcast_online_status(True)
         
-        # Mark room as seen when user connects
-        await self.mark_room_seen()
-        await self.broadcast_seen_status()
+        # DON'T auto-mark as seen on connect - wait for explicit action
+        # User will send "mark_seen" when they actually view messages
+        # This prevents hot-reload from marking everything as read
 
     async def disconnect(self, close_code):
         try:

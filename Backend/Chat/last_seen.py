@@ -119,26 +119,50 @@ class LastSeenService:
     def mark_room_as_seen(user_id, room_name):
         """
         Mark that user has seen the room (to calculate unread messages)
+        Saves to both database (persistent) and cache (fast access)
         """
-        now = timezone.now().isoformat()
-        cache.set(f"room_seen:{user_id}:{room_name}", now, timeout=None)
+        from .models import RoomLastSeen
+        
+        now = timezone.now()
+        
+        # Save to database (persistent)
+        RoomLastSeen.objects.update_or_create(
+            user_id=user_id,
+            room=room_name,
+            defaults={'seen_at': now}
+        )
+        
+        # Also cache for fast access
+        cache.set(f"room_seen:{user_id}:{room_name}", now.isoformat(), timeout=86400)
 
     @staticmethod
     def get_room_last_seen(user_id, room_name):
         """
         Get user's last seen time for a room (to calculate unread)
+        Checks cache first, falls back to database
 
         Returns:
             datetime object or None (timezone-aware)
         """
-        last_seen_str = cache.get(f"room_seen:{user_id}:{room_name}")
+        # Try cache first (fast)
+        cache_key = f"room_seen:{user_id}:{room_name}"
+        last_seen_str = cache.get(cache_key)
+        
         if last_seen_str:
             try:
                 dt = datetime.fromisoformat(last_seen_str)
-                # Ensure timezone-aware
                 if dt.tzinfo is None:
                     dt = timezone.make_aware(dt)
                 return dt
             except:
-                return None
-        return None
+                pass
+        
+        # Fallback to database
+        from .models import RoomLastSeen
+        try:
+            record = RoomLastSeen.objects.get(user_id=user_id, room=room_name)
+            # Re-cache for next time
+            cache.set(cache_key, record.seen_at.isoformat(), timeout=86400)
+            return record.seen_at
+        except RoomLastSeen.DoesNotExist:
+            return None

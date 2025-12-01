@@ -1,11 +1,11 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Max, Prefetch
+from django.db.models import Max, Prefetch, Q
 from django.core.cache import cache
-from .models import Message
-from .serializers import MessageSerializer
+from .models import Message, Call
+from .serializers import MessageSerializer, CallSerializer
 
 
 class MessageListView(generics.ListAPIView):
@@ -138,11 +138,13 @@ class ConversationListView(generics.GenericAPIView):
                 contact_name = contact_user.username or contact_name
                 contact_id = str(contact_user.id)
 
-                # Get avatar from tourist or guide profile
+                # Get avatar URL from tourist or guide profile
                 if hasattr(contact_user, "tourist_profile") and contact_user.tourist_profile and contact_user.tourist_profile.face_image:
-                    contact_avatar = contact_user.tourist_profile.face_image
+                    img = contact_user.tourist_profile.face_image
+                    contact_avatar = img.url if hasattr(img, 'url') else str(img) if img else None
                 elif hasattr(contact_user, "guide_profile") and contact_user.guide_profile and contact_user.guide_profile.face_image:
-                    contact_avatar = contact_user.guide_profile.face_image
+                    img = contact_user.guide_profile.face_image
+                    contact_avatar = img.url if hasattr(img, 'url') else str(img) if img else None
 
             # Check if contact is online
             is_online = False
@@ -264,3 +266,88 @@ class RoomSeenStatusView(APIView):
                 result["contact_seen_at"] = contact_seen.isoformat()
         
         return Response(result)
+
+
+# ==================== Call Views ====================
+
+class CallHistoryView(generics.ListAPIView):
+    """API endpoint to get user's call history"""
+    serializer_class = CallSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Get calls where user is either caller or callee
+        return (
+            Call.objects.filter(Q(caller=user) | Q(callee=user))
+            .select_related(
+                'caller', 'callee',
+                'caller__tourist_profile', 'caller__guide_profile',
+                'callee__tourist_profile', 'callee__guide_profile'
+            )
+            .order_by('-created_at')[:50]  # Last 50 calls
+        )
+
+
+class CallDetailView(generics.RetrieveAPIView):
+    """API endpoint to get call details"""
+    serializer_class = CallSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
+    queryset = Call.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        # Only allow access to calls the user is part of
+        return Call.objects.filter(
+            Q(caller=user) | Q(callee=user)
+        ).select_related(
+            'caller', 'callee',
+            'caller__tourist_profile', 'caller__guide_profile',
+            'callee__tourist_profile', 'callee__guide_profile'
+        )
+
+
+class ActiveCallView(APIView):
+    """API endpoint to check if there's an active call with a user"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id):
+        """Check if there's an active/pending call with specified user"""
+        current_user = request.user
+        
+        active_call = Call.objects.filter(
+            Q(caller=current_user, callee_id=user_id) |
+            Q(caller_id=user_id, callee=current_user),
+            status__in=['pending', 'ringing', 'accepted']
+        ).first()
+        
+        if active_call:
+            serializer = CallSerializer(active_call)
+            return Response({
+                "has_active_call": True,
+                "call": serializer.data
+            })
+        
+        return Response({
+            "has_active_call": False,
+            "call": None
+        })
+
+
+class MissedCallsView(APIView):
+    """API endpoint to get count of missed calls"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        # Get missed calls that haven't been acknowledged
+        missed_count = Call.objects.filter(
+            callee=user,
+            status='missed'
+        ).count()
+        
+        return Response({
+            "missed_calls_count": missed_count
+        })

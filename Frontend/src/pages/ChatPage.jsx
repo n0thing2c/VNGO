@@ -58,12 +58,19 @@ export default function ChatPage() {
   const location = useLocation();
   const targetRoom = location.state?.targetRoom;
   const targetUser = location.state?.targetUser;
+  const openChatbot = location.state?.openChatbot;
   const targetRoomRef = useRef(targetRoom);
+  const openChatbotRef = useRef(openChatbot);
+  const chatbotOpenedRef = useRef(false);
   
-  // Update ref when targetRoom changes
+  // Update refs when targetRoom or openChatbot changes
   useEffect(() => {
     targetRoomRef.current = targetRoom;
   }, [targetRoom]);
+
+  useEffect(() => {
+    openChatbotRef.current = openChatbot;
+  }, [openChatbot]);
 
   const resolveRoomMateName = useCallback(
     (roomName) => {
@@ -340,13 +347,41 @@ export default function ChatPage() {
           contactId: conv.contactId && conv.contactId !== conv.room ? conv.contactId : null
         }));
         const normalized = normalizeAndEnhance(cleaned);
-        setConversations(normalized);
+        
+        // Fetch online status by username for conversations without contactId
+        const withOnlineStatus = await Promise.all(
+          normalized.map(async (conv) => {
+            // Skip chatbot
+            const isChatbot = 
+              conv.contactName?.toLowerCase().trim() === "chatbot" ||
+              conv.room?.endsWith("chatbot");
+            
+            // If no contactId but has contactName, fetch online status by username
+            if (!conv.contactId && conv.contactName && !isChatbot) {
+              try {
+                const status = await chatService.getUserOnlineStatusByUsername(conv.contactName);
+                if (status && status.is_online !== undefined) {
+                  return {
+                    ...conv,
+                    isOnline: status.is_online,
+                    contactId: status.user_id || conv.contactId
+                  };
+                }
+              } catch {
+                // Silently fail
+              }
+            }
+            return conv;
+          })
+        );
+        
+        setConversations(withOnlineStatus);
 
         // Auto-select first conversation if available and no room is selected
-        // But don't auto-select if we have a targetRoom (it will be handled by the targetRoom useEffect)
-        if (normalized.length > 0 && !selectedRoom && !targetRoomRef.current) {
-          setSelectedRoom(normalized[0].room);
-          setSelectedContact(normalized[0]);
+        // But don't auto-select if we have a targetRoom or openChatbot (they will be handled by their own useEffects)
+        if (withOnlineStatus.length > 0 && !selectedRoom && !targetRoomRef.current && !openChatbotRef.current) {
+          setSelectedRoom(withOnlineStatus[0].room);
+          setSelectedContact(withOnlineStatus[0]);
         }
       } catch (error) {
         console.error("Error loading conversations:", error);
@@ -370,9 +405,38 @@ export default function ChatPage() {
           contactId: conv.contactId && conv.contactId !== conv.room ? conv.contactId : null
         }));
         const normalized = normalizeAndEnhance(cleaned);
+        
+        // Fetch online status by username for conversations without contactId
+        const withOnlineStatus = await Promise.all(
+          normalized.map(async (conv) => {
+            // Skip chatbot
+            const isChatbot = 
+              conv.contactName?.toLowerCase().trim() === "chatbot" ||
+              conv.room?.endsWith("chatbot");
+            
+            // If no contactId but has contactName, fetch online status by username
+            if (!conv.contactId && conv.contactName && !isChatbot) {
+              try {
+                const status = await chatService.getUserOnlineStatusByUsername(conv.contactName);
+                if (status && status.is_online !== undefined) {
+                  return {
+                    ...conv,
+                    isOnline: status.is_online,
+                    // Also update contactId if returned from API
+                    contactId: status.user_id || conv.contactId
+                  };
+                }
+              } catch {
+                // Silently fail, keep original conv
+              }
+            }
+            return conv;
+          })
+        );
+        
         setConversations((prev) => {
           // Merge keeping latest info and order
-          const merged = normalizeAndEnhance([...prev, ...normalized]);
+          const merged = normalizeAndEnhance([...prev, ...withOnlineStatus]);
           return merged;
         });
         // Ensure targetRoom remains selected if it exists
@@ -391,6 +455,30 @@ export default function ChatPage() {
       clearInterval(id);
     };
   }, [normalizeAndEnhance]);
+
+  // Sync selectedContact with conversations when isOnline or contactId changes
+  useEffect(() => {
+    if (!selectedRoom || !conversations.length) return;
+    
+    const currentConv = conversations.find(c => c.room === selectedRoom);
+    if (!currentConv) return;
+    
+    // Update selectedContact if isOnline or contactId changed
+    setSelectedContact(prev => {
+      if (!prev) return currentConv;
+      
+      // Check if relevant fields changed
+      const needsUpdate = 
+        prev.isOnline !== currentConv.isOnline ||
+        prev.contactId !== currentConv.contactId ||
+        prev.contactAvatar !== currentConv.contactAvatar;
+      
+      if (needsUpdate) {
+        return { ...prev, ...currentConv };
+      }
+      return prev;
+    });
+  }, [conversations, selectedRoom]);
 
   // Realtime notifications for other rooms
   useEffect(() => {
@@ -493,6 +581,16 @@ export default function ChatPage() {
       setSelectedContact(newBotConversation);
     }
   };
+
+  // Auto-open chatbot when navigating from FloatingChatbotButton
+  useEffect(() => {
+    if (openChatbot && user?.username && !chatbotOpenedRef.current) {
+      chatbotOpenedRef.current = true;
+      // Clear the ref so it doesn't interfere with other logic
+      openChatbotRef.current = false;
+      handleStartChatbot();
+    }
+  }, [openChatbot, user?.username]);
 
   useEffect(() => {
     if (!targetRoom) return;
