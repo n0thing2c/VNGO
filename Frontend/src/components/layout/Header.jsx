@@ -79,7 +79,7 @@ export default function Header() {
             {isLoggedIn && user ? (
               <div className="flex items-center gap-2 md:gap-3">
                 {/* 1. NOTIFICATION DROPDOWN */}
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger className="outline-none relative">
                     <div className="text-white hover:bg-white/20 p-2 rounded-full transition-colors relative">
                       <Bell className="w-9 h-9" />
@@ -135,7 +135,7 @@ export default function Header() {
                 </DropdownMenu>
 
                 {/* Menu Dropdown */}
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger className="flex items-center gap-2 outline-none hover:bg-white/20 rounded-full px-3 py-2 transition-colors">
                     {/* <Menu className="w-10 h-10 text-white" /> */}
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
