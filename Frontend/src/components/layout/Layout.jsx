@@ -10,8 +10,9 @@ export default function Layout() {
   const { accessToken } = useAuthStore();
   const location = useLocation();
 
-  // Ẩn chatbot button trên trang chat
-  const isChatPage = location.pathname === "/chat";
+  // Ẩn chatbot button trên các trang: chat, login, signup, verify-email
+  const hideChatbotPages = ["/chat", "/login", "/signup", "/verify-email"];
+  const shouldHideChatbot = hideChatbotPages.includes(location.pathname);
 
   // Connect to notification service when user is authenticated
   // This sets the user as "online" in the system
@@ -30,8 +31,8 @@ export default function Layout() {
       </main>
       <Footer />
       
-      {/* Floating Chat Button - hiển thị ở mọi trang trừ trang chat */}
-      {!isChatPage && <FloatingChatbotButton />}
+      {/* Floating Chat Button - ẩn trên trang chat, login, signup, verify-email */}
+      {!shouldHideChatbot && <FloatingChatbotButton />}
     </>
   );
 }
