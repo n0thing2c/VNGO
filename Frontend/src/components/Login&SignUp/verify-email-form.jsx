@@ -114,7 +114,7 @@ export function VerifyEmailForm({ className, ...props }) {
       className={cn("flex flex-col items-center pb-4", className)}
       {...props}
     >
-      <Card className="mx-auto mt-2 md:mt-0 w-[92%] md:max-w-2xl overflow-hidden p-0 shadow-xl">
+      <Card className="mx-auto mt-2 md:mt-9.5 w-[92%] md:max-w-2xl overflow-hidden p-0 shadow-xl">
         <CardContent className="p-6 md:p-8">
           <FieldGroup className="gap-4 text-center">
             <div className="flex flex-col items-center gap-2 mb-4">
