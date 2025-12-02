@@ -249,45 +249,92 @@ class WebRTCService {
 
   /**
    * Get user media (camera/microphone)
+   * Tries to get audio and video SEPARATELY so one can succeed even if the other fails
+   * NEVER throws - always returns a stream (possibly empty)
    */
   async getUserMedia(isVideo = false) {
+    const combinedStream = new MediaStream();
+
+    // Try to get AUDIO first (always needed)
     try {
-      const constraints = isVideo ? this.videoConstraints : this.audioConstraints;
-      this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-      this.emit("local_stream", this.localStream);
-      return this.localStream;
+      console.log("Requesting audio permission...");
+      const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStream.getAudioTracks().forEach(track => {
+        combinedStream.addTrack(track);
+        console.log("Audio track added:", track.label);
+      });
+      this.hasAudioPermission = true;
     } catch (error) {
-      console.error("Error getting user media:", error);
-      
-      // If video fails, try audio-only as fallback
-      if (isVideo && error.name === "NotReadableError") {
-        console.log("Video failed, trying audio-only...");
-        try {
-          this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-          this.emit("local_stream", this.localStream);
-          this.emit("error", { 
-            message: "Camera not available. Using audio only.", 
-            recoverable: true 
-          });
-          return this.localStream;
-        } catch (audioError) {
-          console.error("Audio-only also failed:", audioError);
-        }
-      }
-      
-      let message = "Failed to access media devices";
-      
-      if (error.name === "NotAllowedError") {
-        message = "Camera/microphone permission denied. Please allow access.";
-      } else if (error.name === "NotFoundError") {
-        message = "No camera/microphone found on this device.";
-      } else if (error.name === "NotReadableError") {
-        message = "Camera/microphone is already in use by another app. Please close other apps using camera.";
-      }
-      
-      this.emit("error", { message, error });
-      throw error;
+      console.warn("Could not get audio:", error.name, error.message);
+      this.hasAudioPermission = false;
     }
+
+    // Try to get VIDEO (only for video calls)
+    if (isVideo) {
+      try {
+        console.log("Requesting video permission...");
+        const videoStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "user"
+          }
+        });
+        videoStream.getVideoTracks().forEach(track => {
+          combinedStream.addTrack(track);
+          console.log("Video track added:", track.label);
+        });
+        this.hasVideoPermission = true;
+      } catch (error) {
+        console.warn("Could not get video:", error.name, error.message);
+        this.hasVideoPermission = false;
+      }
+    }
+
+    // Check what we got
+    const hasAudio = combinedStream.getAudioTracks().length > 0;
+    const hasVideo = combinedStream.getVideoTracks().length > 0;
+
+    console.log(`Media result: audio=${hasAudio}, video=${hasVideo}`);
+
+    // Set local stream (even if empty - receive-only mode)
+    this.localStream = combinedStream;
+    
+    // Emit warnings for failures (but DON'T throw)
+    if (!hasAudio && !hasVideo) {
+      console.warn("No media permissions - receive-only mode");
+      this.emit("media_warning", { 
+        message: "Không có quyền camera/microphone. Bạn sẽ chỉ có thể nghe/xem.",
+        hasAudio: false,
+        hasVideo: false,
+      });
+    } else if (isVideo) {
+      if (!hasAudio) {
+        this.emit("media_warning", { 
+          message: "Không có quyền microphone. Bạn sẽ không thể nói.",
+          hasAudio: false,
+          hasVideo: true,
+        });
+      } else if (!hasVideo) {
+        this.emit("media_warning", { 
+          message: "Không có quyền camera. Bạn sẽ không thể bật video.",
+          hasAudio: true,
+          hasVideo: false,
+        });
+      }
+    } else {
+      // Audio call
+      if (!hasAudio) {
+        this.emit("media_warning", { 
+          message: "Không có quyền microphone. Bạn sẽ chỉ có thể nghe.",
+          hasAudio: false,
+          hasVideo: false,
+        });
+      }
+    }
+
+    this.emit("local_stream", combinedStream);
+    return combinedStream;
   }
 
   /**
@@ -364,7 +411,7 @@ class WebRTCService {
       this.pendingCallType = isVideo ? "video" : "audio";
       this.isCaller = true;
       
-      // Track permissions
+      // Reset permissions - will be set by getUserMedia
       this.hasAudioPermission = false;
       this.hasVideoPermission = false;
       
@@ -388,18 +435,11 @@ class WebRTCService {
         call_type: isVideo ? "video" : "audio",
       });
 
-      // Then try to get user media (can fail, but call is already initiated)
-      try {
-        await this.getUserMedia(isVideo);
-        this.hasAudioPermission = this.localStream?.getAudioTracks().length > 0;
-        this.hasVideoPermission = this.localStream?.getVideoTracks().length > 0;
-      } catch (mediaError) {
-        console.warn("Could not get media, but call initiated:", mediaError.message);
-        this.emit("media_permission_denied", { 
-          message: `Không có quyền camera/mic. Bạn sẽ chỉ có thể nghe/xem.`,
-          error: mediaError
-        });
-      }
+      // Get user media (never throws, just sets permissions)
+      await this.getUserMedia(isVideo);
+
+      // Log current permission state
+      console.log(`Caller permissions: audio=${this.hasAudioPermission}, video=${this.hasVideoPermission}`);
 
       return true;
     } catch (error) {
@@ -418,26 +458,18 @@ class WebRTCService {
       this.isCaller = false;
       this.pendingCallType = isVideo ? "video" : "audio";
       
-      // Track which permissions we have
+      // Reset permissions - will be set by getUserMedia
       this.hasAudioPermission = false;
       this.hasVideoPermission = false;
       
       // Connect to call signaling room
       await this.connectSignaling(callId);
       
-      // Try to get user media, but don't fail if denied
-      try {
-        await this.getUserMedia(isVideo);
-        this.hasAudioPermission = this.localStream?.getAudioTracks().length > 0;
-        this.hasVideoPermission = this.localStream?.getVideoTracks().length > 0;
-      } catch (mediaError) {
-        console.warn("Could not get media on accept:", mediaError.message);
-        // Emit warning but continue - user will be in receive-only mode
-        this.emit("media_permission_denied", {
-          message: "Không có quyền truy cập camera/mic. Bạn sẽ chỉ có thể nghe/xem.",
-          error: mediaError
-        });
-      }
+      // Get user media (never throws, just sets permissions)
+      await this.getUserMedia(isVideo);
+      
+      // Log current permission state
+      console.log(`Callee permissions: audio=${this.hasAudioPermission}, video=${this.hasVideoPermission}`);
       
       // Create peer connection (callee prepares to receive offer)
       // This works even without local media - we can still receive
@@ -489,15 +521,10 @@ class WebRTCService {
   async createOffer() {
     console.log("Creating WebRTC offer...");
     
-    // Ensure we have local media before creating offer
+    // Ensure we have local stream (even if empty)
     if (!this.localStream) {
-      try {
-        // Try to get media if we don't have it yet
-        const isVideo = this.pendingCallType === "video";
-        await this.getUserMedia(isVideo);
-      } catch (error) {
-        console.warn("Could not get media for offer, proceeding anyway:", error);
-      }
+      const isVideo = this.pendingCallType === "video";
+      await this.getUserMedia(isVideo);
     }
     
     if (!this.peerConnection) {
@@ -505,9 +532,10 @@ class WebRTCService {
     }
 
     try {
+      // Create offer - we ALWAYS want to receive audio/video even if we can't send
       const offer = await this.peerConnection.createOffer({
         offerToReceiveAudio: true,
-        offerToReceiveVideo: true,
+        offerToReceiveVideo: this.pendingCallType === "video",
       });
       
       await this.peerConnection.setLocalDescription(offer);

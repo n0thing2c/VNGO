@@ -12,9 +12,29 @@ class CallNotifyService {
     this.ws = null;
     this.listeners = new Map();
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 10;
+    this.maxReconnectAttempts = 20;
     this.reconnectDelay = 2000;
     this.isConnected = false;
+    
+    // Audio elements for ringtones
+    this.ringtoneAudio = null;
+    this.ringbackAudio = null;
+  }
+
+  /**
+   * Initialize audio elements
+   */
+  initAudio() {
+    if (!this.ringtoneAudio) {
+      this.ringtoneAudio = new Audio('/sounds/ringtone.mp3');
+      this.ringtoneAudio.loop = true;
+      this.ringtoneAudio.volume = 0.7;
+    }
+    if (!this.ringbackAudio) {
+      this.ringbackAudio = new Audio('/sounds/ringback.mp3');
+      this.ringbackAudio.loop = true;
+      this.ringbackAudio.volume = 0.5;
+    }
   }
 
   /**
@@ -116,22 +136,40 @@ class CallNotifyService {
   }
 
   /**
-   * Play ringtone sound for incoming calls
+   * Play ringtone for incoming calls (callee side)
    */
   playRingtone() {
-    // Create audio context for ringtone
-    // You can replace this with an actual audio file
+    this.stopRingtone();
+    this.initAudio();
+    
+    console.log("Playing ringtone...");
+    
     try {
-      if (!this.ringtoneAudio) {
-        this.ringtoneAudio = new Audio();
-        // Use a simple beep pattern or load an actual ringtone file
-        // this.ringtoneAudio.src = "/sounds/ringtone.mp3";
-        this.ringtoneAudio.loop = true;
-      }
-      // Uncomment when you have an actual ringtone file
-      // this.ringtoneAudio.play().catch(e => console.log("Cannot play ringtone:", e));
+      this.ringtoneAudio.currentTime = 0;
+      this.ringtoneAudio.play().catch(e => {
+        console.log("Cannot play ringtone (autoplay blocked):", e.message);
+      });
     } catch (error) {
       console.log("Ringtone error:", error);
+    }
+  }
+
+  /**
+   * Play ringback tone for outgoing calls (caller side)
+   */
+  playRingbackTone() {
+    this.stopRingbackTone();
+    this.initAudio();
+    
+    console.log("Playing ringback tone...");
+    
+    try {
+      this.ringbackAudio.currentTime = 0;
+      this.ringbackAudio.play().catch(e => {
+        console.log("Cannot play ringback (autoplay blocked):", e.message);
+      });
+    } catch (error) {
+      console.log("Ringback error:", error);
     }
   }
 
@@ -143,6 +181,24 @@ class CallNotifyService {
       this.ringtoneAudio.pause();
       this.ringtoneAudio.currentTime = 0;
     }
+  }
+
+  /**
+   * Stop ringback tone
+   */
+  stopRingbackTone() {
+    if (this.ringbackAudio) {
+      this.ringbackAudio.pause();
+      this.ringbackAudio.currentTime = 0;
+    }
+  }
+
+  /**
+   * Stop all sounds
+   */
+  stopAllSounds() {
+    this.stopRingtone();
+    this.stopRingbackTone();
   }
 
   // ==================== Event Emitter ====================

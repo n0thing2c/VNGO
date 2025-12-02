@@ -109,14 +109,16 @@ export function CallControls({
           )}
         </div>
 
-        {/* Permission warning */}
-        {isCallActive && (!hasAudioPermission || !hasVideoPermission) && (
+        {/* Permission warning - only show camera warning for video calls */}
+        {isCallActive && (!hasAudioPermission || (isVideoCall && !hasVideoPermission)) && (
           <p className="text-center text-yellow-400 mt-4 text-sm">
-            {!hasAudioPermission && !hasVideoPermission 
+            {!hasAudioPermission && isVideoCall && !hasVideoPermission 
               ? "Chế độ chỉ xem (không có mic/camera)"
               : !hasAudioPermission 
                 ? "Không có quyền microphone"
-                : "Không có quyền camera"
+                : isVideoCall && !hasVideoPermission
+                  ? "Không có quyền camera"
+                  : null
             }
           </p>
         )}
@@ -124,7 +126,7 @@ export function CallControls({
         {/* Status text */}
         {isCallEnded && (
           <p className="text-center text-slate-400 mt-4 text-sm">
-            Tap anywhere to close
+            Click X to close
           </p>
         )}
       </div>

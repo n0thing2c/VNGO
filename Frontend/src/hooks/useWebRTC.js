@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { webrtcService } from "@/services/webrtcService";
+import { callNotifyService } from "@/services/callNotifyService";
 
 export function useWebRTC() {
   const [callState, setCallState] = useState({
@@ -31,7 +32,10 @@ export function useWebRTC() {
 
   const [incomingCall, setIncomingCall] = useState(null);
   const callTimerRef = useRef(null);
+  const callTimeoutRef = useRef(null); // Timeout for unanswered calls
   const [callDuration, setCallDuration] = useState(0);
+
+  const CALL_TIMEOUT_MS = 20000; // 20 seconds timeout for outgoing calls
 
   // Cleanup on page unload (browser close, refresh, navigate away)
   useEffect(() => {
@@ -47,15 +51,60 @@ export function useWebRTC() {
     };
   }, []);
 
+  // Timeout for outgoing calls - auto end if not answered within 20s
+  useEffect(() => {
+    // Only start timeout for outgoing calls in "calling" status
+    if (callState.status === "calling" && !callState.isIncoming) {
+      console.log("Starting call timeout (20s)...");
+      
+      callTimeoutRef.current = setTimeout(() => {
+        console.log("Call timeout - no answer");
+        webrtcService.endCall();
+        setCallState((prev) => ({
+          ...prev,
+          status: "ended",
+          error: "Không có phản hồi",
+        }));
+      }, CALL_TIMEOUT_MS);
+    }
+
+    // Clear timeout when call is answered or ended
+    return () => {
+      if (callTimeoutRef.current) {
+        clearTimeout(callTimeoutRef.current);
+        callTimeoutRef.current = null;
+      }
+    };
+  }, [callState.status, callState.isIncoming]);
+
+  // Play ringback tone for outgoing calls
+  useEffect(() => {
+    if (callState.status === "calling" && !callState.isIncoming) {
+      // Caller is waiting for callee to answer - play ringback tone
+      callNotifyService.playRingbackTone();
+    } else {
+      // Stop ringback when call is answered, rejected, or ended
+      callNotifyService.stopRingbackTone();
+    }
+
+    return () => {
+      callNotifyService.stopRingbackTone();
+    };
+  }, [callState.status, callState.isIncoming]);
+
   // Setup event listeners
   useEffect(() => {
     const handlers = {
       local_stream: (stream) => {
+        // Update permissions based on actual tracks in stream
+        const hasAudio = stream?.getAudioTracks().length > 0;
+        const hasVideo = stream?.getVideoTracks().length > 0;
+        console.log(`Local stream updated: audio=${hasAudio}, video=${hasVideo}`);
         setMediaState((prev) => ({ 
           ...prev, 
           localStream: stream,
-          hasAudioPermission: stream?.getAudioTracks().length > 0,
-          hasVideoPermission: stream?.getVideoTracks().length > 0,
+          hasAudioPermission: hasAudio,
+          hasVideoPermission: hasVideo,
         }));
       },
       remote_stream: (stream) => {
@@ -97,6 +146,7 @@ export function useWebRTC() {
           error: `Call rejected: ${data.reason || "declined"}`,
         }));
         stopCallTimer();
+        callNotifyService.stopAllSounds();
       },
       call_ended: (data) => {
         setCallState((prev) => ({
@@ -105,6 +155,7 @@ export function useWebRTC() {
         }));
         setIncomingCall(null);
         stopCallTimer();
+        callNotifyService.stopAllSounds();
       },
       call_connected: () => {
         setCallState((prev) => ({
@@ -136,13 +187,25 @@ export function useWebRTC() {
           error: data.message,
         }));
       },
-      media_permission_denied: (data) => {
-        console.log("Media permission denied:", data.message);
-        // Update permission state based on what we have
+      media_warning: (data) => {
+        console.log("Media warning:", data.message);
+        // Update permission state based on what we actually have
         setMediaState((prev) => ({
           ...prev,
-          hasAudioPermission: webrtcService.hasAudio(),
-          hasVideoPermission: webrtcService.hasVideo(),
+          hasAudioPermission: data.hasAudio ?? webrtcService.hasAudio(),
+          hasVideoPermission: data.hasVideo ?? webrtcService.hasVideo(),
+        }));
+      },
+      media_permission_denied: (data) => {
+        console.log("Media permission denied:", data.message);
+        // Update permission state based on actual webrtcService state
+        const hasAudio = webrtcService.hasAudio();
+        const hasVideo = webrtcService.hasVideo();
+        console.log(`Permission update: audio=${hasAudio}, video=${hasVideo}`);
+        setMediaState((prev) => ({
+          ...prev,
+          hasAudioPermission: hasAudio,
+          hasVideoPermission: hasVideo,
         }));
       },
       cleanup: () => {
@@ -157,6 +220,7 @@ export function useWebRTC() {
         });
         setIncomingCall(null);
         stopCallTimer();
+        callNotifyService.stopAllSounds(); // Stop all ringtones
       },
     };
 

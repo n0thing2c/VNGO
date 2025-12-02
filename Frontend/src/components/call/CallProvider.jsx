@@ -64,16 +64,19 @@ export function CallProvider({ children }) {
 
   // Show call screen when in call
   useEffect(() => {
-    if (webrtc.isInCall && !webrtc.hasIncomingCall && !pendingIncomingCall) {
+    // Show if we're in a call OR if we just accepted a call (acceptedCallInfo exists)
+    if ((webrtc.isInCall || acceptedCallInfo) && !webrtc.hasIncomingCall && !pendingIncomingCall) {
       setShowCallScreen(true);
-    } else if (webrtc.callState.status === "ended" || webrtc.callState.status === "idle") {
+    } else if (webrtc.callState.status === "ended") {
+      // Only hide when call actually ended, not when idle
       // Delay hiding to show end animation
       const timer = setTimeout(() => {
         setShowCallScreen(false);
+        setAcceptedCallInfo(null);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [webrtc.isInCall, webrtc.hasIncomingCall, webrtc.callState.status, pendingIncomingCall]);
+  }, [webrtc.isInCall, webrtc.hasIncomingCall, webrtc.callState.status, pendingIncomingCall, acceptedCallInfo]);
 
   // Start a call to a user
   const callUser = useCallback((userId, userName, isVideo = false) => {
@@ -109,6 +112,10 @@ export function CallProvider({ children }) {
       isIncoming: true,
     });
 
+    // Show call screen IMMEDIATELY when user accepts
+    // Even if media fails, user should see the call screen
+    setShowCallScreen(true);
+
     try {
       // Connect to the call room and accept
       const success = await webrtcService.acceptCall(
@@ -116,11 +123,12 @@ export function CallProvider({ children }) {
         callData.call_type === "video"
       );
 
-      if (success) {
-        setShowCallScreen(true);
+      if (!success) {
+        console.warn("acceptCall returned false, but keeping call screen open");
       }
     } catch (error) {
       console.error("Error accepting call:", error);
+      // Keep call screen open even on error - user can see the connection status
     }
   }, [pendingIncomingCall, webrtc.incomingCall]);
 

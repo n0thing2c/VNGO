@@ -4,7 +4,7 @@
  * Displays local/remote video streams, call controls, and status
  */
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { 
   Phone, 
   PhoneOff, 
@@ -31,8 +31,15 @@ export function CallScreen({
 }) {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const remoteAudioRef = useRef(null); // For voice calls
   const [isLocalVideoLarge, setIsLocalVideoLarge] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  
+  // Draggable local video state
+  const [localVideoPos, setLocalVideoPos] = useState({ x: null, y: null });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const localVideoContainerRef = useRef(null);
 
   const { status, callType, callee, caller, isIncoming, error } = callState;
   const { 
@@ -52,6 +59,14 @@ export function CallScreen({
     }
   }, [localStream]);
 
+  // Attach remote stream to AUDIO element for voice calls
+  useEffect(() => {
+    if (remoteAudioRef.current && remoteStream && !isVideoCall) {
+      console.log("Attaching remote stream to audio element for voice call");
+      remoteAudioRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream, isVideoCall]);
+
   // Attach remote stream to video element
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
@@ -68,6 +83,64 @@ export function CallScreen({
       return () => clearTimeout(timer);
     }
   }, [status, showControls]);
+
+  // Drag handlers for local video
+  const handleDragStart = useCallback((e) => {
+    if (isLocalVideoLarge) return;
+    e.stopPropagation();
+    
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+    
+    const rect = localVideoContainerRef.current?.getBoundingClientRect();
+    if (rect) {
+      dragOffset.current = {
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+      };
+    }
+    setIsDragging(true);
+  }, [isLocalVideoLarge]);
+
+  const handleDragMove = useCallback((e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+    
+    const newX = clientX - dragOffset.current.x;
+    const newY = clientY - dragOffset.current.y;
+    
+    // Keep within screen bounds
+    const maxX = window.innerWidth - (localVideoContainerRef.current?.offsetWidth || 150);
+    const maxY = window.innerHeight - (localVideoContainerRef.current?.offsetHeight || 200);
+    
+    setLocalVideoPos({
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY)),
+    });
+  }, [isDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Add/remove global listeners for drag
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('touchmove', handleDragMove, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+      window.removeEventListener('touchmove', handleDragMove);
+      window.removeEventListener('touchend', handleDragEnd);
+    };
+  }, [isDragging, handleDragMove, handleDragEnd]);
 
   // Get the other party's info
   const otherParty = isIncoming ? caller : callee;
@@ -96,8 +169,18 @@ export function CallScreen({
       onMouseMove={() => setShowControls(true)}
       onClick={() => setShowControls(true)}
     >
-      {/* Video Container */}
-      <div className="relative flex-1 overflow-hidden">
+      {/* Hidden audio element for voice calls - IMPORTANT for playing remote audio */}
+      {!isVideoCall && (
+        <audio 
+          ref={remoteAudioRef} 
+          autoPlay 
+          playsInline
+          className="hidden"
+        />
+      )}
+
+      {/* Video Container - Full screen */}
+      <div className="relative flex-1 w-full h-full overflow-hidden">
         {/* Remote Video (main view) */}
         {isVideoCall && remoteStream ? (
           <video
@@ -149,17 +232,28 @@ export function CallScreen({
           </div>
         )}
 
-        {/* Local Video (picture-in-picture) */}
+        {/* Local Video (picture-in-picture) - Draggable */}
         {isVideoCall && localStream && (
           <div
-            className={`absolute transition-all duration-300 rounded-xl overflow-hidden shadow-2xl border-2 border-slate-700 cursor-pointer ${
+            ref={localVideoContainerRef}
+            className={`absolute rounded-xl overflow-hidden shadow-2xl border-2 border-slate-700 select-none ${
               isLocalVideoLarge
-                ? "inset-0 m-4"
-                : "bottom-24 right-4 w-32 h-44 md:w-48 md:h-64"
-            }`}
-            onClick={(e) => {
+                ? "inset-0 m-4 cursor-pointer"
+                : `w-32 h-44 md:w-48 md:h-64 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`
+            } ${isDragging ? '' : 'transition-all duration-300'}`}
+            style={
+              !isLocalVideoLarge && localVideoPos.x !== null
+                ? { left: localVideoPos.x, top: localVideoPos.y, right: 'auto' }
+                : !isLocalVideoLarge
+                  ? { top: 40, right: 16 }
+                  : {}
+            }
+            onMouseDown={handleDragStart}
+            onTouchStart={handleDragStart}
+            onDoubleClick={(e) => {
               e.stopPropagation();
               setIsLocalVideoLarge(!isLocalVideoLarge);
+              setLocalVideoPos({ x: null, y: null }); // Reset position when enlarging
             }}
           >
             <video
@@ -167,7 +261,7 @@ export function CallScreen({
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover pointer-events-none"
             />
             {!isVideoEnabled && (
               <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
@@ -176,10 +270,13 @@ export function CallScreen({
             )}
             {/* Resize button */}
             <button
-              className="absolute top-2 right-2 p-1 rounded bg-black/50 text-white hover:bg-black/70 transition-colors"
+              className="absolute top-2 right-2 p-1 rounded bg-black/50 text-white hover:bg-black/70 transition-colors z-10"
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsLocalVideoLarge(!isLocalVideoLarge);
+                setLocalVideoPos({ x: null, y: null }); // Reset position
               }}
             >
               {isLocalVideoLarge ? (
@@ -233,9 +330,9 @@ export function CallScreen({
         </div>
       </div>
 
-      {/* Call Controls */}
+      {/* Call Controls - Overlay at bottom */}
       <div 
-        className={`transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 transition-opacity duration-300 ${
           showControls || status !== "connected" ? "opacity-100" : "opacity-0"
         }`}
       >
