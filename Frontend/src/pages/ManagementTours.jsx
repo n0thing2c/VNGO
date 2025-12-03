@@ -1,6 +1,6 @@
 // src/pages/ManagementTours.jsx
 import { useAuthStore } from "@/stores/useAuthStore";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import BookingList from "@/components/management/BookingList";
 import IncomingRequests from "@/components/management/IncomingRequests";
 import PastTours from "@/components/management/PastTours";
@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { managementService } from "@/services/managementService";
 import { tourService } from "@/services/tourService";
 import BookingCardSkeleton from "@/components/management/BookingCardSkeleton";
+import { Globe, Compass, Clock } from "lucide-react";
 
 export default function ManagementTours() {
   const { user } = useAuthStore();
@@ -20,8 +21,7 @@ export default function ManagementTours() {
     pastTours: [],
   });
   const [myTours, setMyTours] = useState([]);
-
-  const isGuide = managementData.role === "guide";
+  const [activeTab, setActiveTab] = useState("bookings"); // Thêm dòng này
 
   useEffect(() => {
     const fetchManagementData = async () => {
@@ -30,8 +30,8 @@ export default function ManagementTours() {
       
       if (result.success) {
         setManagementData(result.data);
+        setActiveTab(result.data.role === "guide" ? "my-tours" : "bookings"); // Set tab đúng ngay khi có role
         
-        // If user is a guide, also fetch their tours
         if (result.data.role === "guide") {
           const toursResult = await tourService.getMyTours();
           if (toursResult.success) {
@@ -48,13 +48,11 @@ export default function ManagementTours() {
     }
   }, [user]);
 
-  // Refresh data function để truyền vào các component con
   const refreshData = async () => {
     const result = await managementService.getManagementSnapshot();
     if (result.success) {
       setManagementData(result.data);
       
-      // Also refresh tours if guide
       if (result.data.role === "guide") {
         const toursResult = await tourService.getMyTours();
         if (toursResult.success) {
@@ -85,72 +83,76 @@ export default function ManagementTours() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
-          <div className="bg-gray-50 px-8 py-6 border-b">
-            <Tabs defaultValue={isGuide ? "my-tours" : "bookings"} className="w-full">
-              <TabsList className={`grid w-full max-w-2xl mx-auto h-14 rounded-full bg-white p-1 shadow-sm ${isGuide ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                
-                {/* ===== TOURIST: 2 tab ===== */}
-                {!isGuide && (
-                  <>
-                    <TabsTrigger value="bookings" className="rounded-full data-[state=active]:bg-green-600 data-[state=active]:text-white">
-                      My bookings
-                    </TabsTrigger>
-                    <TabsTrigger value="past-tours" className="rounded-full data-[state=active]:bg-green-600 data-[state=active]:text-white">
-                      Past tours
-                    </TabsTrigger>
-                  </>
-                )}
+  <div className="min-h-screen bg-gray-100 py-8 px-4">
+    <div className="max-w-7xl mx-auto space-y-4">
 
-                {/* ===== GUIDE: 3 tab ===== */}
-                {isGuide && (
-                  <>
-                    <TabsTrigger value="my-tours" className="rounded-full data-[state=active]:bg-green-600 data-[state=active]:text-white">
-                      My Tours
-                    </TabsTrigger>
-                    <TabsTrigger value="incoming" className="rounded-full data-[state=active]:bg-green-600 data-[state=active]:text-white">
-                      Incoming requests
-                    </TabsTrigger>
-                    <TabsTrigger value="past-tours" className="rounded-full data-[state=active]:bg-green-600 data-[state=active]:text-white">
-                      Past tours
-                    </TabsTrigger>
-                  </>
-                )}
-
-              </TabsList>
-
-              {/* ===== NỘI DUNG ===== */}
-              {!isGuide && (
+      {/* THẺ 1: TabsList*/}
+      
+      <div className="bg-white rounded-4xl shadow-lg overflow-hidden">
+        <div className="px-8 pt-8 pb-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className={`flex items-center gap-6 mx-0 ${
+              managementData.role === 'guide' ? 'justify-start' : 'justify-start'
+            }`}>
+              {managementData.role === 'guide' ? (
                 <>
-                  <TabsContent value="bookings" className="p-8">
-                    <BookingList bookings={managementData.bookings} refreshData={refreshData} />
-                  </TabsContent>
-                  <TabsContent value="past-tours" className="p-8">
-                    <PastTours role="tourist" pastTours={managementData.pastTours} />
-                  </TabsContent>
+                  <TabsTrigger value="my-tours" className="data-[state=active]:text-green-700 min-w-[96px]">
+                    <Compass className="h-5 w-5" />
+                    My Tours
+                  </TabsTrigger>
+                  <TabsTrigger value="incoming" className="data-[state=active]:text-green-700 min-w-[96px]">
+                    <Globe className="h-5 w-5" />Incoming requests
+                  </TabsTrigger>
+                  <TabsTrigger value="past-tours" className="data-[state=active]:text-green-700 min-w-[96px]">
+                    <Clock className="h-5 w-5" />Past tours
+                  </TabsTrigger>
+                </>
+              ) : (
+                <>
+                  <TabsTrigger value="bookings" className="data-[state=active]:text-green-700 min-w-[96px]">
+                    <Globe className="h-5 w-5" />My bookings
+                  </TabsTrigger>
+                  <TabsTrigger value="past-tours" className="data-[state=active]:text-green-700 min-w-[96px]">
+                    <Clock className="h-5 w-5" />Past tours
+                  </TabsTrigger>
                 </>
               )}
-
-              {isGuide && (
-                <>
-                  <TabsContent value="my-tours" className="p-8">
-                    <MyToursList tours={myTours} refreshTours={refreshData} />
-                  </TabsContent>
-                  <TabsContent value="incoming" className="p-8">
-                    <IncomingRequests incomingRequests={managementData.incomingRequests} refreshData={refreshData} />
-                  </TabsContent>
-                  <TabsContent value="past-tours" className="p-8">
-                    <PastTours role="guide" pastTours={managementData.pastTours} />
-                  </TabsContent>
-                </>
-              )}
-            </Tabs>
-          </div>
-
+            </TabsList>
+          </Tabs>
         </div>
       </div>
+
+      {/* THẺ 2: Nội dung */}
+      <div className="bg-white rounded-4xl shadow-lg overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <div className="p-8 pt-10 min-h-[600px]">
+            {managementData.role === 'guide' ? (
+              <>
+                {activeTab === "my-tours" && (
+                  <MyToursList tours={myTours} refreshData={refreshData} />
+                )}
+                {activeTab === "incoming" && (
+                  <IncomingRequests incomingRequests={managementData.incomingRequests} refreshData={refreshData} />
+                )}
+                {activeTab === "past-tours" && (
+                  <PastTours role="guide" pastTours={managementData.pastTours} />
+                )}
+              </>
+            ) : (
+              <>
+                {activeTab === "bookings" && (
+                  <BookingList bookings={managementData.bookings} refreshData={refreshData} />
+                )}
+                {activeTab === "past-tours" && (
+                  <PastTours role="tourist" pastTours={managementData.pastTours} />
+                )}
+              </>
+            )}
+          </div>
+        </Tabs>
+      </div>
+
     </div>
-  );
+  </div>
+);
 }
