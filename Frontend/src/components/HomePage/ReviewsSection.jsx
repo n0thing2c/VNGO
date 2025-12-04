@@ -39,52 +39,55 @@ const itemsPerView = {
 };
 
 export default function ReviewsSection() {
-    return(
-        <section id="reviews" className="py-16 md:py-20 lg:py-24 bg-white">
-          <div className="container mx-auto px-4 md:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12 lg:mb-16">
-              <div className="flex justify-center mb-4 md:mb-6">
-                {/* <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
+  return (
+    <section id="reviews" className="py-16 md:py-20 lg:py-24 bg-white">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <div className="text-center mb-8 md:mb-12 lg:mb-16">
+          <div className="flex justify-center mb-4 md:mb-6">
+            {/* <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
                   <span className="text-5xl">💬</span>
                 </div> */}
-                <img
-                  src={ReviewIcon}
-                  alt="Review Icon"
-                  className="w-8 md:w-12 lg:w-16 h-auto object-cover"
-                />
-              </div>
-              <h2 className="text-vngo-primary text-3xl md:text-4xl font-bold text-black mb-2">What travellers say</h2>
-            </div>
-            
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true, // Cho phép lặp vô tận
-              }}
-              className="w-full max-w-6xl mx-auto"
-            >
-              <CarouselContent className="-ml-4 md:-ml-6 lg:-ml-8">
-                {reviews.map((review) => (
-                  <CarouselItem
-                    key={review.id}
-                    className="pl-4 md:pl-6 lg:pl-8 basis-full md:basis-1/2 lg:basis-1/3"
-                  >
-                    <article
-                      key={review.id}
-                      className="flex-none border-t border-black/15 pt-6 h-full"
-                    >
-                      <h3 className="mb-4 text-lg font-semibold text-black">{review.title}</h3>
-                      <p className="text-black/60 leading-relaxed">
-                        {review.text}
-                      </p>
-                    </article>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
-            </Carousel>
+            <img
+              src={ReviewIcon}
+              alt="Review Icon"
+              className="w-8 md:w-12 lg:w-16 h-auto object-cover"
+            />
           </div>
-        </section>
-    )
+          <h2 className="text-vngo-primary text-3xl md:text-4xl font-bold text-black mb-2">What travellers say</h2>
+          <p className="text-center text-gray-600 max-w-2xl mx-auto">
+            See what our travelers are saying
+          </p>
+        </div>
+
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true, // Cho phép lặp vô tận
+          }}
+          className="w-full max-w-6xl mx-auto"
+        >
+          <CarouselContent className="-ml-4 md:-ml-6 lg:-ml-8">
+            {reviews.map((review) => (
+              <CarouselItem
+                key={review.id}
+                className="pl-4 md:pl-6 lg:pl-8 basis-full md:basis-1/2 lg:basis-1/3"
+              >
+                <article
+                  key={review.id}
+                  className="flex-none border-t border-black/15 pt-6 h-full"
+                >
+                  <h3 className="mb-4 text-lg font-semibold text-black">{review.title}</h3>
+                  <p className="text-black/60 leading-relaxed">
+                    {review.text}
+                  </p>
+                </article>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden md:flex" />
+          <CarouselNext className="hidden md:flex" />
+        </Carousel>
+      </div>
+    </section>
+  )
 }

@@ -16,6 +16,8 @@ import {
     Star,
     Calendar,
     LandPlot,
+    Mars,
+    Venus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { tourService } from "@/services/tourService.js";
@@ -277,106 +279,139 @@ export function GuidePublicProfile({ guideId }) {
                 - max-w-[1440px]: Chặn lại khi màn hình quá to (hoặc zoom out)
                 - px-4 sm:px-8: Padding 2 bên để không dính sát lề
             */}
-            <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-8 pt-8 pb-12 space-y-8">
-                {/* Top Section: Info and Achievements */}
+            <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-8 pt-8 pb-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Left: Info Block */}
-                    <div
-                        className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                        {/* Avatar + Name */}
-                        <div className="flex flex-col items-center space-y-2">
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <div
-                                        className="relative h-35 w-35 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300 cursor-pointer">
+                    {/* Left Column: Info and Stats */}
+                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-6">
+                        {/* Info Block */}
+                        <div className="flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                            {/* Avatar + Name */}
+                            <div className="flex flex-col items-center space-y-2">
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <div className="relative h-45 w-45 md:h-50 md:w-50 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300 cursor-pointer">
+                                            <img
+                                                src={guide.face_image || DEFAULT_AVATAR}
+                                                alt={guide.name}
+                                                className="h-full w-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = DEFAULT_AVATAR;
+                                                }}
+                                            />
+                                        </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-[600px] p-0 bg-transparent border-none shadow-none flex justify-center items-center">
+                                        <div className="sr-only">
+                                            <DialogTitle>{guide.name}'s Profile Picture</DialogTitle>
+                                            <DialogDescription>Full size view of the profile picture</DialogDescription>
+                                        </div>
                                         <img
                                             src={guide.face_image || DEFAULT_AVATAR}
                                             alt={guide.name}
-                                            className="h-full w-full object-cover"
+                                            className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
                                             onError={(e) => {
                                                 e.target.onerror = null;
                                                 e.target.src = DEFAULT_AVATAR;
                                             }}
                                         />
+                                    </DialogContent>
+                                </Dialog>
+                                <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
+                                    {guide.name}
+                                </FieldLabel>
+                            </div>
+
+                            {/* Rating */}
+                            <div className="flex items-center justify-center pt-1">
+                                <HeartRating rating={averageRating} />
+                                <span className="text-sm md:text-base text-gray-600 ml-2 whitespace-nowrap">
+                                    {averageRating.toFixed(1)} ({reviews.length} review{reviews.length === 1 ? "" : "s"})
+                                </span>
+                            </div>
+
+                            {/* Location & Languages */}
+                            <div className="flex items-center text-gray-600 text-base md:text-lg">
+                                <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
+                                <span className="truncate">
+                                    {guide.location || "Location not provided"}
+                                </span>
+                            </div>
+                            <div className="flex items-center text-gray-600 text-base md:text-lg">
+                                {guide.gender === "Male" && (
+                                    <Mars className="w-4 h-4 md:w-5 md:h-5 mr-2 shrink-0" color="#3b82f6" />
+                                )}
+                                {guide.gender === "Female" && (
+                                    <Venus className="w-4 h-4 md:w-5 md:h-5 mr-2 shrink-0" color="#ec4899" />
+                                )}
+                                <span>{guide.gender ? ` ${guide.gender}` : ""}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600 text-base md:text-lg">
+                                <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0" />
+                                <span className="truncate">
+                                    {guide.languages?.length
+                                        ? guide.languages.join(", ")
+                                        : "Languages not set"}
+                                </span>
+                            </div>
+
+                            {/* Message Button */}
+                            {userRole !== "guide" && (
+                                <Button
+                                    className={`w-full mt-4 rounded-full flex items-center justify-center gap-2 btn-vngo-hover-effect ${userRole === "tourist"
+                                        ? "bg-[#068F64] text-white"
+                                        : "bg-gray-300 text-gray-500 cursor-not-allowed hover:scale-100 hover:shadow-none"
+                                        }`}
+                                    onClick={handleMessageClick}
+                                >
+                                    <MessageCircleMore className="w-4 h-4" />
+                                    Message{" "}
+                                    {guide.name
+                                        ? guide.name.trim().split(" ").slice(-1).join(" ")
+                                        : guide.username}
+                                </Button>
+                            )}
+                        </div>
+
+                        {/* Stats Grid (Moved to Left) */}
+                        {guide.stats && (
+                            <div className="flex flex-col gap-4">
+                                {/* Past Tours */}
+                                <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                                    <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-center">
+                                        <Calendar className="w-6 h-6 text-blue-600" />
                                     </div>
-                                </DialogTrigger>
-                                {/* Nội dung Dialog hiển thị ảnh lớn */}
-                                <DialogContent className="sm:max-w-[600px] p-0 bg-transparent border-none shadow-none flex justify-center items-center">
-                                    {/* Thêm Title ẩn để đảm bảo accessibility (tránh lỗi console) */}
-                                    <div className="sr-only">
-                                        <DialogTitle>{guide.name}'s Profile Picture</DialogTitle>
-                                        <DialogDescription>Full size view of the profile picture</DialogDescription>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Completed tours</p>
+                                        <p className="text-xl font-semibold text-gray-900">
+                                            {guide.stats.total_past_tours}
+                                        </p>
                                     </div>
-                                    
-                                    <img
-                                        src={guide.face_image || DEFAULT_AVATAR}
-                                        alt={guide.name}
-                                        className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = DEFAULT_AVATAR;
-                                        }}
-                                    />
-                                </DialogContent>
-                            </Dialog>
-                            <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
-                                {guide.name}
-                            </FieldLabel>
-                        </div>
+                                </div>
 
-                        {/* Rating (Moved below name) */}
-                        <div className="flex items-center justify-center pt-1">
-                            <HeartRating rating={averageRating} />
-                            <span className="text-sm md:text-base text-gray-600 ml-2 whitespace-nowrap">
-                                {averageRating.toFixed(1)} ({reviews.length} review
-                                {reviews.length === 1 ? "" : "s"})
-                            </span>
-                        </div>
-
-                        {/* Other Info (left-aligned) */}
-                        <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
-                            <span className="truncate">
-                                {guide.location || "Location not provided"}
-                            </span>
-                        </div>
-                        <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0" />
-                            <span className="truncate">
-                                {guide.languages?.length
-                                    ? guide.languages.join(", ")
-                                    : "Languages not set"}
-                            </span>
-                        </div>
-
-                        {/* Message Button (Visible to all, clickable only for tourists) */}
-                        {userRole !== "guide" && (
-                            <Button
-                                className={`w-full mt-4 rounded-full flex items-center justify-center gap-2 btn-vngo-hover-effect ${userRole === "tourist"
-                                    ? "bg-[#068F64] text-white"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed hover:scale-100 hover:shadow-none"
-                                    }`}
-                                onClick={handleMessageClick}
-                            >
-                                <MessageCircleMore className="w-4 h-4" />
-                                Message{" "}
-                                {guide.name
-                                    ? guide.name.trim().split(" ").slice(-1).join(" ")
-                                    : guide.username}
-                            </Button>
+                                {/* Hosted Tours */}
+                                <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                                    <div className="p-3 bg-purple-50 rounded-lg flex items-center justify-center">
+                                        <LandPlot className="w-6 h-6 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Offered tours</p>
+                                        <p className="text-xl font-semibold text-gray-900">
+                                            {guide.stats.total_tours}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
 
-                    {/* Right: Achievements and Stats Section */}
-                    <div className="lg:col-span-8 xl:col-span-9 w-full space-y-6">
-                        {/* Achievements Box */}
-                        <div className="pt-10 px-8 pb-8 bg-white rounded-xl shadow-sm border border-gray-200">
-                            <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary mb-8">
+                    {/* Right Column: Achievements, About Me, Tours, Reviews */}
+                    <div className="lg:col-span-8 xl:col-span-9 w-full space-y-8">
+                        {/* Achievements */}
+                        <div className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                            <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">
                                 Achievements
                             </h3>
-
-                            {/* Achievements badges */}
-                            {/* Achievements badges */}
                             <div className="grid grid-cols-10 gap-3 mb-10 w-full max-w-full justify-center">
                                 {achievements?.length > 0 ? (
                                     achievements.map((ach, idx) => (
@@ -390,10 +425,6 @@ export function GuidePublicProfile({ guideId }) {
                                     </p>
                                 )}
                             </div>
-
-
-
-                            {/* Progress bar */}
                             {guide.stats && (
                                 <>
                                     <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-4">
@@ -411,120 +442,82 @@ export function GuidePublicProfile({ guideId }) {
                             )}
                         </div>
 
-                        {/* Stats Grid - Past Tours and Hosted Tours */}
-                        {guide.stats && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Past Tours Box */}
-                                <div
-                                    className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-start gap-4">
-                                    <div className="p-3 bg-blue-50 rounded-lg flex items-start justify-center">
-                                        <Calendar className="w-8 h-8 text-blue-600" />
-                                    </div>
-                                    <div className="flex flex-col h-full">
-                                        <p className="text-gray-600  justify-center text-md leading-tight">
-                                            Completed tours
-                                        </p>
-                                        <p className="text-2xl font-semibold text-gray-900">
-                                            {guide.stats.total_past_tours}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Hosted Tours Box */}
-                                <div
-                                    className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-start gap-4">
-                                    <div className="p-3 bg-purple-50 rounded-lg flex items-start justify-center">
-                                        <LandPlot className="w-8 h-8 text-purple-600" />
-                                    </div>
-                                    <div className="flex flex-col h-full">
-                                        <p className="text-gray-600 justify-center text-md leading-tight">
-                                            Offered tours
-                                        </p>
-                                        <p className="text-2xl font-semibold text-gray-900">
-                                            {guide.stats.total_tours}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* About Me (Moved Down, Full Width) */}
-                <div
-                    className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                    <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">
-                        About me
-                    </h3>
-                    <FieldDescription className="text-gray-700 leading-loose text-base md:text-lg break-words whitespace-pre-wrap">
-                        {guide.bio ||
-                            "This guide has not added a bio yet. Check their tours and reviews below."}
-                    </FieldDescription>
-                </div>
-
-                {/* Tours */}
-                <div>
-                    <div className="flex items-center justify-between mt-2">
-                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
-                            Tours ({tours.length})
-                        </FieldLabel>
-                    </div>
-                    {tours.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-sm">
-                            This guide has not published any tours yet.
-                        </FieldDescription>
-                    ) : (
-                        <div className="relative flex items-center p-8">
-                            <Button
-                                className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
-                                onClick={() => scrollTours("left")}
-                            >
-                                <ChevronLeft className="w-5 h-5 text-gray-700" />
-                            </Button>
-                            <div
-                                ref={tourListRef}
-                                className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
-                            >
-                                {tours.map((tour) => (
-                                    <TourCard
-                                        key={tour.id}
-                                        tour={tour}
-                                        onViewTour={handleViewTour}
-                                    />
-                                ))}
-                            </div>
-                            <Button
-                                className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
-                                onClick={() => scrollTours("right")}
-                            >
-                                <ChevronRight className="w-5 h-5 text-gray-700" />
-                            </Button>
-                        </div>
-                    )}
-                </div>
-
-                <FieldSeparator className="p-10" />
-                {/* Guide Reviews */}
-                <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
-                            Recent reviews
-                        </FieldLabel>
-                        {!!reviews.length && (
-                            <FieldDescription className="text-base md:text-lg text-gray-500">
-                                {reviews.length} review{reviews.length === 1 ? "" : "s"}
+                        {/* About Me */}
+                        <div className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                            <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary border-b border-gray-200 pb-2">
+                                About me
+                            </h3>
+                            <FieldDescription className="text-gray-700 leading-loose text-base md:text-lg break-words whitespace-pre-wrap">
+                                {guide.bio || "This guide has not added a bio yet. Check their tours and reviews below."}
                             </FieldDescription>
-                        )}
-                    </div>
-                    {reviews.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-base md:text-lg">
-                            No reviews yet. Be the first to share your experience!
-                        </FieldDescription>
-                    ) : (
-                        <div className="text-lg">
-                            <RatingList ratings={reviews} showTourName={true} />
                         </div>
-                    )}
+
+                        {/* Tours */}
+                        <div>
+                            <div className="flex items-center justify-between mt-2 border-b border-gray-200 pb-2">
+                                <FieldLabel className="text-2xl md:text-3xl font-semibold text-vngo-primary">
+                                    Tours ({tours.length})
+                                </FieldLabel>
+                            </div>
+                            {tours.length === 0 ? (
+                                <FieldDescription className="text-gray-500 text-sm">
+                                    This guide has not published any tours yet.
+                                </FieldDescription>
+                            ) : (
+                                <div className="relative flex items-center p-8">
+                                    <Button
+                                        className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
+                                        onClick={() => scrollTours("left")}
+                                    >
+                                        <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                    </Button>
+                                    <div
+                                        ref={tourListRef}
+                                        className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
+                                    >
+                                        {tours.map((tour) => (
+                                            <TourCard
+                                                key={tour.id}
+                                                tour={tour}
+                                                onViewTour={handleViewTour}
+                                            />
+                                        ))}
+                                    </div>
+                                    <Button
+                                        className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
+                                        onClick={() => scrollTours("right")}
+                                    >
+                                        <ChevronRight className="w-5 h-5 text-gray-700" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* <FieldSeparator className="p-10" /> */}
+
+                        {/* Guide Reviews */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4 border-b border-gray-200 pb-2">
+                                <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
+                                    Recent reviews
+                                </FieldLabel>
+                                {!!reviews.length && (
+                                    <FieldDescription className="text-base md:text-lg text-gray-500">
+                                        {reviews.length} review{reviews.length === 1 ? "" : "s"}
+                                    </FieldDescription>
+                                )}
+                            </div>
+                            {reviews.length === 0 ? (
+                                <FieldDescription className="text-gray-500 text-base md:text-lg">
+                                    No reviews yet. Be the first to share your experience!
+                                </FieldDescription>
+                            ) : (
+                                <div className="text-lg">
+                                    <RatingList ratings={reviews} showTourName={true} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

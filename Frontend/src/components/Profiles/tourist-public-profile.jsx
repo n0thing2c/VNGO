@@ -180,183 +180,186 @@ export function TouristPublicProfile({ touristId }) {
         <div className="min-h-screen w-full">
             <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-8 pt-8 pb-12 space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Profile / Avatar card */}
-                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                        {/* Avatar + Name */}
-                        <div className="flex flex-col items-center space-y-2">
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <div className="relative h-35 w-35 md:h-38 md:w-38 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300 cursor-pointer">
+                    {/* Left Column: Info and Stats */}
+                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col space-y-6">
+                        {/* Profile / Avatar card */}
+                        <div className="flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                            {/* Avatar + Name */}
+                            <div className="flex flex-col items-center space-y-2">
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <div className="relative h-45 w-45 md:h-50 md:w-50 rounded-full overflow-hidden border-2 border-white ring-2 ring-gray-300 cursor-pointer">
+                                            <img
+                                                src={tourist.face_image || DEFAULT_AVATAR}
+                                                alt={tourist.name}
+                                                className="h-full w-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = DEFAULT_AVATAR;
+                                                }}
+                                            />
+                                        </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-[600px] p-0 bg-transparent border-none shadow-none flex justify-center items-center">
+                                        {/*Full avatar*/}
+                                        <div className="sr-only">
+                                            <DialogTitle>{tourist.name}'s Profile Picture</DialogTitle>
+                                            <DialogDescription>Full size view of the profile picture</DialogDescription>
+                                        </div>
+
                                         <img
                                             src={tourist.face_image || DEFAULT_AVATAR}
                                             alt={tourist.name}
-                                            className="h-full w-full object-cover"
+                                            className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
                                             onError={(e) => {
                                                 e.target.onerror = null;
                                                 e.target.src = DEFAULT_AVATAR;
                                             }}
                                         />
-                                    </div>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-[600px] p-0 bg-transparent border-none shadow-none flex justify-center items-center">
-                                    {/*Full avatar*/}
-                                    <div className="sr-only">
-                                        <DialogTitle>{tourist.name}'s Profile Picture</DialogTitle>
-                                        <DialogDescription>Full size view of the profile picture</DialogDescription>
-                                    </div>
-                                    
-                                    <img
-                                        src={tourist.face_image || DEFAULT_AVATAR}
-                                        alt={tourist.name}
-                                        className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = DEFAULT_AVATAR;
-                                        }}
-                                    />
-                                </DialogContent>
-                            </Dialog>
-                            <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
-                                {tourist.name}
-                            </FieldLabel>
+                                    </DialogContent>
+                                </Dialog>
+                                <FieldLabel className="text-2xl md:text-3xl font-bold text-vngo-primary text-center">
+                                    {tourist.name}
+                                </FieldLabel>
+                            </div>
+
+                            {/* Other Info */}
+                            <div className="flex items-center text-gray-600 text-base md:text-lg">
+                                <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
+                                <span className="truncate">{tourist.nationality || "Nationality not provided"}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600 text-base md:text-lg">
+                                <Calendar className="w-5 h-5 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0" />
+                                <span>
+                                    {tourist.age ? `${tourist.age} years old` : "Age not provided"}
+                                </span>
+                            </div>
+                            <div className="flex items-center text-gray-600 text-base md:text-lg">
+                                {tourist.gender === "Male" && (
+                                    <Mars className="w-5 h-5 mr-2 shrink-0" color="#3b82f6" />
+                                )}
+                                {tourist.gender === "Female" && (
+                                    <Venus className="w-5 h-5 mr-2 shrink-0" color="#ec4899" />
+                                )}
+                                <span>{tourist.gender ? ` ${tourist.gender}` : ""}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600 text-base md:text-lg">
+                                <Mail className="w-5 h-5 md:w-5 md:h-5 mr-2 text-green-600 shrink-0" />
+                                <span className="truncate">
+                                    {user?.email || "Email not provided"}
+                                </span>
+                            </div>
                         </div>
 
-                        {/* Other Info */}
-                        <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
-                            <span>{tourist.nationality || "Nationality not provided"}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <Calendar className="w-5 h-5 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0" />
-                            <span>
-                                {tourist.age ? `${tourist.age} years old` : "Age not provided"}
-                            </span>
-                        </div>
-                        <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            {tourist.gender === "Male" && (
-                                <Mars className="w-5 h-5 mr-2 shrink-0" color="#3b82f6" />
-                            )}
-                            {tourist.gender === "Female" && (
-                                <Venus className="w-5 h-5 mr-2 shrink-0" color="#ec4899" />
-                            )}
-                            <span>{tourist.gender ? ` • ${tourist.gender}` : ""}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600 text-base md:text-lg">
-                            <Mail className="w-5 h-5 md:w-5 md:h-5 mr-2 text-green-600 shrink-0" />
-                            <span className="truncate">
-                                {user?.email || "Email not provided"}
-                            </span>
+                        {/* Stats (Summary cards) - Moved to Left */}
+                        <div className="flex flex-col gap-4">
+                            {/* Past Tours */}
+                            <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-center">
+                                    <Calendar className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Attended tours</p>
+                                    <p className="text-xl font-semibold text-gray-900">
+                                        {tours.length}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Hosted Tours (Written reviews) */}
+                            <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
+                                <div className="p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
+                                    <Star className="w-6 h-6 text-yellow-400" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Written reviews</p>
+                                    <p className="text-xl font-semibold text-gray-900">
+                                        {reviews.length}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Summary cards */}
-                    <div className="lg:col-span-8 xl:col-span-9 grid grid-cols-1 gap-6">
-                        {/* Past Tours */}
-                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
-                            <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <Calendar className="w-8 h-8 text-blue-600" />
+                    {/* Right Column: Past Tours, Written Reviews */}
+                    <div className="lg:col-span-8 xl:col-span-9 w-full space-y-8">
+                        {/* Past tours */}
+                        <div>
+                            <div className="flex items-center justify-between mt-2 border-b border-gray-200 pb-2">
+                                <FieldLabel className="text-2xl md:text-3xl font-semibold text-vngo-primary">
+                                    Past tours ({tours.length})
+                                </FieldLabel>
                             </div>
-                            <div className="flex flex-col">
-                                <p className="text-gray-600 text-md leading-tight">
-                                    Attended tours
-                                </p>
-                                <p className="text-2xl font-semibold text-gray-900">
-                                    {tours.length}
-                                </p>
-                            </div>
+                            {tours.length === 0 ? (
+                                <FieldDescription className="text-gray-500 text-sm pt-6">
+                                    This tourist has not attended any tours yet.
+                                </FieldDescription>
+                            ) : (
+                                <div className="relative flex items-center p-8">
+                                    <Button
+                                        className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
+                                        onClick={() => scrollTours("left")}
+                                    >
+                                        <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                    </Button>
+                                    <div
+                                        ref={tourListRef}
+                                        className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
+                                    >
+                                        {tours.map((tour) => (
+                                            <PastTourCard
+                                                key={tour.id}
+                                                tour={tour}
+                                                onViewTour={handleViewTour}
+                                            />
+                                        ))}
+                                        <style>
+                                            {`
+                                              /* Hide scrollbar for Chrome, Safari and Opera */
+                                              div::-webkit-scrollbar {
+                                                display: none;
+                                              }
+                                            `}
+                                        </style>
+                                    </div>
+                                    <Button
+                                        className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
+                                        onClick={() => scrollTours("right")}
+                                    >
+                                        <ChevronRight className="w-5 h-5 text-gray-700" />
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Hosted Tours */}
-                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
-                            <div className="p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
-                                <Star className="w-8 h-8 text-yellow-400" />
-                            </div>
-                            <div className="flex flex-col">
-                                <p className="text-gray-600 text-md leading-tight">
+                        {/* <FieldSeparator className="p-10" /> */}
+
+                        {/* Guide Reviews */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4 border-b border-gray-200 pb-2">
+                                <FieldLabel className="text-2xl md:text-3xl font-semibold text-vngo-primary">
                                     Written reviews
-                                </p>
-                                <p className="text-2xl font-semibold text-gray-900">
-                                    {reviews.length}
-                                </p>
+                                </FieldLabel>
+                                {!!reviews.length && (
+                                    <FieldDescription className="text-base md:text-lg text-gray-500">
+                                        {reviews.length} review{reviews.length === 1 ? "" : "s"}
+                                    </FieldDescription>
+                                )}
                             </div>
+                            {reviews.length === 0 ? (
+                                <FieldDescription className="text-gray-500 text-base md:text-lg">
+                                    No reviews yet.
+                                </FieldDescription>
+                            ) : (
+                                // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
+                                // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
+                                // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
+                                <div className="text-lg">
+                                    <RatingList ratings={reviews} showTourName={true} />
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div>
-
-                {/* Past tours */}
-                <div>
-                    <div className="flex items-center justify-between mt-2">
-                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
-                            Past tours ({tours.length})
-                        </FieldLabel>
-                    </div>
-                    {tours.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-sm pt-6">
-                            This tourist has not attended any tours yet.
-                        </FieldDescription>
-                    ) : (
-                        <div className="relative flex items-center p-8">
-                            <Button
-                                className="absolute left-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
-                                onClick={() => scrollTours("left")}
-                            >
-                                <ChevronLeft className="w-5 h-5 text-gray-700" />
-                            </Button>
-                            <div
-                                ref={tourListRef}
-                                className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 px-1 snap-x snap-mandatory scroll-smooth"
-                            >
-                                {tours.map((tour) => (
-                                    <PastTourCard
-                                        key={tour.id}
-                                        tour={tour}
-                                        onViewTour={handleViewTour}
-                                    />
-                                ))}
-                                <style>
-                                    {`
-                                      /* Hide scrollbar for Chrome, Safari and Opera */
-                                      div::-webkit-scrollbar {
-                                        display: none;
-                                      }
-                                    `}
-                                </style>
-                            </div>
-                            <Button
-                                className="absolute right-0 z-10 p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 hidden md:flex items-center justify-center"
-                                onClick={() => scrollTours("right")}
-                            >
-                                <ChevronRight className="w-5 h-5 text-gray-700" />
-                            </Button>
-                        </div>
-                    )}
-                </div>
-
-                <FieldSeparator className="p-10" />
-                {/* Guide Reviews */}
-                <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <FieldLabel className="text-vngo-primary text-2xl md:text-3xl font-semibold">
-                            Written reviews
-                        </FieldLabel>
-                        {!!reviews.length && (
-                            <FieldDescription className="text-base md:text-lg text-gray-500">
-                                {reviews.length} review{reviews.length === 1 ? "" : "s"}
-                            </FieldDescription>
-                        )}
-                    </div>
-                    {reviews.length === 0 ? (
-                        <FieldDescription className="text-gray-500 text-base md:text-lg">
-                            No reviews yet.
-                        </FieldDescription>
-                    ) : (
-                        // Wrapper này đảm bảo RatingList có không gian để hiển thị to hơn
-                        // Lưu ý: Nếu RatingList set cứng font-size bên trong file đó thì bạn cần vào file ratings.jsx để sửa thêm.
-                        // Ở đây tôi set text base to lên để override nếu dùng tailwind inherits.
-                        <div className="text-lg">
-                            <RatingList ratings={reviews} showTourName={true} />
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
