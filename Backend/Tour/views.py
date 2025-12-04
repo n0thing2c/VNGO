@@ -369,6 +369,8 @@ def guide_get_all_tours(request, guide_id):
                 "reviews": t.get('rating_count', 0),
                 "duration": t['duration'],
                 "groupSize": t['max_people'],
+                "min_people": t['min_people'],
+                "max_people": t['max_people'],
                 "transportation": t['transportation'],
                 "price": t['price'],
             })

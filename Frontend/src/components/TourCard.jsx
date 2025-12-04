@@ -15,17 +15,24 @@ export default function TourCard({ tour }) {
     rating = 4.5,
     reviews = 10,
     duration = 4,
+    min_people,
+    max_people,
     groupSize = 5,
     transportation = 'Car',
     price = 114
   } = tour || {};
+
+  // Determine display group size
+  const displayGroupSize = (min_people && max_people)
+    ? `${min_people} - ${max_people}`
+    : groupSize;
 
   // Function to render the star ratings
   const renderStars = () => {
     const fullStars = Math.floor(rating);
     const halfStar = rating % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-    
+
     return (
       <>
         {[...Array(fullStars)].map((_, i) => (
@@ -40,31 +47,31 @@ export default function TourCard({ tour }) {
   };
 
   return (
-    <Link to={`/tour/post/${id}`} className="block rounded-3xl bg-white shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col h-full">
+    <Link to={`/tour/post/${id}`} className="block rounded-3xl bg-white shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col h-full text-left">
       {/* Full width image - no gap at top */}
       <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
-        <img 
-          src={image} 
-          alt={title} 
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
-          onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/400x300/fecaca/991b1b?text=Image+Error'; }}
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/fecaca/991b1b?text=Image+Error'; }}
         />
         {/* You can add badges here if needed, e.g., for "Featured" */}
       </div>
-      
+
       {/* Info bar (Duration, Group Size, Transport) */}
       <div className="bg-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-700">
-        <div className="flex items-center gap-2">
-          <Car size={16} className="text-gray-600" />
-          <span className="capitalize">{transportation}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <Car size={16} className="text-gray-600 flex-shrink-0" />
+          <span className="capitalize truncate">{transportation}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Clock size={16} className="text-gray-600" />
-          <span>{duration} hours</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <Clock size={16} className="text-gray-600 flex-shrink-0" />
+          <span className="truncate">{duration} hours</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Users size={16} className="text-gray-600" />
-          <span>{groupSize}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <Users size={16} className="text-gray-600 flex-shrink-0" />
+          <span className="truncate">{displayGroupSize}</span>
         </div>
       </div>
 
@@ -90,14 +97,14 @@ export default function TourCard({ tour }) {
             </div>
           </div> */}
         </div>
-        
+
         <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center gap-0.5">
-                {renderStars()}
-            </div>
-            <span className="text-sm text-gray-600">
-                {rating.toFixed(1)} ({reviews})
-            </span>
+          <div className="flex items-center gap-0.5">
+            {renderStars()}
+          </div>
+          <span className="text-sm text-gray-600">
+            {rating.toFixed(1)} ({reviews})
+          </span>
         </div>
 
         {/* Tour Details */}
@@ -110,10 +117,10 @@ export default function TourCard({ tour }) {
 
         {/* Price */}
         <div className="flex items-baseline justify-start">
-          <span className="text-3xl font-extrabold text-blue-600">${price/25000}</span>
+          <span className="text-3xl font-extrabold text-blue-600">${price / 25000}</span>
           <span className="text-sm text-gray-600 ml-1.5">/person</span>
         </div>
       </div>
-    </Link>
+    </Link >
   );
 }

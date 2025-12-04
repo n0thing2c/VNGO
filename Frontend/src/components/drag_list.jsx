@@ -35,7 +35,7 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
 
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(item.name);
-    
+
     // State cho phần Description
     const [isEditingDesc, setIsEditingDesc] = useState(false);
     // State để đếm ký tự realtime
@@ -46,7 +46,7 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
         setDescValue(item.description || "");
         setTempName(item.name);
     }, [item.description, item.name]);
-    
+
     // Style cho hiệu ứng kéo thả
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -61,9 +61,9 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
         setIsEditingName(false);
     };
 
-    const handleDescSave = (e) => {
+    const handleDescSave = () => {
         // Lưu khi blur hoặc bấm nút save (ở đây ta dùng onBlur cho tiện)
-        onUpdateDescription(idx, e.target.value);
+        onUpdateDescription(idx, descValue);
         setIsEditingDesc(false);
     };
 
@@ -79,9 +79,9 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
             {/* --- HÀNG 1: Handle, Số thứ tự, Tên, Nút Xóa --- */}
             <div className="flex items-center gap-3">
                 {/* Nút nắm để kéo (Handle) */}
-                <div 
-                    {...attributes} 
-                    {...listeners} 
+                <div
+                    {...attributes}
+                    {...listeners}
                     className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 rounded"
                 >
                     <GripVertical size={20} />
@@ -105,7 +105,7 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                                 className="flex-1 border border-[#068F64] rounded px-2 py-1 text-sm outline-none bg-gray-50"
                                 autoFocus
                             />
-                            <button 
+                            <button
                                 onClick={handleRenameSave}
                                 className="p-1 text-green-600 hover:bg-green-50 rounded"
                             >
@@ -113,8 +113,8 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                             </button>
                         </div>
                     ) : (
-                        <div 
-                            className="flex items-center gap-2 cursor-pointer group/name" 
+                        <div
+                            className="flex items-center gap-2 cursor-pointer group/name"
                             onClick={() => setIsEditingName(true)}
                         >
                             <span className="font-semibold text-gray-800 truncate select-none">
@@ -141,26 +141,33 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
             {/* --- HÀNG 2: Inline Description --- */}
             <div className="pl-11 pr-2">
                 {isEditingDesc ? (
-                    <div className="relative">
+                    <div className="flex flex-col gap-1">
                         <textarea
                             className="w-full text-sm p-3 border rounded-lg focus:outline-none focus:border-[#068F64] focus:ring-1 focus:ring-[#068F64] bg-gray-50 resize-y min-h-[80px]"
                             placeholder="Suggestion: At what time? What are the activities? What's special about this place?"
-                            defaultValue={item.description || ""}
-                            onBlur={(e) => {
-                                handleDescSave(e);
+                            value={descValue}
+                            onChange={(e) => {
+                                if (e.target.value.length <= MAX_DESC_LENGTH) {
+                                    setDescValue(e.target.value);
+                                }
+                            }}
+                            onBlur={() => {
+                                handleDescSave();
                                 setIsEditingDesc(false);
                             }}
                             autoFocus
                         />
-                        <div className="absolute bottom-2 left-2 text-xs text-gray-400">
-                            Click outside to save
-                        </div>
-                        {/* Bộ đếm ký tự */}
-                        <div className={`
-                            absolute bottom-2 right-2 text-[10px] font-medium pointer-events-none
-                            ${descValue.length >= MAX_DESC_LENGTH ? "text-red-500" : "text-gray-400"}
-                        `}>
-                            {descValue.length}/{MAX_DESC_LENGTH}
+                        <div className="flex justify-between px-1">
+                            <div className="text-xs text-gray-400">
+                                Click outside to save
+                            </div>
+                            {/* Bộ đếm ký tự */}
+                            <div className={`
+                                text-[10px] font-medium
+                                ${descValue.length >= MAX_DESC_LENGTH ? "text-red-500" : "text-gray-400"}
+                            `}>
+                                {descValue.length}/{MAX_DESC_LENGTH}
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -207,10 +214,10 @@ export default function DragList({ items, onRemoveItem, onReorder, onRenameItem,
         // Nếu backend có ID (item.id) thì nên dùng item.id thay vì item.name
         const oldIndex = items.findIndex((s) => s.name === active.id);
         const newIndex = items.findIndex((s) => s.name === over.id);
-        
+
         if (oldIndex !== -1 && newIndex !== -1) {
-             const reordered = arrayMove(items, oldIndex, newIndex);
-             onReorder(reordered);
+            const reordered = arrayMove(items, oldIndex, newIndex);
+            onReorder(reordered);
         }
     };
 

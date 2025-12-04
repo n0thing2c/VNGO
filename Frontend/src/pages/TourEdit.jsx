@@ -551,7 +551,7 @@ export default function TourEdit() {
                                 value={description}
                                 onChange={(e) =>
                                     setdescription(
-                                        e.target.value.length > 500
+                                        e.target.value.length > 1000
                                             ? description
                                             : e.target.value
                                     )
@@ -560,7 +560,7 @@ export default function TourEdit() {
                                 className="resize-none py-2 xl:py-3 text-md"
                             />
                             <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
-                                {description.length}/500
+                                {description.length}/1000
                               </span>
                         </div>
 
