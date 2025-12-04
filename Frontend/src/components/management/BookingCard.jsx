@@ -189,9 +189,9 @@ export default function BookingCard({ booking, showActions = false, refreshData 
         )}
 
         {/* View details button - push to bottom if no actions */}
-        <Button asChild className={`w-full bg-green-600 hover:bg-green-700 rounded-full h-12 ${!showActions || booking.status_key !== "pending" ? 'mt-auto' : ''}`}>
+        {/* <Button asChild className={`w-full bg-green-600 hover:bg-green-700 rounded-full h-12 ${!showActions || booking.status_key !== "pending" ? 'mt-auto' : ''}`}>
           <Link to={`/tour/${booking.tourId}`}>View tour</Link>
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

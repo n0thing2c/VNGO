@@ -32,23 +32,26 @@ function TabsList({
 
 function TabsTrigger({
   className,
+  children,
   ...props
 }) {
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        `relative inline-flex items-center gap-2 px-5 py-2 
-         text-[15px] font-medium whitespace-nowrap rounded-xl 
+        `group relative inline-flex items-center gap-2 px-5 h-full
+         text-[18px] font-medium whitespace-nowrap rounded-xl 
          transition-all duration-200 
          hover:text-green-600
-         data-[state=active]:text-green-700
-         after:absolute after:left-0 after:bottom-[-6px]
-         after:h-[3px] after:w-full after:bg-green-600 after:rounded-full
-         after:opacity-0 data-[state=active]:after:opacity-100`,
+         data-[state=active]:text-green-700`,
         className
       )}
-      {...props} />
+      {...props}>
+      <span className="relative flex h-full items-center gap-2">
+        {children}
+        <span className="absolute bottom-0 left-0 h-[5px] w-full rounded-t-full bg-green-600 opacity-0 transition-opacity group-data-[state=active]:opacity-100" />
+      </span>
+    </TabsPrimitive.Trigger>
   );
 }
 
