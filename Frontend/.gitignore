@@ -222,7 +222,6 @@ media/
 
 # React development and build files
 build/
-public/
 
 # IDEs and Editors
 .vscode/

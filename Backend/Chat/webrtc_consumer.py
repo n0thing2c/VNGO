@@ -278,13 +278,16 @@ class WebRTCConsumer(AsyncJsonWebsocketConsumer):
             })
             return
         
+        # Get call info from cache before deleting
+        call_info = cache.get(f"active_call:{call_id}")
+        
         # Update call status and calculate duration
         await self.end_call(call_id)
         
         # Remove from cache
         cache.delete(f"active_call:{call_id}")
         
-        # Notify all participants
+        # Notify all participants in the call room
         await self.channel_layer.group_send(
             f"webrtc_call_{call_id}",
             {
@@ -296,6 +299,25 @@ class WebRTCConsumer(AsyncJsonWebsocketConsumer):
                 }
             }
         )
+        
+        # If call was pending/not accepted yet, also notify the callee via their personal channel
+        # (because callee hasn't joined the call room yet)
+        if call_info and call_info.get("status") in ["pending", None]:
+            callee_id = call_info.get("callee_id")
+            if callee_id and callee_id != self.user_id:
+                print(f"WebRTCConsumer: Sending call.cancelled to callee {callee_id}")
+                await self.channel_layer.group_send(
+                    f"webrtc_user_{callee_id}",
+                    {
+                        "type": "call.cancelled",
+                        "payload": {
+                            "type": "call.cancelled",
+                            "call_id": call_id,
+                            "cancelled_by": self.user_id,
+                            "reason": "caller_ended",
+                        }
+                    }
+                )
     
     # ==================== WebRTC Signaling ====================
     
