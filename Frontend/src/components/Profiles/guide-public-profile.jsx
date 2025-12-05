@@ -473,7 +473,7 @@ export function GuidePublicProfile({guideId}) {
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-gray-500 text-lg col-span-10 text-center">
+                                <p className="text-gray-500 text-lg xl:col-span-12 lg:col-span-10 md:col-span-7 sm:col-span-5 flex justify-center">
                                     No achievements yet.
                                 </p>
                             )}

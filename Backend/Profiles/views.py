@@ -199,72 +199,73 @@ class GuidePublicProfileView(generics.RetrieveAPIView):
 
 
 class GuideAchievementView(APIView):
-    """
-    Returns guide achievement badges and basic stats based on guide performance.
-    """
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, guide_id):
         guide = get_object_or_404(Guide, pk=guide_id)
         achievements = []
 
+        # --- Ratings ---
         agg = TourRating.objects.filter(tour__guide=guide).aggregate(avg_rating=Avg('rating'))
         avg_rating = agg['avg_rating'] or 0
 
-        # Highly Rated: average rating 4+ stars
-        if avg_rating >=3.5:
+        if avg_rating >= 3.5:
             achievements.append("Liked")
         if avg_rating >= 4:
             achievements.append("Loved")
-        if avg_rating >=4.7:
+        if avg_rating >= 4.7:
             achievements.append("People's Choice")
 
-        # Multilingual: knows 3+ languages
-        if guide.languages and len(guide.languages) >= 3:
+        # --- Languages ---
+        language_count = len(guide.languages) if guide.languages else 0
+
+        if language_count >= 5:
+            achievements.append("Polygot")
+        elif language_count >= 3:
             achievements.append("Multilingual")
 
-        if guide.languages and len(guide.languages) >= 5:
-            achievements.append("Polygot")
-
-        # Experienced: top 30% in past tours
-        all_guides = Guide.objects.annotate(
-            past_tours_count=Count('past_tours')
-        ).order_by('-past_tours_count')
-
+        # --- Past tours ---
         guide_past_count = PastTour.objects.filter(guide=guide).count()
 
         if guide_past_count >= 500:
             achievements.append("Legendary Guide")
-        if guide_past_count >= 100:
+        elif guide_past_count >= 100:
             achievements.append("Master Guide")
-        if guide_past_count >= 50:
+        elif guide_past_count >= 50:
             achievements.append("Experienced Guide")
-        if guide_past_count >= 10:
+        elif guide_past_count >= 10:
             achievements.append("Rising Guide")
-        if guide_past_count >= 1:
+        elif guide_past_count >= 1:
             achievements.append("Rookie Guide")
 
+        # --- Tours created ---
         guide_tour_count = Tour.objects.filter(guide=guide).count()
 
         if guide_tour_count >= 100:
             achievements.append("Master Architect")
-        if guide_tour_count >= 50:
+        elif guide_tour_count >= 50:
             achievements.append("Master Artist")
-        if guide_tour_count >= 30:
+        elif guide_tour_count >= 30:
             achievements.append("Skilled Artist")
-        if guide_tour_count >= 10:
+        elif guide_tour_count >= 10:
             achievements.append("Apprentice Crafter")
-        if guide_tour_count >= 1:
+        elif guide_tour_count >= 1:
             achievements.append("Rookie Crafter")
 
-            # Optional: other stats
-            stats = {
-                "total_past_tours": guide_past_count,
-                "total_tours": guide_tour_count,
-                "achievement_count": len(achievements)
-            }
+        # --- Stats always computed ---
+        stats = {
+            "total_past_tours": guide_past_count,
+            "total_tours": guide_tour_count,
+            "achievement_count": len(achievements),
+            "avg_rating": round(avg_rating, 2),
+        }
 
-            return Response({"success": True, "achievements": achievements, "stats": stats})
+        return Response({
+            "success": True,
+            "achievements": achievements,
+            "stats": stats
+        })
+
 
 
 @api_view(['GET'])
