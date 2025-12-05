@@ -4,6 +4,38 @@ from Tour.models import Tour
 from Profiles.models import Tourist, Guide
 from django.utils import timezone
 from datetime import datetime
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+
+def send_booking_ws_notification(notification):
+    """Send a realtime WebSocket notification for a BookingNotification instance."""
+    channel_layer = get_channel_layer()
+    if not channel_layer:
+        return
+
+    try:
+        payload = {
+            "type": "booking_notification",
+            "id": notification.id,
+            "booking_id": notification.booking_id,
+            "tour_name": notification.booking.tour.name if notification.booking and notification.booking.tour else "",
+            "notification_type": notification.notification_type,
+            "message": notification.message,
+            "is_read": notification.is_read,
+            "created_at": notification.created_at.isoformat() if notification.created_at else None,
+        }
+
+        async_to_sync(channel_layer.group_send)(
+            f"notify_user_{notification.recipient_id}",
+            {
+                "type": "chat.notification",
+                "payload": payload,
+            },
+        )
+    except Exception:
+        # Fail silently - notifications should not break main flow
+        pass
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -159,12 +191,14 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         booking = Booking.objects.create(**validated_data)
         
         # Create notification for guide
-        BookingNotification.objects.create(
+        notification = BookingNotification.objects.create(
             booking=booking,
             recipient=booking.guide.user,
             notification_type='new_booking',
             message=f"New booking request from {tourist.user.username} for {tour.name}"
         )
+        # Send realtime WebSocket notification 
+        send_booking_ws_notification(notification)
         
         return booking
 

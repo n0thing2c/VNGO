@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom'; // <-- Rất quan trọng!
 import { Menu, ChevronDown, User, Map, Calendar, MessageSquare, LogOut, Bell, LogIn, UserPlus } from 'lucide-react';
 import {
@@ -12,31 +13,8 @@ import {
 import logo from '../../assets/LogoVNGO.png'
 import GlobalSearchBar from '../GlobalSearchBar';
 import { useAuthStore } from '@/stores/useAuthStore';
-
-// Mock Data for Notifications
-const MOCK_NOTIFICATIONS = [
-  {
-    id: 1,
-    title: "Booking Confirmed",
-    message: "Your tour to Ha Long Bay has been confirmed.",
-    time: "2 hours ago",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "New Message",
-    message: "You have a new message from Guide Tuan.",
-    time: "5 hours ago",
-    read: true,
-  },
-  {
-    id: 3,
-    title: "Payment Successful",
-    message: "Payment for Da Nang trip was successful.",
-    time: "1 day ago",
-    read: true,
-  },
-];
+import { managementService } from '@/services/managementService';
+import { notificationService } from '@/services/notifyService';
 
 export default function Header() {
   const location = useLocation();
@@ -48,8 +26,111 @@ export default function Header() {
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = !!user; // Tạo một biến boolean tiện lợi
   const profileHref = user?.role === "tourist" ? "/tourist-profile/" : "/guide-profile/";
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+
   // Calculate unread notifications for the red dot
-  const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setNotifications([]);
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchNotifications = async () => {
+      setLoadingNotifications(true);
+      const res = await managementService.getNotifications();
+      if (isMounted && res.success) {
+        setNotifications(res.data || []);
+      }
+      setLoadingNotifications(false);
+    };
+
+    fetchNotifications();
+
+    const handleWsNotification = (data) => {
+      if (!data || data.type !== "booking_notification") return;
+
+      const newNotification = {
+        id: data.id,
+        booking_id: data.booking_id,
+        tour_name: data.tour_name,
+        notification_type: data.notification_type,
+        message: data.message,
+        is_read: data.is_read,
+        created_at: data.created_at,
+      };
+
+      setNotifications((prev) => [newNotification, ...prev]);
+    };
+
+    notificationService.on("notification", handleWsNotification);
+    notificationService.connect();
+
+    return () => {
+      isMounted = false;
+      notificationService.off("notification", handleWsNotification);
+    };
+  }, [isLoggedIn]);
+
+  const handleNotificationClick = async (notif) => {
+    if (!notif || notif.is_read) return;
+
+    if (!notif.id) {
+      // Local-only notification (no backend ID)
+      setNotifications((prev) =>
+        prev.map((n) => (n === notif ? { ...n, is_read: true } : n))
+      );
+      return;
+    }
+
+    const res = await managementService.markNotificationRead(notif.id);
+    if (res.success) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n))
+      );
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    if (!notifications.length) return;
+
+    const res = await managementService.markAllNotificationsRead();
+    if (res.success) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    }
+  };
+
+  const getNotificationTitle = (notif) => {
+    if (!notif) return "Notification";
+    const type = notif.notification_type;
+    const tourName = notif.tour_name || "tour";
+
+    if (type === "new_booking") {
+      return `New booking: ${tourName}`;
+    }
+    if (type === "booking_accepted") {
+      return `Booking accepted: ${tourName}`;
+    }
+    if (type === "booking_declined") {
+      return `Booking declined: ${tourName}`;
+    }
+    if (type === "booking_reminder") {
+      return `Review your tour: ${tourName}`;
+    }
+
+    return "Notification";
+  };
+
+  const formatNotificationTime = (notif) => {
+    if (!notif || !notif.created_at) return "";
+    const date = new Date(notif.created_at);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString();
+  };
 
   return (
     <header className="bg-black sticky top-0 z-50 border-b border-black/10">
@@ -100,18 +181,19 @@ export default function Header() {
                     </DropdownMenuLabel>
 
                     <div className="max-h-[300px] overflow-y-auto">
-                      {MOCK_NOTIFICATIONS.length > 0 ? (
-                        MOCK_NOTIFICATIONS.map((notif) => (
+                      {notifications.length > 0 ? (
+                        notifications.map((notif) => (
                           <div
                             key={notif.id}
-                            className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read ? 'bg-blue-50/50' : ''}`}
+                            onClick={() => handleNotificationClick(notif)}
+                            className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-blue-50/50' : ''}`}
                           >
                             <div className="flex justify-between items-start mb-1">
-                              <h4 className={`text-sm ${!notif.read ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
-                                {notif.title}
+                              <h4 className={`text-sm ${!notif.is_read ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
+                                {getNotificationTitle(notif)}
                               </h4>
                               <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
-                                {notif.time}
+                                {formatNotificationTime(notif)}
                               </span>
                             </div>
                             <p className="text-xs text-gray-500 line-clamp-2">
@@ -127,7 +209,11 @@ export default function Header() {
                     </div>
 
                     <div className="p-2 border-t border-gray-100 bg-gray-50 text-center">
-                      <button className="text-xs font-semibold text-[#5A74F8] hover:underline">
+                      <button
+                        className="text-xs font-semibold text-[#5A74F8] hover:underline"
+                        onClick={handleMarkAllAsRead}
+                        disabled={notifications.length === 0 || loadingNotifications}
+                      >
                         Mark all as read
                       </button>
                     </div>

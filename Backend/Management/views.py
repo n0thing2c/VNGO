@@ -19,6 +19,7 @@ from .serializers import (
     PastTourListSerializer,
     FrontendBookingCardSerializer,
     FrontendPastTourCardSerializer,
+    send_booking_ws_notification,
 )
 from Profiles.models import Tourist, Guide
 from Tour.models import Tour
@@ -119,6 +120,31 @@ def migrate_past_bookings_to_history():
                 if not PastTour.objects.filter(booking=booking).exists():
                     PastTour.create_from_booking(booking)
                     migrated_count += 1
+
+                # Create "review your tour" reminder notification once per booking
+                try:
+                    has_reminder = BookingNotification.objects.filter(
+                        booking=booking,
+                        notification_type="booking_reminder",
+                    ).exists()
+                    if not has_reminder:
+                        reminder_message = (
+                            f"Your tour '{booking.tour.name}' on {booking.tour_date} has completed. "
+                            f"Please leave a review for your guide {booking.guide.name}."
+                        )
+                        notification = BookingNotification.objects.create(
+                            booking=booking,
+                            recipient=booking.tourist.user,
+                            notification_type="booking_reminder",
+                            message=reminder_message,
+                        )
+                        # Send realtime WebSocket reminder 
+                        send_booking_ws_notification(notification)
+                except Exception as e:
+                    # Log error but keep processing other bookings
+                    print(
+                        f"Error creating review reminder for booking {booking.id}: {str(e)}"
+                    )
         except Exception as e:
             # Log error but continue processing other bookings
             print(f"Error migrating booking {booking.id}: {str(e)}")
@@ -317,12 +343,15 @@ class BookingViewSet(viewsets.ModelViewSet):
             message = f"Your booking for {booking.tour.name} on {booking.tour_date} has been accepted!"
 
             # Create notification for tourist
-            BookingNotification.objects.create(
+            notification = BookingNotification.objects.create(
                 booking=booking,
                 recipient=booking.tourist.user,
                 notification_type="booking_accepted",
                 message=message,
             )
+
+            # Send realtime WebSocket notification (best-effort)
+            send_booking_ws_notification(notification)
 
             serializer = BookingSerializer(booking)
             return Response(
@@ -345,6 +374,23 @@ class BookingViewSet(viewsets.ModelViewSet):
             # Send in-app notification or email (since booking will be deleted, we can't link to it)
             # For now, we'll skip creating BookingNotification since it requires a booking FK
             # Instead, you might want to implement a separate NotificationLog model for deleted bookings
+            # However, we still send a realtime WebSocket notification so the tourist is informed.
+            try:
+                temp_notification = BookingNotification(
+                    booking=booking,
+                    recipient=tourist_user,
+                    notification_type="booking_declined",
+                    message=(
+                        f"Your booking for {tour_name} on {tour_date} was declined. "
+                        f"Reason: {decline_reason or 'No reason provided.'}"
+                    ),
+                )
+                # This object is not saved to DB, so id/created_at are null.
+                # send_booking_ws_notification can still use recipient_id/booking_id
+                # to target the correct user in realtime.
+                send_booking_ws_notification(temp_notification)
+            except Exception as e:
+                print(f"Error sending decline notification for booking {booking.id}: {str(e)}")
 
             # Delete the booking immediately
             booking.delete()
