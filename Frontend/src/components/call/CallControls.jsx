@@ -113,11 +113,11 @@ export function CallControls({
         {isCallActive && (!hasAudioPermission || (isVideoCall && !hasVideoPermission)) && (
           <p className="text-center text-yellow-400 mt-4 text-sm">
             {!hasAudioPermission && isVideoCall && !hasVideoPermission 
-              ? "Chế độ chỉ xem (không có mic/camera)"
+              ? "View only(Don't have mic/camera)"
               : !hasAudioPermission 
-                ? "Không có quyền microphone"
+                ? "Don't have microphone permission"
                 : isVideoCall && !hasVideoPermission
-                  ? "Không có quyền camera"
+                  ? "Don't have camera permission"
                   : null
             }
           </p>

@@ -141,25 +141,21 @@ export default function ChatWindow({
     const fetchGuideRating = async () => {
       setAverageRating(0);
       setTotalReviews(0);
-      const res = await tourService.getAllToursByGuide(contactId);
+      
+      // Fetch reviews from guide like in guide-public-profile
+      const res = await tourService.getAllTourRatingsByGuide(contactId);
       if (res.success && Array.isArray(res.data)) {
-        const tours = res.data;
-        if (tours.length > 0) {
-          // Calculate average of tour ratings
-          const totalRating = tours.reduce(
-            (acc, tour) => acc + (parseFloat(tour.rating) || 0),
+        const reviews = res.data;
+        if (reviews.length > 0) {
+          // Calculate average rating from reviews
+          const totalRating = reviews.reduce(
+            (acc, review) => acc + (parseFloat(review.rating) || 0),
             0
           );
-          const avg = totalRating / tours.length;
-
-          // Calculate total reviews across all tours
-          const totalRev = tours.reduce(
-            (acc, tour) => acc + (parseInt(tour.reviews) || 0),
-            0
-          );
+          const avg = totalRating / reviews.length;
 
           setAverageRating(avg);
-          setTotalReviews(totalRev);
+          setTotalReviews(reviews.length);
         }
       }
     };
@@ -560,9 +556,10 @@ export default function ChatWindow({
                       <Star
                         key={star}
                         className={`w-3.5 h-3.5 ${star <= Math.round(averageRating)
-                          ? "fill-yellow-400 text-yellow-400"
+                          ? "text-yellow-400"
                           : "text-gray-300"
                           }`}
+                        fill="currentColor"
                       />
                     ))}
                   </div>
