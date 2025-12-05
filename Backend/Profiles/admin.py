@@ -9,7 +9,7 @@ class TouristAdmin(admin.ModelAdmin):
 
 @admin.register(Guide)
 class GuideAdmin(admin.ModelAdmin):
-    list_display = ("user", "name", "age", "gender", "average_rating_display", "location")
+    list_display = ("user", "name", "age", "gender", "location")
     search_fields = ("user__username", "name", "location")
 
     def average_rating_display(self, obj):
