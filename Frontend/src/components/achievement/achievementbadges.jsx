@@ -10,7 +10,7 @@ import {
     Star,
     Paintbrush,
     Heart,
-    ThumbsUp, Globe, User, UserRound, UserPlus, UserCheck, UserPen, Pencil, Brush, Palette, PencilRuler
+    ThumbsUp, Globe, User, UserRound, UserPlus, UserCheck, UserPen, Pencil, Brush, Palette, PencilRuler, Lock
 } from "lucide-react";
 
 
@@ -41,6 +41,9 @@ const ACHIEVEMENT_COLORS = {
   liked: "from-blue-300 via-blue-400 to-blue-500",
   loved: "from-red-200 via-red-400 to-red-600",
   "people's choice": "from-yellow-300 via-yellow-400 to-yellow-500",
+
+    locked: "from-gray-300 via-gray-400 to-gray-500",
+
 };
 
 const ACHIEVEMENT_OUTLINES = {
@@ -68,6 +71,9 @@ const ACHIEVEMENT_OUTLINES = {
   liked: "#3b82f6",
   loved: "#b91c1c",
   "people's choice": "#ca8a04",
+
+    locked: "#6b7280", // gray-500
+
 };
 
 const ACHIEVEMENT_ICONS = {
@@ -97,41 +103,58 @@ const ACHIEVEMENT_ICONS = {
   liked: <ThumbsUp color="#3b82f6" className="w-4 h-4" />,
   loved: <Heart fill="#f87171" stroke="#b91c1c" className="w-4 h-4" />,
   "people's choice": <Star fill="#facc15" stroke="#ca8a04" className="w-4 h-4" />,
+
+    locked: (
+  <Lock
+    fill="#d1d5db"   // gray-300
+    stroke="#4b5563" // gray-600
+    className="w-4 h-4"
+  />
+),
+
 };
 
 
 function AchievementBadge({ variant = "popular", label }) {
+  const isLocked = variant === "locked";
+
   return (
-    <div className="relative inline-block m-2 group overflow-visible">
-      {/* Hover glow */}
+    <div className="relative inline-block m-3 group overflow-visible">
+
+      {/* Hover glow (disabled for locked) */}
       <div
         className={cn(
           "absolute inset-0 rounded-lg transition-opacity duration-300",
-          "bg-gradient-to-br opacity-0 group-hover:opacity-40",
+          isLocked
+            ? "opacity-0" // no glow
+            : "bg-gradient-to-br opacity-0 group-hover:opacity-40",
           ACHIEVEMENT_COLORS[variant]
         )}
         style={{
-          filter: "blur(20px) brightness(0.9)",
+          filter: isLocked ? "none" : "blur(20px) brightness(0.9)",
           zIndex: 0,
         }}
       />
 
-      {/* Outer hexagon shadow/base (fixed) */}
+      {/* Outer hexagon */}
       <div
         className="absolute w-10 h-10"
         style={{
           clipPath:
             "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
           backgroundColor: ACHIEVEMENT_OUTLINES[variant],
-            filter: "brightness(0.7)",
+          filter: "brightness(0.7)",
           transform: "translateY(3px)",
           zIndex: 5,
         }}
       />
 
-      {/* Main hexagon + inner hexagon (hover lifts only this) */}
+      {/* Main hexagon */}
       <div
-        className="relative w-10 h-10 flex items-center justify-center text-white font-bold cursor-pointer transition-transform transform group-hover:-translate-y-[-3px]"
+        className={cn(
+          "relative w-10 h-10 flex items-center justify-center text-white font-bold cursor-pointer transition-transform transform",
+          isLocked ? "" : "group-hover:-translate-y-[-3px]" // disable hover lift
+        )}
         style={{
           clipPath:
             "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
@@ -139,7 +162,7 @@ function AchievementBadge({ variant = "popular", label }) {
           zIndex: 10,
         }}
       >
-        {/* Inner hexagon */}
+        {/* Inner icon */}
         <div
           className="w-9 h-9 flex items-center justify-center bg-white"
           style={{
@@ -153,8 +176,8 @@ function AchievementBadge({ variant = "popular", label }) {
         </div>
       </div>
 
-      {/* Label popup */}
-      <span className=" absolute left-1/2 -translate-x-1/2 mt-2 w-max opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-xl text-black text-xs px-2 py-1 shadow-lg z-20">
+      {/* Label popup (always shows on hover even if locked) */}
+      <span className="absolute left-1/2 -translate-x-1/2 mt-2 w-max opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-xl text-black text-xs px-2 py-1 shadow-lg z-20">
         {label}
       </span>
     </div>
