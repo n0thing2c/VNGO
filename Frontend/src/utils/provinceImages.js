@@ -1,6 +1,7 @@
 // ẢNH FALLBACK: Dùng khi user tìm kiếm linh tinh
-const DEFAULT_PROVINCE_HERO_IMAGE = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80';
-const DEFAULT_PROVINCE_POPDEST_IMAGE = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80';
+const DEFAULT_PROVINCE_HERO_IMAGE = 'https://www.tripnstay.com/wp-content/uploads/2023/01/vietnam.jpg';
+// const DEFAULT_PROVINCE_POPDEST_IMAGE = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80';
+const DEFAULT_PROVINCE_POPDEST_IMAGE = 'https://www.tripnstay.com/wp-content/uploads/2023/01/vietnam.jpg';
 
 const PROVINCE_HERO_IMAGE_MAP = {
   // Miền Bắc 
@@ -22,11 +23,18 @@ const PROVINCE_HERO_IMAGE_MAP = {
   "ninh-binh": "https://images.unsplash.com/photo-1508264165352-258a6b1fbbd4?q=80&w=1740",
   
   // Miền Trung
-  'da-nang': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
-  'hoi-an': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
-  'quang-nam': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
-  'hue': 'https://images.unsplash.com/photo-1598404418022-f173f4007b8b?auto=format&fit=crop&w=1740&q=80',
-  'thua-thien-hue': 'https://images.unsplash.com/photo-1598404418022-f173f4007b8b?auto=format&fit=crop&w=1740&q=80',
+  'thanh-hoa': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'nghe-an': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'ha-tinh': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'hue': 'https://static.vinwonders.com/production/OWpyp4tN-check-in-hue-banner.jpg',
+  'thua-thien-hue': 'https://static.vinwonders.com/production/OWpyp4tN-check-in-hue-banner.jpg',
+  'quang-tri': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'da-nang': 'https://img.vietcetera.com/uploads/images/16-dec-2022/shutterstock-1343287217.jpg',
+  'quang-ngai': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'khanh-hoa': 'https://www.uncovervietnam.com/wp-content/uploads/2021/08/nha-trang-beach-vietnam-sunrise-khanh-hoa.jpg',
+  'gia-lai': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
+  'lam-dong': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
+  'dak-lak': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
   
   // Miền Nam
   'ho-chi-minh': 'https://images.unsplash.com/photo-1521019795854-14e15f600980?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -37,7 +45,7 @@ const PROVINCE_HERO_IMAGE_MAP = {
   "dong-thap": "https://images.unsplash.com/photo-1470075801209-17f9ec0cada7?q=80&w=1740",
   "ca-mau": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?q=80&w=1740",
   "an-giang": "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=1740",
-  "can-tho": "https://images.unsplash.com/photo-1525895921573-b0dd2b8cd161?q=80&w=1740",
+  "can-tho": "https://th.bing.com/th/id/R.71d24d7207405d97d6c9effb819ff188?rik=w9yqumSvwzkpMw&pid=ImgRaw&r=0",
 };
 
 const PROVINCE_POPDEST_IMAGE_MAP = {
@@ -60,11 +68,18 @@ const PROVINCE_POPDEST_IMAGE_MAP = {
   "ninh-binh": "https://images.unsplash.com/photo-1508264165352-258a6b1fbbd4?q=80&w=1740",
   
   // Miền Trung
-  'da-nang': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
-  'hoi-an': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
-  'quang-nam': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
-  'hue': 'https://images.unsplash.com/photo-1598404418022-f173f4007b8b?auto=format&fit=crop&w=1740&q=80',
-  'thua-thien-hue': 'https://images.unsplash.com/photo-1598404418022-f173f4007b8b?auto=format&fit=crop&w=1740&q=80',
+  'thanh-hoa': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'nghe-an': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'ha-tinh': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'hue': 'https://static.vinwonders.com/production/OWpyp4tN-check-in-hue-banner.jpg',
+  'thua-thien-hue': 'https://static.vinwonders.com/production/OWpyp4tN-check-in-hue-banner.jpg',
+  'quang-tri': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'da-nang': 'https://img.vietcetera.com/uploads/images/16-dec-2022/shutterstock-1343287217.jpg',
+  'quang-ngai': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
+  'khanh-hoa': 'https://www.uncovervietnam.com/wp-content/uploads/2021/08/nha-trang-beach-vietnam-sunrise-khanh-hoa.jpg',
+  'gia-lai': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
+  'lam-dong': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
+  'dak-lak': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
   
   // Miền Nam
   'ho-chi-minh': 'https://images.unsplash.com/photo-1521019795854-14e15f600980?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -75,7 +90,7 @@ const PROVINCE_POPDEST_IMAGE_MAP = {
   "dong-thap": "https://images.unsplash.com/photo-1470075801209-17f9ec0cada7?q=80&w=1740",
   "ca-mau": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?q=80&w=1740",
   "an-giang": "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=1740",
-  "can-tho": "https://images.unsplash.com/photo-1525895921573-b0dd2b8cd161?q=80&w=1740",
+  "can-tho": "https://th.bing.com/th/id/R.71d24d7207405d97d6c9effb819ff188?rik=w9yqumSvwzkpMw&pid=ImgRaw&r=0",
 };
 
 // Hàm chuẩn hóa chuỗi input (quan trọng)

@@ -20,7 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Trash2, Pencil, Check, GripVertical } from "lucide-react";
 
 // Giới hạn ký tự cho mô tả
-const MAX_DESC_LENGTH = 250;
+const MAX_DESC_LENGTH = 1000;
 
 // Component con: 1 Dòng địa điểm
 function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }) {
@@ -147,8 +147,11 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                             placeholder="Suggestion: At what time? What are the activities? What's special about this place?"
                             value={descValue}
                             onChange={(e) => {
-                                if (e.target.value.length <= MAX_DESC_LENGTH) {
-                                    setDescValue(e.target.value);
+                                const newValue = e.target.value;
+                                if (newValue.length <= MAX_DESC_LENGTH) {
+                                    setDescValue(newValue);
+                                } else {
+                                    setDescValue(newValue.slice(0, MAX_DESC_LENGTH));
                                 }
                             }}
                             onBlur={() => {
@@ -196,18 +199,18 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
 }
 
 // Component chính
-export default function DragList({ items, onRemoveItem, onReorder, onRenameItem, onUpdateDescription }) {
+export default function DragList({items, onRemoveItem, onReorder, onRenameItem, onUpdateDescription}) {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
                 distance: 1, // Di chuyển chuột 1px mới tính là drag (tránh click nhầm)
             },
         }),
-        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+        useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates })
     );
 
     const handleDragEnd = (event) => {
-        const { active, over } = event;
+        const {active, over} = event;
         if (!over || active.id === over.id) return;
 
         // Lưu ý: Dùng item.name làm ID có rủi ro nếu trùng tên. 
