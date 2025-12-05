@@ -18,15 +18,15 @@ export default function MyToursList({ tours, refreshTours }) {
   };
   if (!tours || tours.length === 0) {
     return (
-      <div className="text-center py-20">
-        <div className="text-gray-400 text-6xl mb-4"><Map></Map></div>
+      <div className="text-center py-20 ">
+        <Map className="w-20 h-20 mx-auto text-gray-300 mb-6"/>
         <h3 className="text-xl font-semibold text-gray-700 mb-2">No tours yet</h3>
         <p className="text-gray-500 mb-6">
           Create your first tour to start accepting bookings.
         </p>
-        <Button asChild className="bg-green-600 hover:bg-green-700 rounded-full">
+        <Button asChild className="bg-[#068F64] hover:bg-white border hover:border-black hover:text-black text-white rounded-full">
           <Link to="/tour/create">
-            <PlusCircle className="w-5 h-5 mr-2" />
+            <PlusCircle className="w-5 h-5" />
             Create Tour
           </Link>
         </Button>

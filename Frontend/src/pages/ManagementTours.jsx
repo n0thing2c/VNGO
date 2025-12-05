@@ -11,8 +11,8 @@ import { tourService } from "@/services/tourService";
 import BookingCardSkeleton from "@/components/management/BookingCardSkeleton";
 import { Globe, Compass, Clock, Send } from "lucide-react";
 
-const IS_MOCK_TEST = true; // 👈 Đổi thành FALSE khi deploy hoặc test API thật
-const TEST_ROLE = "guide"; // 👈 Đổi thành "tourist" để test Tourist Tabs
+const IS_MOCK_TEST = 0; // Đổi thành FALSE khi deploy hoặc test API thật
+const TEST_ROLE = "guide"; // Đổi thành "tourist" để test Tourist Tabs
 
 const mockDataTourist = {
     role: "tourist",
@@ -21,7 +21,7 @@ const mockDataTourist = {
     bookings: [
         {
             id: 101,
-            tourId: "T-001",
+            tourId: "101",
             image: "https://picsum.photos/id/237/300/200", // Thay bằng ảnh thực
             title: "Ha Long Bay: 3-Day Cruise & Kayaking",
             status: "Confirmed",
@@ -35,7 +35,7 @@ const mockDataTourist = {
         },
         {
             id: 102,
-            tourId: "T-002",
+            tourId: "102",
             image: "https://picsum.photos/id/160/300/200",
             title: "Sapa Trekking & Local Village Stay",
             status: "Pending Confirmation",
@@ -52,7 +52,7 @@ const mockDataTourist = {
     pastTours: [
         {
             id: 201,
-            tourId: "T-003",
+            tourId: "201",
             image: "https://picsum.photos/id/150/300/200",
             title: "Hoi An Lantern Festival Night Tour",
             status: "Completed",
@@ -72,7 +72,7 @@ const mockDataGuide = {
     incomingRequests: [
         {
             id: 301,
-            tourId: "G-001",
+            tourId: "301",
             image: "https://picsum.photos/id/240/300/200",
             title: "Tour ẩm thực Sài Gòn đêm",
             status: "Pending",
@@ -86,7 +86,7 @@ const mockDataGuide = {
         },
         {
             id: 302,
-            tourId: "G-002",
+            tourId: "302",
             image: "https://picsum.photos/id/250/300/200",
             title: "Chuyến đi Mũi Né 2 ngày",
             status: "Declined",
@@ -110,8 +110,8 @@ const mockMyTours = [
         image: "https://picsum.photos/id/101/300/200",
         status: 'Active',
         status_key: 'active',
-        price: 500000, // Thêm giá tiền (quan trọng)
-        duration: "1 day",
+        price: 5000000, // Thêm giá tiền (quan trọng)
+        duration: "2",
         max_guests: 15,
         rating: 4.8,
         reviews_count: 12,
@@ -125,7 +125,7 @@ const mockMyTours = [
         status: 'Draft',
         status_key: 'draft',
         price: 2500000, // Thêm giá tiền (quan trọng)
-        duration: "3 days",
+        duration: "3",
         max_guests: 20,
         rating: 0,
         reviews_count: 0,
@@ -247,22 +247,22 @@ export default function ManagementTours() {
             }`}>
               {managementData.role === 'guide' ? (
                 <>
-                  <TabsTrigger value="my-tours" className="data-[state=active]:text-green-700 min-w-[96px]">
+                  <TabsTrigger value="my-tours" className="data-[state=active]:text-[#068F64] min-w-[96px]">
                     <Compass className="h-6 w-7 mr-1" />My Tours
                   </TabsTrigger>
-                  <TabsTrigger value="incoming" className="data-[state=active]:text-green-700 min-w-[96px]">
+                  <TabsTrigger value="incoming" className="data-[state=active]:text-[#068F64] min-w-[96px]">
                     <Send className="h-6 w-7 mr-1" />Incoming requests
                   </TabsTrigger>
-                  <TabsTrigger value="past-tours" className="data-[state=active]:text-green-700 min-w-[96px]">
+                  <TabsTrigger value="past-tours" className="data-[state=active]:text-[#068F64] min-w-[96px]">
                     <Clock className="h-6 w-7 mr-1" />Past tours
                   </TabsTrigger>
                 </>
               ) : (
                 <>
-                  <TabsTrigger value="bookings" className="data-[state=active]:text-green-700 min-w-[96px]">
+                  <TabsTrigger value="bookings" className="data-[state=active]:text-[#068F64] min-w-[96px]">
                     <Globe className="h-6 w-7 mr-1" />My bookings
                   </TabsTrigger>
-                  <TabsTrigger value="past-tours" className="data-[state=active]:text-green-700 min-w-[96px]">
+                  <TabsTrigger value="past-tours" className="data-[state=active]:text-[#068F64] min-w-[96px]">
                     <Clock className="h-6 w-7 mr-1" />Past tours
                   </TabsTrigger>
                 </>
@@ -275,7 +275,7 @@ export default function ManagementTours() {
       {/* THẺ 2: Nội dung */}
       <div className="bg-white rounded-4xl shadow-lg overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="p-8 pt-10 min-h-[600px]">
+          <div className="p-8 pt-10 min-h-[500px]">
             {managementData.role === 'guide' ? (
               <>
                 {activeTab === "my-tours" && (

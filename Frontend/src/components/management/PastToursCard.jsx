@@ -7,8 +7,8 @@ export default function PastTours({ role, pastTours }) {
   };
   if (!pastTours || pastTours.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="text-gray-400 text-6xl mb-4"><CalendarDays/></div>
+      <div className="text-center py-20">
+        <CalendarDays className="w-20 h-20 mx-auto text-gray-300 mb-6"/>
         <h3 className="text-xl font-semibold text-gray-700 mb-2">No past tours yet</h3>
         <p className="text-gray-500">
           {role === "tourist" 

@@ -3,7 +3,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { Calendar, Clock, Users, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { managementService } from "@/services/managementService";
