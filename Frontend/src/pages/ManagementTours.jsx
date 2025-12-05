@@ -3,7 +3,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import BookingList from "@/components/management/BookingList";
 import IncomingRequests from "@/components/management/IncomingRequests";
-import PastTours from "@/components/management/PastTours";
+import PastTours from "@/components/management/PastToursCard";
 import MyToursList from "@/components/management/MyToursList";
 import { useState, useEffect } from "react";
 import { managementService } from "@/services/managementService";
@@ -248,8 +248,7 @@ export default function ManagementTours() {
               {managementData.role === 'guide' ? (
                 <>
                   <TabsTrigger value="my-tours" className="data-[state=active]:text-green-700 min-w-[96px]">
-                    <Compass className="h-6 w-7 mr-1" />
-                    My Tours
+                    <Compass className="h-6 w-7 mr-1" />My Tours
                   </TabsTrigger>
                   <TabsTrigger value="incoming" className="data-[state=active]:text-green-700 min-w-[96px]">
                     <Send className="h-6 w-7 mr-1" />Incoming requests

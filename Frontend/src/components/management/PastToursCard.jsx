@@ -1,12 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Star, Users, Clock, DollarSign } from "lucide-react";
+import { Star, Users, Clock, DollarSign, Calendar, CalendarDays } from "lucide-react";
 
 export default function PastTours({ role, pastTours }) {
+  const handleCardClick = (tourId) => {
+    // Navigate to view page
+    window.location.href = `/tour/${tourId}`;
+  };
   if (!pastTours || pastTours.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="text-gray-400 text-6xl mb-4">📅</div>
+        <div className="text-gray-400 text-6xl mb-4"><CalendarDays/></div>
         <h3 className="text-xl font-semibold text-gray-700 mb-2">No past tours yet</h3>
         <p className="text-gray-500">
           {role === "tourist" 
@@ -21,7 +25,7 @@ export default function PastTours({ role, pastTours }) {
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {pastTours.map((tour) => (
-          <div key={tour.id} className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
+          <div key={tour.id} onClick={() => handleCardClick(tour.tourId)} className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
             {/* Full width image - no gap at top */}
             {tour.image && (
               <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
@@ -50,11 +54,11 @@ export default function PastTours({ role, pastTours }) {
                   <p className="text-sm text-gray-600 mb-1">
                     Guide: <span className="font-medium">{tour.guideName}</span>
                   </p>
-                  <p className="text-sm text-gray-600 mb-4">📅 {tour.date}</p>
+                  <p className="text-sm text-gray-600 mb-4"><Calendar className="w-4 h-4 flex-shrink-0" /> {tour.date}</p>
                   
-                  <Button asChild className="mt-auto w-full bg-green-600 hover:bg-green-700 rounded-full h-11">
+                  {/* <Button asChild className="mt-auto w-full bg-green-600 hover:bg-green-700 rounded-full h-11">
                     <Link to={`/tour/${tour.tourId}`}>View tour</Link>
-                  </Button>
+                  </Button> */}
                 </>
               ) : (
                 // Guide view
@@ -63,7 +67,7 @@ export default function PastTours({ role, pastTours }) {
                   <p className="text-sm text-gray-600 mb-1">
                     Tourist: <span className="font-medium">{tour.touristName}</span>
                   </p>
-                  <p className="text-sm text-gray-600 mb-4">📅 {tour.date}</p>
+                  <p className="text-sm text-gray-600 mb-4"><Calendar className="w-4 h-4 flex-shrink-0" /> {tour.date}</p>
                   
                   <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center gap-2">
@@ -82,9 +86,9 @@ export default function PastTours({ role, pastTours }) {
                     </div>
                   </div>
                   
-                  <Button asChild className="mt-auto w-full bg-green-600 hover:bg-green-700 rounded-full h-11">
+                  {/* <Button asChild className="mt-auto w-full bg-green-600 hover:bg-green-700 rounded-full h-11">
                     <Link to={`/tour/${tour.tourId}`}>View tour</Link>
-                  </Button>
+                  </Button> */}
                 </>
               )}
             </div>
