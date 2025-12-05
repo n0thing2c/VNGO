@@ -219,38 +219,38 @@ class GuideAchievementView(APIView):
         # --- Languages ---
         language_count = len(guide.languages) if guide.languages else 0
 
+        if language_count >= 3:
+            achievements.append("Multilingual")
         if language_count >= 5:
             achievements.append("Polygot")
-        elif language_count >= 3:
-            achievements.append("Multilingual")
 
         # --- Past tours ---
         guide_past_count = PastTour.objects.filter(guide=guide).count()
 
+        if guide_past_count >= 1:
+            achievements.append("Rookie Guide")
+        if guide_past_count >= 10:
+            achievements.append("Rising Guide")
+        if guide_past_count >= 50:
+            achievements.append("Experienced Guide")
+        if guide_past_count >= 100:
+            achievements.append("Master Guide")
         if guide_past_count >= 500:
             achievements.append("Legendary Guide")
-        elif guide_past_count >= 100:
-            achievements.append("Master Guide")
-        elif guide_past_count >= 50:
-            achievements.append("Experienced Guide")
-        elif guide_past_count >= 10:
-            achievements.append("Rising Guide")
-        elif guide_past_count >= 1:
-            achievements.append("Rookie Guide")
 
         # --- Tours created ---
         guide_tour_count = Tour.objects.filter(guide=guide).count()
 
+        if guide_tour_count >= 1:
+            achievements.append("Rookie Crafter")
+        if guide_tour_count >= 10:
+            achievements.append("Apprentice Crafter")
+        if guide_tour_count >= 30:
+            achievements.append("Skilled Artist")
+        if guide_tour_count >= 50:
+            achievements.append("Master Artist")
         if guide_tour_count >= 100:
             achievements.append("Master Architect")
-        elif guide_tour_count >= 50:
-            achievements.append("Master Artist")
-        elif guide_tour_count >= 30:
-            achievements.append("Skilled Artist")
-        elif guide_tour_count >= 10:
-            achievements.append("Apprentice Crafter")
-        elif guide_tour_count >= 1:
-            achievements.append("Rookie Crafter")
 
         # --- Stats always computed ---
         stats = {
