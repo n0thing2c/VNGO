@@ -1,10 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { Clock, Users, Star, DollarSign, BookOpen, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function TourManagementCard({ tour, onDelete}) {
-    const handleCardClick = () => {
+  const handleCardClick = () => {
     // Navigate to view page
     window.location.href = `/tour/${tour.id}`;
   };
@@ -19,9 +18,7 @@ export default function TourManagementCard({ tour, onDelete}) {
     onDelete?.(tour.id);
   };
   return (
-    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white"
-    onClick={handleCardClick}
-    >
+    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white" onClick={handleCardClick}>
       {/* Full width image - no gap at top */}
       <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
         <img
@@ -65,7 +62,7 @@ export default function TourManagementCard({ tour, onDelete}) {
         
         {/* Location */}
         {tour.location && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-1">📍 {tour.location}</p>
+          <p className="text-sm text-gray-600 mb-3 line-clamp-1"> {tour.location}</p>
         )}
 
         {/* Tour stats in 2 columns */}
@@ -115,14 +112,14 @@ export default function TourManagementCard({ tour, onDelete}) {
         <div className="flex gap-2 mt-auto">
           <Button
             onClick={handleEditClick}
-            className="flex-1 bg-green-600 hover:bg-green-700 rounded-full h-11"
+            className="flex-1 justify-center gap-2 bg-[#4673E6] rounded-full border border-transparent hover:bg-white hover:border-black hover:text-black text-white h-10"
           >
             Edit
           </Button>
           <Button
             onClick={handleDeleteClick}
             variant="outline"
-            className="flex-1 rounded-full h-11"
+            className="flex-1 rounded-full h-10 border bg-[#CC3737] hover:bg-white hover:border-black hover:text-black text-white"
           >
             Delete
           </Button>
@@ -131,4 +128,3 @@ export default function TourManagementCard({ tour, onDelete}) {
     </div>
   );
 }
-

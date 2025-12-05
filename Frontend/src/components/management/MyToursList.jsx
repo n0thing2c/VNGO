@@ -1,8 +1,9 @@
-import TourManagementCard from "./TourManagementCard";
+import TourManagementCard from "./MyToursCard";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { PlusCircle } from "lucide-react";
 import { tourService } from "@/services/tourService";
+import { Map } from "lucide-react";
 export default function MyToursList({ tours, refreshTours }) {
     const handleDelete = async (tourId) => {
     if (!window.confirm("Are you sure you want to delete this tour?")) return;
@@ -18,7 +19,7 @@ export default function MyToursList({ tours, refreshTours }) {
   if (!tours || tours.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="text-gray-400 text-6xl mb-4">🗺️</div>
+        <div className="text-gray-400 text-6xl mb-4"><Map></Map></div>
         <h3 className="text-xl font-semibold text-gray-700 mb-2">No tours yet</h3>
         <p className="text-gray-500 mb-6">
           Create your first tour to start accepting bookings.
@@ -42,7 +43,7 @@ export default function MyToursList({ tours, refreshTours }) {
             You have {tours.length} tour{tours.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button asChild className="bg-green-600 hover:bg-green-700 rounded-full">
+        <Button asChild className="bg-[#068F64] border hover:bg-white hover:border-black hover:text-black rounded-full">
           <Link to="/tour/create">
             <PlusCircle className="w-5 h-5 mr-2" />
             Create New Tour
@@ -58,4 +59,3 @@ export default function MyToursList({ tours, refreshTours }) {
     </div>
   );
 }
-

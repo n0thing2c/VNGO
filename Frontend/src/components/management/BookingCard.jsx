@@ -1,4 +1,6 @@
+// dùng cho incoming request luôn
 // src/components/management/BookingCard.jsx
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -23,6 +25,11 @@ export default function BookingCard({ booking, showActions = false, refreshData 
   const [isProcessing, setIsProcessing] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
+
+  const handleCardClick = () => {
+    // Navigate to view page
+    window.location.href = `/tour/${booking.tourId}`;
+  };
 
   const getStatusStyle = (status) => {
     const statusLower = status?.toLowerCase() || "";
@@ -76,7 +83,9 @@ export default function BookingCard({ booking, showActions = false, refreshData 
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
+    <div className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white"
+        onClick={handleCardClick}
+    >
       {/* Full width image - no gap at top */}
       <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
         <img
@@ -141,11 +150,13 @@ export default function BookingCard({ booking, showActions = false, refreshData 
 
         {/* Actions for Guide (Accept/Decline) - push to bottom */}
         {showActions && booking.status_key === "pending" && (
-          <div className="space-y-2 mb-3 mt-auto">
+          <div className="flex items-center gap-3 mb-3 mt-auto">
             <Button 
               onClick={handleAccept}
               disabled={isProcessing}
-              className="w-full bg-green-600 hover:bg-green-700 rounded-full h-10"
+              className="flex-1 flex items-center justify-center gap-2 bg-[#068F64] rounded-full border border-transparent hover:bg-white hover:border-black hover:text-black text-white h-10 transition-all"
+              // className="flex items-center gap-2 bg-[#068F64] rounded-full hover:bg-white hover:border-black hover:text-black hover:border-1 text-white"
+              // className="w-full bg-green-600 hover:bg-green-700 rounded-full h-10"
             >
               {isProcessing ? "Processing..." : "Accept"}
             </Button>
@@ -155,7 +166,8 @@ export default function BookingCard({ booking, showActions = false, refreshData 
                 <Button 
                   disabled={isProcessing}
                   variant="outline" 
-                  className="w-full rounded-full h-10 border-red-300 text-red-600 hover:bg-red-50"
+                  className="flex-1 rounded-full h-10 border bg-[#CC3737] hover:bg-white hover:border-black hover:text-black text-white"
+                  // className="w-full rounded-full h-10 border-red-300 text-red-600 hover:bg-red-50"
                 >
                   Decline
                 </Button>
@@ -189,9 +201,9 @@ export default function BookingCard({ booking, showActions = false, refreshData 
         )}
 
         {/* View details button - push to bottom if no actions */}
-        <Button asChild className={`w-full bg-green-600 hover:bg-green-700 rounded-full h-12 ${!showActions || booking.status_key !== "pending" ? 'mt-auto' : ''}`}>
+        {/* <Button asChild className={`w-full bg-green-600 hover:bg-green-700 rounded-full h-12 ${!showActions || booking.status_key !== "pending" ? 'mt-auto' : ''}`}>
           <Link to={`/tour/${booking.tourId}`}>View tour</Link>
-        </Button>
+        </Button> */}
       </div>
     </div>
   );
