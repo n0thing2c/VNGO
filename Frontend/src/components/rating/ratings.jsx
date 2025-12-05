@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { Card } from "@/components/ui/card.jsx";
 
-import { FieldLabel } from "@/components/ui/field.jsx";
+import {FieldLabel, FieldSeparator} from "@/components/ui/field.jsx";
 
 import { Star } from "lucide-react"; // only stars
 
@@ -233,7 +233,7 @@ const RatingList = ({ ratings = [], showTourName = false, hideStars = false }) =
             </div>
 
           )}
-
+            <FieldSeparator/>
         </div>
 
       ))}
