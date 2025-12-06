@@ -76,8 +76,8 @@ export function SignupForm({ className, ...props }) {
 
     try {
       await signUp(username, email, password, roleLower);
-      // Store email in localStorage for resend functionality
-      localStorage.setItem("pendingVerificationEmail", email);
+      // Store email in sessionStorage for resend functionality (cleared when tab closes)
+      sessionStorage.setItem("pendingVerificationEmail", email);
       toast.success("Please check your email to verify your account.");
       // Redirect to verify email page
       setTimeout(() => {

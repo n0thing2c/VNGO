@@ -48,8 +48,8 @@ export function VerifyEmailForm({ className, ...props }) {
   const token = searchParams.get("token");
   const hasVerifiedRef = useRef(false); // Track if verification has been attempted
 
-  // Get email from localStorage (set after signup)
-  const pendingEmail = localStorage.getItem("pendingVerificationEmail");
+  // Get email from sessionStorage (set after signup)
+  const pendingEmail = sessionStorage.getItem("pendingVerificationEmail");
 
   const handleEmailVerification = useCallback(
     async (verificationToken) => {
@@ -88,10 +88,10 @@ export function VerifyEmailForm({ className, ...props }) {
     }
   }, [token, handleEmailVerification, status]);
 
-  // Clean up email from localStorage after successful verification
+  // Clean up email from sessionStorage after successful verification
   useEffect(() => {
     if (status === "success") {
-      localStorage.removeItem("pendingVerificationEmail");
+      sessionStorage.removeItem("pendingVerificationEmail");
     }
   }, [status]);
 
