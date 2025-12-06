@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { authService } from "@/services/authService.js";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { MailCheck } from "lucide-react";
 
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
@@ -106,7 +107,9 @@ export function ForgetPasswordForm({ className, ...props }) {
             ) : (
               <Field>
                 <div className="py-8">
-                  <div className="text-6xl mb-4">📧</div>
+                  <div className="flex justify-center mb-4">
+                    <MailCheck className="w-16 h-16 text-primary" />
+                  </div>
                   <p className="text-lg mb-2 font-medium">Check your email</p>
                   <p className="text-sm text-muted-foreground mb-6">
                     If this email is registered, we've sent a password reset

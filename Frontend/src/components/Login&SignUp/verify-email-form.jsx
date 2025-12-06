@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { authService } from "@/services/authService.js";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { Mail, MailCheck, MailX } from "lucide-react";
 
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
@@ -56,7 +57,7 @@ export function VerifyEmailForm({ className, ...props }) {
       if (hasVerifiedRef.current) {
         return;
       }
-      
+
       try {
         hasVerifiedRef.current = true; // Mark as attempted
         setIsLoading(true);
@@ -136,7 +137,9 @@ export function VerifyEmailForm({ className, ...props }) {
               <>
                 <Field>
                   <div className="py-8">
-                    <div className="text-6xl mb-4">📧</div>
+                    <div className="flex justify-center mb-4">
+                      <Mail className="w-16 h-16 text-primary" />
+                    </div>
                     <p className="text-lg mb-2 font-medium">Check your email</p>
                     <p className="text-sm text-muted-foreground mb-6">
                       We've sent a verification link to your email address.
@@ -193,7 +196,9 @@ export function VerifyEmailForm({ className, ...props }) {
             {status === "success" && (
               <Field>
                 <div className="py-8">
-                  <div className="text-6xl mb-4">✅</div>
+                  <div className="flex justify-center mb-4">
+                    <MailCheck className="w-16 h-16 text-green-600" />
+                  </div>
                   <p className="text-lg mb-2 font-medium text-green-600">
                     Email Verified Successfully!
                   </p>
@@ -214,7 +219,9 @@ export function VerifyEmailForm({ className, ...props }) {
             {status === "error" && (
               <Field>
                 <div className="py-8">
-                  <div className="text-6xl mb-4">❌</div>
+                  <div className="flex justify-center mb-4">
+                    <MailX className="w-16 h-16 text-red-600" />
+                  </div>
                   <p className="text-lg mb-2 font-medium text-red-600">
                     Verification Failed
                   </p>
