@@ -22,6 +22,17 @@ import {Combobox} from '@/components/ui/combobox';
 // API
 import {API_ENDPOINTS} from "@/constant";
 import SortSelect from "@/components/sortbutton.jsx";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    PaginationEllipsis,
+} from '@/components/ui/pagination.jsx';
+
+const TOURS_PER_PAGE = 9;
 
 const ALL_LANGUAGES = [
     "Amharic", "Arabic", "Azerbaijani", "Bengali", "Bhojpuri", "Burmese",
@@ -46,7 +57,7 @@ const ToursShowPage = () => {
     const [locations, setLocations] = useState([]);
     const [filterOptions, setFilterOptions] = useState({tags: [], transportation: []});
     const [isLoading, setIsLoading] = useState(false);
-
+    const [currentPage, setCurrentPage] = useState(1);
     // State cho search/location (đồng bộ với URL)
     const [searchTerm, setSearchTerm] = useState(searchTermFromUrl);
     const [selectedLocation, setSelectedLocation] = useState(locationFromUrl);
@@ -170,6 +181,7 @@ const ToursShowPage = () => {
             .then(res => res.json())
             .then(data => {
                 setTours(data);
+                setCurrentPage(1);
                 setIsLoading(false);
             })
             .catch(err => {
@@ -201,7 +213,11 @@ const ToursShowPage = () => {
             return {...prev, [group]: newValues};
         });
     };
-
+    // --- Pagination ---
+    const totalPages = Math.ceil(tours.length / TOURS_PER_PAGE);
+    const indexOfLastTour = currentPage * TOURS_PER_PAGE;
+    const indexOfFirstTour = indexOfLastTour - TOURS_PER_PAGE;
+    const currentTours = tours.slice(indexOfFirstTour, indexOfLastTour);
     // --- Render ---
     return (
         <div className="min-h-screen bg-gray-50">
@@ -423,7 +439,7 @@ const ToursShowPage = () => {
 
                 {/* --- Tours Grid --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {tours.map((tour) => (
+                    {currentTours.map((tour) => (
                         <TourCard key={tour.id} tour={tour} />
                     ))}
                 </div>
@@ -440,6 +456,55 @@ const ToursShowPage = () => {
                         <p className="text-gray-600">
                             Try changing location or using filters
                         </p>
+                    </div>
+                )}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="mt-8 flex justify-center">
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (currentPage > 1) setCurrentPage(currentPage - 1);
+                                        }}
+                                    />
+                                </PaginationItem>
+
+                                {Array.from({ length: totalPages }).map((_, i) => (
+                                    <PaginationItem key={i}>
+                                        <PaginationLink
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setCurrentPage(i + 1);
+                                            }}
+                                            className={currentPage === i + 1 ? "bg-gray-800 text-white" : "text-black"}
+                                        >
+                                            {i + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))}
+
+                                {totalPages > 5 && (
+                                    <PaginationItem>
+                                        <PaginationEllipsis />
+                                    </PaginationItem>
+                                )}
+
+                                <PaginationItem>
+                                    <PaginationNext
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                                        }}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
                     </div>
                 )}
             </div>
