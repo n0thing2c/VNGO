@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/field.jsx";
 import { toast } from "sonner";
 import { authService } from "@/services/authService.js";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 // Helper function to extract error message from API response
@@ -45,13 +45,20 @@ export function VerifyEmailForm({ className, ...props }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+  const hasVerifiedRef = useRef(false); // Track if verification has been attempted
 
   // Get email from localStorage (set after signup)
   const pendingEmail = localStorage.getItem("pendingVerificationEmail");
 
   const handleEmailVerification = useCallback(
     async (verificationToken) => {
+      // Prevent multiple calls with the same token
+      if (hasVerifiedRef.current) {
+        return;
+      }
+      
       try {
+        hasVerifiedRef.current = true; // Mark as attempted
         setIsLoading(true);
         setStatus("verifying");
         await authService.verifyEmail(verificationToken);
@@ -64,6 +71,8 @@ export function VerifyEmailForm({ className, ...props }) {
       } catch (error) {
         setStatus("error");
         toast.error(getErrorMessage(error));
+        // Reset ref on error so user can retry if needed
+        hasVerifiedRef.current = false;
       } finally {
         setIsLoading(false);
       }
@@ -73,10 +82,10 @@ export function VerifyEmailForm({ className, ...props }) {
 
   // Auto-verify if token is present in URL
   useEffect(() => {
-    if (token) {
+    if (token && !hasVerifiedRef.current && status === "pending") {
       handleEmailVerification(token);
     }
-  }, [token, handleEmailVerification]);
+  }, [token, handleEmailVerification, status]);
 
   // Clean up email from localStorage after successful verification
   useEffect(() => {

@@ -191,7 +191,7 @@ export function SignupForm({ className, ...props }) {
               </Field>
 
               <Field>
-                <FieldDescription className="mt-2 text-sm">
+                <div className="mt-2 text-sm text-muted-foreground">
                   <div className="flex items-start gap-2">
                     <input
                       type="checkbox"
@@ -221,7 +221,7 @@ export function SignupForm({ className, ...props }) {
                       .
                     </label>
                   </div>
-                </FieldDescription>
+                </div>
                 <Button
                   className="w-full md:w-auto h-9 px-4 text-sm mt-3"
                   type="submit"
