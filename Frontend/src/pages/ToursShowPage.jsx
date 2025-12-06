@@ -17,10 +17,22 @@ import {Label} from "../components/ui/label";
 import {useSearchParams} from 'react-router-dom'; // read params
 import TourCard from '@/components/TourCard';
 import {getProvinceHeroImage} from '@/utils/provinceImages';
+import {Combobox} from '@/components/ui/combobox';
 
 // API
 import {API_ENDPOINTS} from "@/constant";
 import SortSelect from "@/components/sortbutton.jsx";
+
+const ALL_LANGUAGES = [
+    "Amharic", "Arabic", "Azerbaijani", "Bengali", "Bhojpuri", "Burmese",
+    "English", "Fula", "French", "German", "Gujarati", "Hakka", "Hausa",
+    "Hindi", "Igbo", "Indonesian/Malay", "Italian", "Japanese", "Javanese",
+    "Kannada", "Korean", "Maithili", "Malay/Indonesian", "Malayalam",
+    "Mandarin Chinese", "Marathi", "Oromo", "Oriya", "Pashto", "Persian",
+    "Polish", "Punjabi", "Romanian", "Russian", "Sindebele", "Sindhi",
+    "Sinhalese", "Spanish", "Sunda", "Tagalog", "Telugu", "Thai", "Turkish",
+    "Ukrainian", "Urdu", "Vietnamese", "Wu Chinese", "Yoruba"
+].sort();
 
 const ToursShowPage = () => {
     // LẤY searchParams TỪ URL
@@ -47,6 +59,8 @@ const ToursShowPage = () => {
         rating: 0,           // 0 = All
         transportation: [],  // array rỗng
         tags: [],            // array rỗng
+        guideGender: '',
+        guideLanguage: '',
     };
 
     // State filter ĐANG ÁP DỤNG (dùng để fetch API)
@@ -144,6 +158,9 @@ const ToursShowPage = () => {
         if (filters.transportation.length > 0) params.append('transportation', filters.transportation.join(','));
         if (filters.tags.length > 0) params.append('tags', filters.tags.join(','));
 
+        if (filters.guideGender) params.append('guide_gender', filters.guideGender);
+        if (filters.guideLanguage) params.append('guide_language', filters.guideLanguage);
+
         //Sort
         if (sort) params.append('sort', sort);
 
@@ -189,7 +206,7 @@ const ToursShowPage = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* --- Hero Section --- */}
-            <div className="relative w-full h-64 md:h-72 bg-gray-800">
+            <div className="relative w-full h-72 md:h-80 bg-gray-800">
                 <img
                     src={heroImage || "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"}
                     alt="Scenic view"
@@ -207,7 +224,7 @@ const ToursShowPage = () => {
                     {/* Nút mở Dialog Filter */}
                     <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="h-10 px-6">
+                            <Button variant="outline" className="rounded-2xl h-10 px-6">
                                 <Filter className="w-4 h-4 mr-2"/>
                                 All filters
                             </Button>
@@ -312,7 +329,7 @@ const ToursShowPage = () => {
                                                     onCheckedChange={() => handleCheckboxChange('transportation', opt.value)}
                                                 />
                                                 <Label htmlFor={`trans-${opt.value}`}
-                                                       className="font-normal">{opt.label}</Label>
+                                                    className="font-normal">{opt.label}</Label>
                                             </div>
                                         ))}
                                     </div>
@@ -330,10 +347,36 @@ const ToursShowPage = () => {
                                                     onCheckedChange={() => handleCheckboxChange('tags', tag)}
                                                 />
                                                 <Label htmlFor={`tag-${tag}`}
-                                                       className="font-normal capitalize">{tag}</Label>
+                                                    className="font-normal capitalize">{tag}</Label>
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+
+                                {/* 7. Guide gender and language*/}
+                                <div className="space-y-3">
+                                    <Label>Guide Gender</Label>
+                                    <RadioGroup
+                                        value={tempFilters.guideGender}
+                                        onValueChange={(val) => setTempFilters(prev => ({ ...prev, guideGender: val }))}
+                                    >
+                                        {["Male", "Female", "Other"].map((g) => (
+                                            <div key={g} className="flex items-center space-x-2">
+                                                <RadioGroupItem value={g} id={`gender-${g}`} />
+                                                <Label htmlFor={`gender-${g}`} className="font-normal capitalize">{g}</Label>
+                                            </div>
+                                        ))}
+                                    </RadioGroup>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label>Guide Language</Label>
+                                    <Combobox
+                                        items={ALL_LANGUAGES.map(l => ({ value: l, label: l }))}
+                                        value={tempFilters.guideLanguage}
+                                        setValue={(val) => setTempFilters(prev => ({ ...prev, guideLanguage: val }))}
+                                        placeholder="Select language"
+                                    />
                                 </div>
 
                             </div>
@@ -346,14 +389,14 @@ const ToursShowPage = () => {
                     </Dialog>
 
                     {/* Nút Clear All (bên ngoài) */}
-                    <Button variant="ghost" onClick={handleClearFilters} className="text-gray-600">
-                        <X className="w-4 h-4 mr-2"/>
+                    <Button variant="ghost" onClick={handleClearFilters} className="rounded-2xl h-10 px-6 text-gray-600">
+                        <X className="w-4 h-4 mr-2" />
                         Clear Filters
                     </Button>
 
                     <div className="flex items-center gap-2 ml-auto">
-                      <span className="font-normal">Sort by:</span>
-                      <SortSelect sort={sort} setSort={setSort} options={SORT_OPTIONS} />
+                        <span className="font-normal">Sort by:</span>
+                        <SortSelect sort={sort} setSort={setSort} options={SORT_OPTIONS} />
                     </div>
 
 
@@ -373,7 +416,7 @@ const ToursShowPage = () => {
                     <p className="text-gray-600">
                         {isLoading
                             ? "Searching..."
-                            : `${tours.length} tours found`
+                            : `${tours.length == 0 ? "No" : tours.length} ${tours.length == 1 ? "tour" : "tours"} found`
                         }
                     </p>
                 </div>
@@ -381,7 +424,7 @@ const ToursShowPage = () => {
                 {/* --- Tours Grid --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {tours.map((tour) => (
-                        <TourCard key={tour.id} tour={tour}/>
+                        <TourCard key={tour.id} tour={tour} />
                     ))}
                 </div>
 
@@ -389,7 +432,7 @@ const ToursShowPage = () => {
                 {!isLoading && tours.length === 0 && (
                     <div className="text-center py-12">
                         <div className="text-gray-400 mb-4">
-                            <Search className="w-16 h-16 mx-auto"/>
+                            <Search className="w-16 h-16 mx-auto" />
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">
                             No tour matches

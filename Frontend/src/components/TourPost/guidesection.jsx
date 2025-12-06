@@ -55,54 +55,59 @@ const GuideSection = ({ guide }) => {
   };
 
   return (
-    <Card className="w-full bg-neutral-100 rounded-4xl p-4 flex flex-col sm:flex-row gap-4 items-center h-full">
-      <div className="flex-shrink-0 flex flex-col items-center gap-2">
+    <Card className="w-full bg-neutral-100 rounded-4xl px-6 py-4 flex flex-col sm:flex-row gap-8 items-center h-full">
+      <div className="flex-shrink-0 flex flex-col items-center gap-1">
         {/* Avatar */}
-          <Button
-            className="bg-transparent p-2 hover:bg-transparent flex mt-3 mb-3"
-            onClick={handleViewProfile}
-          >
-            <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden text-xl font-bold text-gray-700">
-          {guide.avatar ? (
-            <img
-              src={guide.avatar}
-              alt={guide.name || guide.username}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            guideInitial
-          )}
-            </div>
-          </Button>
+        <Button
+          className="bg-transparent p-0 hover:bg-transparent flex mt-1 mb-1 h-auto"
+          onClick={handleViewProfile}
+        >
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden text-3xl font-bold text-gray-700 cursor-pointer">
+            {guide.avatar ? (
+              <img
+                src={guide.avatar}
+                alt={guide.name || guide.username}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              guideInitial
+            )}
+          </div>
+        </Button>
         {/* Message button */}
         {userRole !== "guide" && (
           <Button
-            className="bg-[#068F64] rounded-2xl w-auto h-auto text-[9px] flex items-center gap-1"
+            className="bg-[#068F64] rounded-2xl px-4 py-1 text-sm flex items-center gap-2"
             onClick={handleMessageClick}
           >
             <MessageCircleMore /> Message{" "}
-            {guide.name
+            {/* {guide.name
               ? guide.name.trim().split(" ").slice(-1).join(" ")
-              : guide.username}
+              : guide.username} */}
           </Button>
         )}
 
       </div>
 
-      <div className="flex-1 flex flex-col justify-center">
-        <h3 className="text-lg font-semibold">{guide.name}</h3>
-        <p className="text-gray-700 text-sm">Location: {guide.location}</p>
-        <p className="text-gray-700 text-sm">Languages: {guide.languages.join(", ")}</p>
-        <div className="flex items-center gap-1 mt-1">
+      <div className="flex-1 flex flex-col justify-center gap-1">
+        <h3 className="text-xl font-bold">{guide.name}</h3>
+        <p className="text-gray-700 text-base">Location: {guide.location}</p>
+        <p className="text-gray-700 text-base">
+          Languages:{" "}
+          {guide.languages.length > 3
+            ? `${guide.languages.slice(0, 3).join(", ")}, (+${guide.languages.length - 3})`
+            : guide.languages.join(", ")}
+        </p>
+        <div className="flex items-center gap-1 mt-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star
               key={i}
-              className={`w-4 h-4 ${i < guide.rating ? "text-yellow-400" : "text-gray-300"}`}
+              className={`w-5 h-5 ${i < guide.rating ? "text-yellow-400" : "text-gray-300"}`}
               fill={i < guide.rating ? "currentColor" : "lightgray"}
               stroke="currentColor"
             />
           ))}
-          <span className="text-sm ml-1"> {guide.rating.toFixed(1)} ({guide.rating_count} votes)</span>
+          <span className="text-base ml-2"> {guide.rating.toFixed(1)} ({guide.rating_count} votes)</span>
         </div>
         <div className="flex flex-wrap gap-2 mt-3">
 

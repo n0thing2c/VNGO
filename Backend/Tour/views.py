@@ -613,6 +613,9 @@ def get_all_tours(request):
         transport = request.GET.get('transportation')
         tags = request.GET.get('tags')
 
+        guide_gender = request.GET.get('guide_gender')
+        guide_language = request.GET.get('guide_language')
+
         # Filters
         # if search_term:
         #     tours_queryset = tours_queryset.filter(
@@ -672,6 +675,11 @@ def get_all_tours(request):
                 # Use icontains for case-insensitive match in JSON array
                 tours_queryset = tours_queryset.filter(tags__icontains=tag)
             tours_queryset = tours_queryset.filter(q_filter).distinct()
+
+        if guide_gender:
+            tours_queryset = tours_queryset.filter(guide__gender__iexact=guide_gender)
+        if guide_language:
+            tours_queryset = tours_queryset.filter(guide__language__icontains=guide_language)
 
         # -------------------
         # Sorting

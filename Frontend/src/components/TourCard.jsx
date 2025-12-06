@@ -10,8 +10,6 @@ export default function TourCard({ tour }) {
     title = 'Amazing Tour Title',
     description = 'A brief and exciting description of the tour goes here.',
     image = 'https://placehold.co/400x300/60a5fa/ffffff?text=Tour+Image',
-    // guideName = 'Awesome Guide',
-    // guideImage = 'https://placehold.co/100x100/e0e0e0/000000?text=Guide',
     rating = 4.5,
     reviews = 10,
     duration = 4,
@@ -21,6 +19,13 @@ export default function TourCard({ tour }) {
     transportation = 'Car',
     price = 114
   } = tour || {};
+
+  // // Extract guide info safely
+  // const guide = tour?.guide;
+  // const guideName = guide?.name || tour?.guideName || 'Local Guide';
+  // // Use a sensible default or the provided avatar. If it's a relative path, the browser/setup might need a base URL, 
+  // // but assuming incoming data is handled like other images for now.
+  // const guideAvatar = guide?.avatar || tour?.guideImage || 'https://placehold.co/100x100/e0e0e0/000000?text=Guide';
 
   // Determine display group size
   const displayGroupSize = (min_people && max_people)
@@ -49,14 +54,29 @@ export default function TourCard({ tour }) {
   return (
     <Link to={`/tour/post/${id}`} className="block rounded-3xl bg-white shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col h-full text-left">
       {/* Full width image - no gap at top */}
-      <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
+      <div className="relative h-56 w-full overflow-hidden flex-shrink-0 group">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/fecaca/991b1b?text=Image+Error'; }}
         />
-        {/* You can add badges here if needed, e.g., for "Featured" */}
+
+        {/* Gradient Overlay for text readability */}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+
+        {/* Guide Info Overlay */}
+        {/* <div className="absolute bottom-3 left-3 flex items-center gap-2 z-10">
+          <img
+            src={guideAvatar}
+            alt={guideName}
+            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x100/e0e0e0/000000?text=G'; }}
+          />
+          <span className="text-white font-medium text-sm drop-shadow-md truncate max-w-[150px]">
+            {guideName}
+          </span>
+        </div> */}
       </div>
 
       {/* Info bar (Duration, Group Size, Transport) */}
@@ -76,42 +96,25 @@ export default function TourCard({ tour }) {
       </div>
 
       {/* Main Content */}
-      <div className="p-6">
-        {/* Guide Info */}
-        <div className="flex items-center gap-3 mb-4">
-          {/* <img 
-            src={guideImage} 
-            alt={guideName} 
-            className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-            onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/100x100/e0e0e0/000000?text=Guide'; }}
-          />
-          <div>
-            <h4 className="font-semibold text-lg text-gray-900">{guideName}</h4>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-0.5">
-                {renderStars()}
-              </div>
-              <span className="text-sm text-gray-600">
-                {rating.toFixed(1)} ({reviews})
-              </span>
-            </div>
-          </div> */}
-        </div>
+      <div className="p-5 flex flex-col gap-2">
 
-        <div className="flex items-center gap-2 mb-4">
+        {/* Title */}
+        <h3 className="text-xl font-bold text-gray-900 truncate" title={title}>
+          {title}
+        </h3>
+
+        {/* Rating */}
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-0.5">
             {renderStars()}
           </div>
           <span className="text-sm text-gray-600">
-            {rating.toFixed(1)} ({reviews})
+            {rating.toFixed(1)} <span className="text-gray-400">({reviews} reviews)</span>
           </span>
         </div>
 
-        {/* Tour Details */}
-        <h3 className="text-xl font-bold text-gray-900 truncate mb-2" title={title}>
-          {title}
-        </h3>
-        <p className="text-gray-600 text-sm mb-5 line-clamp-2">
+        {/* Description */}
+        <p className="text-gray-600 text-sm line-clamp-2 mt-1 mb-2">
           {description}
         </p>
 

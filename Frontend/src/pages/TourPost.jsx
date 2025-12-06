@@ -387,43 +387,48 @@ export default function TourPost() {
                     <div>
                         <div className="flex flex-col gap-2 mb-4">
                             {/* Achievements - Above Title */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                {achievements.slice(0, 10).map((ach) => (
-                                    <AchievementBadge
-                                        key={ach}
-                                        variant={ACHIEVEMENT_VARIANTS[ach]}
-                                        label={ach}
-                                    />
-                                ))}
+                            {achievements.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {achievements.slice(0, 5).map((ach) => (
+                                        <AchievementBadge
+                                            key={ach}
+                                            variant={ACHIEVEMENT_VARIANTS[ach]}
+                                            label={ach}
+                                        />
+                                    ))}
 
-                                {/* See All Achievements */}
-                                {achievements.length > 10 && (
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
-                                                +{achievements.length - 10} more
-                                            </Badge>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>All Achievements</DialogTitle>
-                                                <DialogDescription>
-                                                    Achievements earned by this tour.
-                                                </DialogDescription>
-                                            </DialogHeader>
-                                            <div className="flex flex-wrap gap-2 mt-4">
-                                                {achievements.map((ach) => (
-                                                    <AchievementBadge
-                                                        key={ach}
-                                                        variant={ACHIEVEMENT_VARIANTS[ach]}
-                                                        label={ach}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
-                                )}
-                            </div>
+                                    {/* See All Achievements */}
+                                    {achievements.length > 5 && (
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Badge
+                                                    variant="outline"
+                                                    className="cursor-pointer hover:bg-gray-100"
+                                                >
+                                                    +{achievements.length - 5} more
+                                                </Badge>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>All Achievements</DialogTitle>
+                                                    <DialogDescription>
+                                                        Achievements earned by this tour.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="flex flex-wrap gap-2 mt-4">
+                                                    {achievements.map((ach) => (
+                                                        <AchievementBadge
+                                                            key={ach}
+                                                            variant={ACHIEVEMENT_VARIANTS[ach]}
+                                                            label={ach}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Tour Name - Scaled */}
                             <FieldLabel
@@ -438,29 +443,72 @@ export default function TourPost() {
                             </FieldLabel>
                         </div>
 
-                        {/* Tags - Original Position (Below Title) */}
-                        <div className="flex flex-wrap gap-y-2 mb-6">
-                            {tour.tags.map((tag, index) => (
-                                <span key={index} className="mr-2">
-                                    <Badge
-                                        // variant={TOUR_TAG_VARIANTS[tag] || "default"}
-                                        // className="cursor-pointer inline-flex items-center gap-1"
-                                        variant="secondary"
-                                        className={cn(
-                                            "cursor-pointer inline-flex items-center gap-1 font-normal px-2.5 py-0.5 text-sm transition-colors",
-                                            TOUR_TAG_STYLES[tag] || "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                                        )}
-                                    >
-                                        {TOUR_TAG_ICONS[tag] && (
-                                            <span className="flex-shrink-0">
-                                                {TOUR_TAG_ICONS[tag]}
-                                            </span>
-                                        )}
-                                        {tag}
-                                    </Badge>
-                                </span>
-                            ))}
-                        </div>
+                        {/* Tags - Original Position (Below Title) - Only show if tags exist */}
+                        {tour.tags && tour.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-y-2 mb-6 items-center">
+                                {tour.tags.slice(0, 5).map((tag, index) => (
+                                    <span key={index} className="mr-2">
+                                        <Badge
+                                            variant="secondary"
+                                            className={cn(
+                                                "cursor-pointer inline-flex items-center gap-1 font-normal px-2.5 py-0.5 text-sm transition-colors",
+                                                TOUR_TAG_STYLES[tag] ||
+                                                "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                            )}
+                                        >
+                                            {TOUR_TAG_ICONS[tag] && (
+                                                <span className="flex-shrink-0">
+                                                    {TOUR_TAG_ICONS[tag]}
+                                                </span>
+                                            )}
+                                            {tag}
+                                        </Badge>
+                                    </span>
+                                ))}
+
+                                {/* Show All Tags Dialog */}
+                                {tour.tags.length > 5 && (
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Badge
+                                                variant="outline"
+                                                className="cursor-pointer hover:bg-gray-100 h-6 px-2.5"
+                                            >
+                                                +{tour.tags.length - 5} more
+                                            </Badge>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>All Tags</DialogTitle>
+                                                <DialogDescription>
+                                                    Tags associated with this tour.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="flex flex-wrap gap-2 mt-4">
+                                                {tour.tags.map((tag, index) => (
+                                                    <Badge
+                                                        key={index}
+                                                        variant="secondary"
+                                                        className={cn(
+                                                            "cursor-pointer inline-flex items-center gap-1 font-normal px-2.5 py-0.5 text-sm transition-colors",
+                                                            TOUR_TAG_STYLES[tag] ||
+                                                            "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                                        )}
+                                                    >
+                                                        {TOUR_TAG_ICONS[tag] && (
+                                                            <span className="flex-shrink-0">
+                                                                {TOUR_TAG_ICONS[tag]}
+                                                            </span>
+                                                        )}
+                                                        {tag}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/*row 2*/}
