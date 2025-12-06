@@ -9,7 +9,7 @@ import React, { createContext, useContext, useEffect, useCallback, useState } fr
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { callNotifyService } from "@/services/callNotifyService";
 import { webrtcService } from "@/services/webrtcService";
-import { useAuthStore } from "../../../stores/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import IncomingCallModal from "./IncomingCallModal";
 import CallScreen from "./CallScreen";
 

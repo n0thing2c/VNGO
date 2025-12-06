@@ -289,7 +289,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
                   <AlertDialogAction
                     onClick={handleDecline}
                     disabled={isProcessing || !declineReason.trim()}
-                    className="bg-red-600 hover:bg-red-700"
+                    className="bg-[#CC3737] hover:bg-red-700"
                   >
                     {isProcessing ? "Processing..." : "Decline Booking"}
                   </AlertDialogAction>

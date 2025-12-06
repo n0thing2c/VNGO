@@ -1,6 +1,22 @@
 import { Star, Users, Clock, DollarSign, Calendar, CalendarDays } from "lucide-react";
-
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from "@/components/ui/pagination.jsx";
+import {useState} from "react";
 export default function PastTours({ role, pastTours }) {
+    const [currentPage, setCurrentPage] = useState(1);
+  const toursPerPage = 6;
+  const totalPages = Math.ceil(pastTours.length / toursPerPage);
+  const indexOfLastTour = currentPage * toursPerPage;
+  const indexOfFirstTour = indexOfLastTour - toursPerPage;
+  const currentTours = pastTours.slice(indexOfFirstTour, indexOfLastTour);
+
   const handleCardClick = (tourId) => {
     // Navigate to view page
     window.location.href = `/tour/${tourId}`;
@@ -22,7 +38,7 @@ export default function PastTours({ role, pastTours }) {
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {pastTours.map((tour) => (
+        {currentTours.map((tour) => (
           <div key={tour.id} onClick={() => handleCardClick(tour.tourId)} className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
             {/* Full width image - no gap at top */}
             {tour.image && (
@@ -93,6 +109,46 @@ export default function PastTours({ role, pastTours }) {
           </div>
         ))}
       </div>
+        {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); if (currentPage > 1) setCurrentPage(currentPage - 1); }}
+                />
+              </PaginationItem>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setCurrentPage(i + 1); }}
+                    className={currentPage === i + 1 ? "bg-gray-800 text-white" : "text-black"}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              {totalPages > 5 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage(currentPage + 1); }}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 }
