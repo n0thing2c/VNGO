@@ -170,9 +170,9 @@ For each tour, use EXACTLY this format:
 
 ⏳ **Duration:** [Duration]\n
 💰 **Price:** [Price]\n
-� **Group size:** [Group size]\n
+👥 **Group size:** [Group size]\n
 ⭐ **Rating:** [Rating info]\n
-� [View Tour Details](http://localhost:5173/tour/[ID])\n
+🔗 [View Tour Details](http://localhost:5173/tour/[ID])\n
 
 TOUR INFORMATION:
 {context_text}
