@@ -238,6 +238,76 @@ class BookingViewSet(viewsets.ModelViewSet):
         # Add tourist to validated data
         serializer.validated_data["tourist"] = tourist
 
+        # --- VALIDATION LOGIC START ---
+        tour = serializer.validated_data.get('tour')
+        tour_date = serializer.validated_data.get('tour_date')
+        tour_time = serializer.validated_data.get('tour_time')
+        
+        # 1. Prevent multiple active bookings for the SAME TOUR
+        # "Active" means PENDING or ACCEPTED.
+        if Booking.objects.filter(
+            tourist=tourist,
+            tour=tour,
+            status__in=[BookingStatus.PENDING, BookingStatus.ACCEPTED]
+        ).exists():
+            return Response(
+                {"error": "You already have an active booking for this tour. Please wait for it to be completed or cancelled."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 2. Prevent TIME OVERLAP for the tourist
+        # A tourist cannot be in two places at once.
+        # We need to know the duration of the new tour.
+        tour_duration = tour.duration  # in hours
+        
+        # Calculate start and end datetime for the NEW booking
+        new_start = datetime.combine(tour_date, tour_time)
+        from datetime import timedelta
+        new_end = new_start + timedelta(hours=tour_duration)
+        
+        # Check against all other ACTIVE bookings of this tourist
+        active_bookings = Booking.objects.filter(
+            tourist=tourist,
+            status__in=[BookingStatus.PENDING, BookingStatus.ACCEPTED]
+        ).select_related('tour')
+
+        for existing in active_bookings:
+            existing_start = datetime.combine(existing.tour_date, existing.tour_time)
+            existing_duration = existing.tour.duration
+            existing_end = existing_start + timedelta(hours=existing_duration)
+
+            # Check for overlap: StartA < EndB and StartB < EndA
+            if new_start < existing_end and existing_start < new_end:
+                 return Response(
+                    {
+                        "error": f"This booking overlaps with your existing booking for '{existing.tour.name}' ({existing.tour_date} at {existing.tour_time})."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        # 3. Prevent BOOKING if GUIDE is already BUSY
+        # If the guide has an ACCEPTED booking effectively overlapping this time, they are busy.
+        # Pending bookings for the guide do not block, as they can be declined.
+        guide = tour.guide
+        if guide:
+            guide_confirmed_bookings = Booking.objects.filter(
+                guide=guide,
+                status=BookingStatus.ACCEPTED
+            ).select_related('tour')
+
+            for confirmed in guide_confirmed_bookings:
+                confirmed_start = datetime.combine(confirmed.tour_date, confirmed.tour_time)
+                confirmed_duration = confirmed.tour.duration
+                confirmed_end = confirmed_start + timedelta(hours=confirmed_duration)
+
+                if new_start < confirmed_end and confirmed_start < new_end:
+                        return Response(
+                        {
+                            "error": f"The guide is not available at this time. They have a confirmed tour '{confirmed.tour.name}' from {confirmed.tour_time} to {confirmed_end.time()}."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+        # --- VALIDATION LOGIC END ---
+
         booking = serializer.save()
 
         # Return full booking details
@@ -339,6 +409,35 @@ class BookingViewSet(viewsets.ModelViewSet):
         action_type = response_serializer.validated_data["action"]
 
         if action_type == "accept":
+            # --- GUIDE OVERLAP VALIDATION START ---
+            # A guide cannot accept a booking if it overlaps with another ACCEPTED booking.
+            
+            # Calculate time range for the booking being accepted
+            current_start = datetime.combine(booking.tour_date, booking.tour_time)
+            from datetime import timedelta
+            current_duration = booking.tour.duration
+            current_end = current_start + timedelta(hours=current_duration)
+            
+            # Check against other ACCEPTED bookings for this guide
+            guide_schedule_conflicts = Booking.objects.filter(
+                guide=guide,
+                status=BookingStatus.ACCEPTED
+            ).exclude(id=booking.id).select_related('tour') # Exclude self just in case
+            
+            for confirmed in guide_schedule_conflicts:
+                confirmed_start = datetime.combine(confirmed.tour_date, confirmed.tour_time)
+                confirmed_duration = confirmed.tour.duration
+                confirmed_end = confirmed_start + timedelta(hours=confirmed_duration)
+                
+                if current_start < confirmed_end and confirmed_start < current_end:
+                     return Response(
+                        {
+                            "error": f"You cannot accept this booking because it overlaps with confirmed booking for '{confirmed.tour.name}' at {confirmed.tour_time}."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            # --- GUIDE OVERLAP VALIDATION END ---
+
             booking.accept()
             message = f"Your booking for {booking.tour.name} on {booking.tour_date} has been accepted!"
 

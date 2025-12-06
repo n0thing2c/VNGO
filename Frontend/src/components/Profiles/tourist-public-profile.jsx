@@ -45,7 +45,7 @@ const StarRating = ({rating = 0}) => {
                         key={idx}
                         className={`w-4 h-4 ${
                             isFilled ? "text-yellow-400" : "text-gray-300"
-                        }`}
+                            }`}
                         fill="currentColor"
                     />
                 );
@@ -95,7 +95,7 @@ const PastTourCard = ({tour, onViewTour}) => (
 );
 
 export function TouristPublicProfile({touristId}) {
-    const {user} = useAuthStore();
+    // const {user} = useAuthStore();
     const navigate = useNavigate();
     const [tourist, setTourist] = useState(null); // holds tourist profile
     const [tours, setTours] = useState([]); // past tours
@@ -192,7 +192,7 @@ export function TouristPublicProfile({touristId}) {
                             style={{
                                 backgroundImage: `url(${
                                     tourist.banner_image || defaultBanner
-                                })`,
+                                    })`,
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
                             }}
@@ -249,18 +249,18 @@ export function TouristPublicProfile({touristId}) {
                                 {/* Other Info */}
                                 <div className="space-y-2">
                                     <div className="flex items-center text-gray-600 text-base md:text-lg">
-                                        <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0"/>
+                                        <MapPin className="w-5 h-5 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
                                         <span className="truncate">
-                      {tourist.nationality || "Nationality not provided"}
-                    </span>
+                                            {tourist.nationality || "Nationality not provided"}
+                                        </span>
                                     </div>
                                     <div className="flex items-center text-gray-600 text-base md:text-lg">
                                         <Calendar className="w-5 h-5 md:w-5 md:h-5 mr-2 text-orange-400 shrink-0"/>
                                         <span>
-                      {tourist.age
-                          ? `${tourist.age} years old`
-                          : "Age not provided"}
-                    </span>
+                                            {tourist.age
+                                                ? `${tourist.age} years old`
+                                                : "Age not provided"}
+                                        </span>
                                     </div>
                                     <div className="flex items-center text-gray-600 text-base md:text-lg">
                                         {tourist.gender === "Male" && (
@@ -277,8 +277,8 @@ export function TouristPublicProfile({touristId}) {
                                     <div className="flex items-center text-gray-600 text-base md:text-lg">
                                         <Mail className="w-5 h-5 md:w-5 md:h-5 mr-2 text-green-600 shrink-0"/>
                                         <span className="truncate">
-                      {user?.email || "Email not provided"}
-                    </span>
+                                            {tourist.email || "Email not provided"}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -382,8 +382,8 @@ export function TouristPublicProfile({touristId}) {
                                 </h3>
                                 {!!reviews.length && (
                                     <span className="text-base md:text-lg text-gray-500">
-                    {reviews.length} review{reviews.length === 1 ? "" : "s"}
-                  </span>
+                                        {reviews.length} review{reviews.length === 1 ? "" : "s"}
+                                    </span>
                                 )}
                             </div>
                         </div>

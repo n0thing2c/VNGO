@@ -370,7 +370,9 @@ class FrontendBookingCardSerializer(serializers.ModelSerializer):
 
     title = serializers.CharField(source="tour.name", read_only=True)
     tourId = serializers.IntegerField(source="tour.id", read_only=True)
+    guideId = serializers.IntegerField(source="guide.id", read_only=True)
     guideName = serializers.CharField(source="guide.name", read_only=True)
+    touristId = serializers.IntegerField(source="tourist.id", read_only=True)
     touristName = serializers.CharField(source="tourist.name", read_only=True)
     status = serializers.CharField(source="get_status_display", read_only=True)
     status_key = serializers.CharField(source="status", read_only=True)
@@ -385,7 +387,9 @@ class FrontendBookingCardSerializer(serializers.ModelSerializer):
             "id",
             "tourId",
             "title",
+            "guideId",
             "guideName",
+            "touristId",
             "touristName",
             "status",
             "status_key",

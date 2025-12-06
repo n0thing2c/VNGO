@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 export default function BookingCard({ booking, showActions = false, refreshData }) {
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
@@ -40,11 +41,15 @@ export default function BookingCard({ booking, showActions = false, refreshData 
   const handleTouristClick = async (event) => {
     event.stopPropagation();
 
-    const detail = await managementService.getBookingDetails(booking.id);
-    const touristId =
-      detail?.data?.tourist?.id ??
-      detail?.data?.tourist ??
-      detail?.data?.tourist_id;
+    let touristId = booking.touristId;
+
+    if (!touristId) {
+      const detail = await managementService.getBookingDetails(booking.id);
+      touristId =
+        detail?.data?.tourist?.id ??
+        detail?.data?.tourist ??
+        detail?.data?.tourist_id;
+    }
 
     if (!touristId) {
       toast.error("Can't find tourist ID.");
@@ -55,6 +60,31 @@ export default function BookingCard({ booking, showActions = false, refreshData 
       navigate(`/tourist-public-profile/${touristId}`);
     } catch (err) {
       window.location.href = `/tourist-public-profile/${touristId}`;
+    }
+  };
+
+  const handleGuideClick = async (event) => {
+    event.stopPropagation();
+
+    let guideId = booking.guideId;
+
+    if (!guideId) {
+      const detail = await managementService.getBookingDetails(booking.id);
+      guideId =
+        detail?.data?.guide?.id ??
+        detail?.data?.guide ??
+        detail?.data?.guide_id;
+    }
+
+    if (!guideId) {
+      toast.error("Can't find guide ID.");
+      return;
+    }
+
+    try {
+      navigate(`/public-profile/${guideId}`);
+    } catch (err) {
+      window.location.href = `/public-profile/${guideId}`;
     }
   };
 
@@ -145,7 +175,13 @@ export default function BookingCard({ booking, showActions = false, refreshData 
         {booking.guideName && !showActions && (
           <p className="text-sm text-gray-600 mb-3">
             Tour guide:{" "}
-            <span className="font-semibold">{booking.guideName}</span>
+            <button
+              type="button"
+              onClick={handleGuideClick}
+              className="font-semibold text-[#068F64] hover:underline focus:outline-none cursor-pointer"
+            >
+              {booking.guideName}
+            </button>
           </p>
         )}
 
@@ -213,8 +249,8 @@ export default function BookingCard({ booking, showActions = false, refreshData 
               onClick={handleAccept}
               disabled={isProcessing}
               className="flex-1 flex items-center justify-center gap-2 bg-[#068F64] rounded-full border border-transparent hover:bg-white hover:border-black hover:text-black text-white h-10 transition-all"
-              // className="flex items-center gap-2 bg-[#068F64] rounded-full hover:bg-white hover:border-black hover:text-black hover:border-1 text-white"
-              // className="w-full bg-green-600 hover:bg-green-700 rounded-full h-10"
+            // className="flex items-center gap-2 bg-[#068F64] rounded-full hover:bg-white hover:border-black hover:text-black hover:border-1 text-white"
+            // className="w-full bg-green-600 hover:bg-green-700 rounded-full h-10"
             >
               {isProcessing ? "Processing..." : "Accept"}
             </Button>
@@ -230,7 +266,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
                   variant="outline"
                   onClick={(e) => e.stopPropagation()}
                   className="flex-1 rounded-full h-10 border bg-[#CC3737] hover:bg-white hover:border-black hover:text-black text-white"
-                  // className="w-full rounded-full h-10 border-red-300 text-red-600 hover:bg-red-50"
+                // className="w-full rounded-full h-10 border-red-300 text-red-600 hover:bg-red-50"
                 >
                   Decline
                 </Button>
