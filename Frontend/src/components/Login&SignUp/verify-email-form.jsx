@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/field.jsx";
 import { toast } from "sonner";
 import { authService } from "@/services/authService.js";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { Mail, MailCheck, MailX } from "lucide-react";
 
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
@@ -45,13 +46,20 @@ export function VerifyEmailForm({ className, ...props }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+  const hasVerifiedRef = useRef(false); // Track if verification has been attempted
 
-  // Get email from localStorage (set after signup)
-  const pendingEmail = localStorage.getItem("pendingVerificationEmail");
+  // Get email from sessionStorage (set after signup)
+  const pendingEmail = sessionStorage.getItem("pendingVerificationEmail");
 
   const handleEmailVerification = useCallback(
     async (verificationToken) => {
+      // Prevent multiple calls with the same token
+      if (hasVerifiedRef.current) {
+        return;
+      }
+
       try {
+        hasVerifiedRef.current = true; // Mark as attempted
         setIsLoading(true);
         setStatus("verifying");
         await authService.verifyEmail(verificationToken);
@@ -64,6 +72,8 @@ export function VerifyEmailForm({ className, ...props }) {
       } catch (error) {
         setStatus("error");
         toast.error(getErrorMessage(error));
+        // Reset ref on error so user can retry if needed
+        hasVerifiedRef.current = false;
       } finally {
         setIsLoading(false);
       }
@@ -73,15 +83,15 @@ export function VerifyEmailForm({ className, ...props }) {
 
   // Auto-verify if token is present in URL
   useEffect(() => {
-    if (token) {
+    if (token && !hasVerifiedRef.current && status === "pending") {
       handleEmailVerification(token);
     }
-  }, [token, handleEmailVerification]);
+  }, [token, handleEmailVerification, status]);
 
-  // Clean up email from localStorage after successful verification
+  // Clean up email from sessionStorage after successful verification
   useEffect(() => {
     if (status === "success") {
-      localStorage.removeItem("pendingVerificationEmail");
+      sessionStorage.removeItem("pendingVerificationEmail");
     }
   }, [status]);
 
@@ -127,7 +137,9 @@ export function VerifyEmailForm({ className, ...props }) {
               <>
                 <Field>
                   <div className="py-8">
-                    <div className="text-6xl mb-4">📧</div>
+                    <div className="flex justify-center mb-4">
+                      <Mail className="w-16 h-16 text-primary" />
+                    </div>
                     <p className="text-lg mb-2 font-medium">Check your email</p>
                     <p className="text-sm text-muted-foreground mb-6">
                       We've sent a verification link to your email address.
@@ -184,7 +196,9 @@ export function VerifyEmailForm({ className, ...props }) {
             {status === "success" && (
               <Field>
                 <div className="py-8">
-                  <div className="text-6xl mb-4">✅</div>
+                  <div className="flex justify-center mb-4">
+                    <MailCheck className="w-16 h-16 text-green-600" />
+                  </div>
                   <p className="text-lg mb-2 font-medium text-green-600">
                     Email Verified Successfully!
                   </p>
@@ -205,7 +219,9 @@ export function VerifyEmailForm({ className, ...props }) {
             {status === "error" && (
               <Field>
                 <div className="py-8">
-                  <div className="text-6xl mb-4">❌</div>
+                  <div className="flex justify-center mb-4">
+                    <MailX className="w-16 h-16 text-red-600" />
+                  </div>
                   <p className="text-lg mb-2 font-medium text-red-600">
                     Verification Failed
                   </p>

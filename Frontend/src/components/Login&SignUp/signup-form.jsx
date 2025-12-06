@@ -76,8 +76,8 @@ export function SignupForm({ className, ...props }) {
 
     try {
       await signUp(username, email, password, roleLower);
-      // Store email in localStorage for resend functionality
-      localStorage.setItem("pendingVerificationEmail", email);
+      // Store email in sessionStorage for resend functionality (cleared when tab closes)
+      sessionStorage.setItem("pendingVerificationEmail", email);
       toast.success("Please check your email to verify your account.");
       // Redirect to verify email page
       setTimeout(() => {
@@ -191,7 +191,7 @@ export function SignupForm({ className, ...props }) {
               </Field>
 
               <Field>
-                <FieldDescription className="mt-2 text-sm">
+                <div className="mt-2 text-sm text-muted-foreground">
                   <div className="flex items-start gap-2">
                     <input
                       type="checkbox"
@@ -221,7 +221,7 @@ export function SignupForm({ className, ...props }) {
                       .
                     </label>
                   </div>
-                </FieldDescription>
+                </div>
                 <Button
                   className="w-full md:w-auto h-9 px-4 text-sm mt-3"
                   type="submit"

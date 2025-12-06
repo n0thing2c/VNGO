@@ -110,6 +110,14 @@ export function LoginForm({ className, ...props }) {
                   required
                   className="rounded-full h-12 text-base"
                 />
+                <div className="flex justify-end mt-1">
+                  <a
+                    href="/forget-password"
+                    className="text-sm text-primary underline"
+                  >
+                    Forget password?
+                  </a>
+                </div>
               </Field>
 
               <Field>

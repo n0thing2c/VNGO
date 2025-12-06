@@ -39,9 +39,9 @@ api.interceptors.response.use(
         if (!originalRequest || originalRequest._retry) {
             return Promise.reject(error);
         }
-        // Do NOT attempt refresh on auth endpoints like login/signup/verify
+        // Do NOT attempt refresh on auth endpoints like login/signup/verify/password reset
         const url = (originalRequest && originalRequest.url) || "";
-        const isAuthPath = ["/auth/login/", "/auth/signup/", "/auth/email/confirm/", "/auth/email/resend/"].some((p) => url.includes(p));
+        const isAuthPath = ["/auth/login/", "/auth/signup/", "/auth/email/confirm/", "/auth/email/resend/", "/auth/password/forget/", "/auth/password/reset/"].some((p) => url.includes(p));
         if (error.response && error.response.status === 401 && !isAuthPath) {
             if (isRefreshing) {
                 return new Promise((resolve) => {

@@ -155,8 +155,6 @@ export default function ManagementTours() {
     const fetchManagementData = async () => {
       setIsLoading(true);
       if (IS_MOCK_TEST) {
-        console.log(`[MOCK] Đang test với Mock Data cho vai trò: ${TEST_ROLE}`);
-        
         // Mô phỏng độ trễ của API
         setTimeout(() => {
             setManagementData(MOCK_MANAGEMENT_DATA);
@@ -197,8 +195,7 @@ export default function ManagementTours() {
 
   const refreshData = async () => {
     if (IS_MOCK_TEST) {
-        console.log("[MOCK] Refresh triggered. No API call made.");
-        return; 
+      return;
     }
     const result = await managementService.getManagementSnapshot();
     if (result.success) {
