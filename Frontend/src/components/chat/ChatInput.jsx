@@ -1,10 +1,34 @@
-import { useState, useRef, useCallback, memo } from "react";
+import { useState, useRef, useCallback, memo, useEffect } from "react";
 import { websocketService } from "@/services/websocketService";
+import EmojiPicker from "emoji-picker-react";
+import { Smile } from "lucide-react";
 
 const ChatInput = memo(({ onSendMessage, disabled = false }) => {
   const [newMessage, setNewMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef(null);
   const lastTypingTimeRef = useRef(0);
+  const emojiPickerRef = useRef(null);
+  const emojiButtonRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showEmojiPicker &&
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(event.target)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showEmojiPicker]);
 
   const handleTyping = useCallback(() => {
     if (!websocketService.isConnected()) return;
@@ -36,6 +60,16 @@ const ChatInput = memo(({ onSendMessage, disabled = false }) => {
     handleTyping();
   }, [handleTyping]);
 
+  const handleEmojiClick = useCallback((emojiData) => {
+    setNewMessage((prev) => prev + emojiData.emoji);
+    // Focus back to input after selecting emoji
+    inputRef.current?.focus();
+  }, []);
+
+  const toggleEmojiPicker = useCallback(() => {
+    setShowEmojiPicker((prev) => !prev);
+  }, []);
+
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
     if (!websocketService.isConnected() || disabled) return;
@@ -43,24 +77,62 @@ const ChatInput = memo(({ onSendMessage, disabled = false }) => {
     const messageToSend = newMessage.trim() || "👍";
     onSendMessage(messageToSend);
     setNewMessage("");
+    setShowEmojiPicker(false);
   }, [newMessage, onSendMessage, disabled]);
 
   return (
-    <form onSubmit={handleSubmit} className="p-4">
+    <form onSubmit={handleSubmit} className="p-4 relative">
+      {/* Emoji Picker Popup */}
+      {showEmojiPicker && (
+        <div
+          ref={emojiPickerRef}
+          className="absolute bottom-full right-16 mb-2 z-50"
+        >
+          <EmojiPicker
+            onEmojiClick={handleEmojiClick}
+            width={320}
+            height={400}
+            searchPlaceholder="Search emoji..."
+            previewConfig={{ showPreview: false }}
+            skinTonesDisabled
+            lazyLoadEmojis
+          />
+        </div>
+      )}
+
       <div className="flex items-center gap-2">
+        {/* Input Field */}
         <input
+          ref={inputRef}
           type="text"
           value={newMessage}
           onChange={handleChange}
-          placeholder="Type your message here"
-          className="flex-1 px-4 py-2 border border-black rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Aa"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
           disabled={disabled}
         />
+
+        {/* Emoji Button - Messenger style (right side) */}
+        <button
+          ref={emojiButtonRef}
+          type="button"
+          onClick={toggleEmojiPicker}
+          className={`
+            p-2 rounded-full shrink-0 transition-all duration-200
+            text-blue-600 hover:bg-blue-50 active:scale-95
+            ${showEmojiPicker ? "bg-blue-50" : ""}
+          `}
+          title="Emoji"
+        >
+          <Smile className="w-6 h-6" />
+        </button>
+
+        {/* Send / Like Button */}
         <button
           type="submit"
           disabled={!websocketService.isConnected() || disabled}
           className="
-            p-3 rounded-full shrink-0 transition-all duration-200
+            p-2 rounded-full shrink-0 transition-all duration-200
             text-blue-600 hover:bg-blue-50 active:scale-95
             disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed
           "
@@ -74,7 +146,7 @@ const ChatInput = memo(({ onSendMessage, disabled = false }) => {
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="w-6 h-6 ml-1"
+              className="w-6 h-6"
             >
               <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
             </svg>
