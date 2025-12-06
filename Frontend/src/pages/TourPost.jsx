@@ -328,8 +328,6 @@ export default function TourPost() {
                 special_requests: specialRequests || "",
             };
 
-            console.log("Booking data being sent:", bookingData);
-
             const result = await managementService.createBooking(bookingData);
 
             if (result.success) {
