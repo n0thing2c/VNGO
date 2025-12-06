@@ -335,3 +335,81 @@ class ConfirmEmailSerializer(serializers.Serializer):
             return user
         else:
             raise RuntimeError("Token has neither pending_signup nor user")
+
+
+class ForgetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for requesting password reset.
+    Sends email with reset token if user exists.
+    """
+
+    email = serializers.EmailField(required=True, allow_blank=False)
+
+    def validate_email(self, value):
+        # Check if user exists with this email
+        user = User.objects.filter(email__iexact=value, email_verified=True).first()
+        if not user:
+            # Don't reveal if email exists or not (security)
+            # Return success anyway to prevent email enumeration
+            return value
+        return value
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for resetting password with token.
+    Validates token and updates user password.
+    """
+
+    token = serializers.UUIDField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+
+    def validate_token(self, value):
+        try:
+            token_obj = EmailVerificationToken.objects.select_related("user").get(
+                token=value, purpose=EmailVerificationToken.PURPOSE_RESET_PASSWORD
+            )
+        except EmailVerificationToken.DoesNotExist:
+            raise serializers.ValidationError("Invalid or expired reset token")
+        
+        if token_obj.used:
+            raise serializers.ValidationError("Reset token has already been used")
+        
+        if token_obj.is_expired():
+            # Cleanup expired token
+            token_obj.delete()
+            raise serializers.ValidationError("Reset token has expired")
+        
+        if not token_obj.user:
+            raise serializers.ValidationError("Invalid reset token")
+        
+        # Attach token_obj to context for save method
+        self.context["token_obj"] = token_obj
+        return value
+
+    def save(self, **kwargs):
+        token_obj = self.context.get("token_obj")
+        if not token_obj:
+            raise RuntimeError("token_obj missing in serializer context")
+        
+        user = token_obj.user
+        new_password = self.validated_data["new_password"]
+        
+        # Hash and set new password
+        from django.contrib.auth.hashers import make_password
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+        
+        # Mark token as used
+        token_obj.mark_used()
+        
+        # Delete other active reset tokens for this user
+        from django.utils import timezone
+        EmailVerificationToken.objects.filter(
+            user=user,
+            purpose=EmailVerificationToken.PURPOSE_RESET_PASSWORD,
+            used=False,
+            expires_at__gt=timezone.now(),
+        ).exclude(id=token_obj.id).delete()
+        
+        return user

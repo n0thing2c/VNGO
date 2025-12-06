@@ -45,6 +45,7 @@ class PendingSignup(models.Model):
 
 class EmailVerificationToken(models.Model):
     PURPOSE_VERIFY_EMAIL = "verify_email"
+    PURPOSE_RESET_PASSWORD = "reset_password"
 
     pending_signup = models.ForeignKey(
         PendingSignup,

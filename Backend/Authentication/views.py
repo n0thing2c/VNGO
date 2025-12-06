@@ -7,6 +7,8 @@ from .serializers import (
     MeSerializer,
     ConfirmEmailSerializer,
     ResendEmailVerificationSerializer,
+    ForgetPasswordSerializer,
+    ResetPasswordSerializer,
 )
 from .models import EmailVerificationToken, PendingSignup
 from rest_framework.permissions import AllowAny
@@ -211,3 +213,105 @@ class RefreshWithCookieView(TokenRefreshView):
             if "access" in serializer.validated_data:
                 response.data = {"access": serializer.validated_data["access"]}
         return response
+
+
+class RequestPasswordResetView(generics.GenericAPIView):
+    """
+    Request password reset - sends email with reset token.
+    Public endpoint (no auth required).
+    """
+
+    serializer_class = ForgetPasswordSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        email = serializer.validated_data["email"]
+
+        # Find user with verified email
+        user = User.objects.filter(email__iexact=email, email_verified=True).first()
+        if not user:
+            # Don't reveal if email exists or not (security)
+            return Response(
+                {
+                    "detail": "If this email is registered, a password reset link will be sent."
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        # Delete old active reset tokens for this user
+        from django.utils import timezone
+
+        now = timezone.now()
+        active_tokens = EmailVerificationToken.objects.filter(
+            user=user,
+            purpose=EmailVerificationToken.PURPOSE_RESET_PASSWORD,
+            used=False,
+            expires_at__gt=now,
+        )
+        if active_tokens.exists():
+            active_tokens.delete()
+
+        # Create new reset token
+        ttl_minutes = getattr(settings, "PASSWORD_RESET_EXPIRY", 60)  # Default 60 minutes
+        token = EmailVerificationToken.create_for_user(
+            user, ttl_minutes=ttl_minutes, purpose=EmailVerificationToken.PURPOSE_RESET_PASSWORD
+        )
+        reset_url = f"{getattr(settings, 'FRONTEND_BASE_URL', '')}/reset-password?token={token.token}"
+
+        # Send email
+        from django.core.mail import send_mail
+
+        subject = "Password Reset Request"
+        message = (
+            f"Hi {user.username},\n\n"
+            f"You requested to reset your password. Click the link below to reset it:\n\n"
+            f"{reset_url}\n\n"
+            f"This link will expire after {ttl_minutes} minutes.\n\n"
+            f"If you did not request this, please ignore this email and your password will remain unchanged.\n"
+        )
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
+        try:
+            if from_email:
+                send_mail(
+                    subject,
+                    message,
+                    from_email,
+                    [user.email],
+                    fail_silently=False,
+                )
+            else:
+                send_mail(
+                    subject, message, None, [user.email], fail_silently=True
+                )
+        except Exception:
+            pass
+
+        # Don't reveal if email was sent successfully (security)
+        return Response(
+            {
+                "detail": "If this email is registered, a password reset link will be sent."
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ConfirmPasswordResetView(generics.GenericAPIView):
+    """
+    Confirm password reset with token and new password.
+    Public endpoint (no auth required).
+    """
+
+    serializer_class = ResetPasswordSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response({"detail": "Password has been reset successfully."})

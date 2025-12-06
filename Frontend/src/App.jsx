@@ -9,6 +9,8 @@ import ToursShowPage from "@/pages/ToursShowPage.jsx";
 import SignUpPage from "./pages/SignUpPage";
 import LogInPage from "./pages/LogInPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
+import ForgetPasswordPage from "./pages/ForgetPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ChatPage from "./pages/ChatPage";
 import GuidePublicProfilePage from "@/pages/GuidePublicProfilePage.jsx";
 import TouristPublicProfilePage from "@/pages/TouristPublicProfilePage.jsx";
@@ -37,6 +39,8 @@ function App() {
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/login" element={<LogInPage />} />
+            <Route path="/forget-password" element={<ForgetPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/tour/post/:tour_id" element={<TourPost />} />
             <Route path="/tour/:tour_id" element={<TourPost />} />
             <Route index element={<HomePage />} />
