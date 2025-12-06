@@ -959,7 +959,7 @@ export default function TourPost() {
                                     <DialogTitle />
                                     <DialogTrigger asChild>
                                         <Button
-                                            className="bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
+                                            className="rounded-full bg-neutral-200 text-gray-600 w-full hover:bg-white hover:border-1 hover:border-neutral-400 hover:text-black">
                                             Write your review here
                                         </Button>
                                     </DialogTrigger>

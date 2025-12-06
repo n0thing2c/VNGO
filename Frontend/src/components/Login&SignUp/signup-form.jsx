@@ -44,6 +44,7 @@ export function SignupForm({ className, ...props }) {
   const { signUp, loading } = useAuthStore();
   const navigate = useNavigate();
   const [hasAgreed, setHasAgreed] = useState(false);
+  const [role, setRole] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -52,7 +53,7 @@ export function SignupForm({ className, ...props }) {
     const username = formData.get("username");
     const password = formData.get("password");
     const confirmPassword = formData.get("confirm-password");
-    let role = formData.get("role");
+    // let role = formData.get("role");
 
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
@@ -70,10 +71,11 @@ export function SignupForm({ className, ...props }) {
     }
 
     // Normalize role to lowercase (backend expects "tourist" or "guide")
-    role = role.toLowerCase();
+    // role = role.toLowerCase();
+    const roleLower = role.toLowerCase();
 
     try {
-      await signUp(username, email, password, role);
+      await signUp(username, email, password, roleLower);
       // Store email in localStorage for resend functionality
       localStorage.setItem("pendingVerificationEmail", email);
       toast.success("Please check your email to verify your account.");
@@ -160,13 +162,15 @@ export function SignupForm({ className, ...props }) {
               </Field>
 
               <Field>
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-10 md:gap-12">
                   <label className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
                       name="role"
                       value="Guide"
                       className="h-3.5 w-3.5"
+                      checked={role === "Guide"}
+                      onChange={(e) => setRole(e.target.value)}
                       required
                     />
                     <span>Guide</span>
@@ -177,6 +181,8 @@ export function SignupForm({ className, ...props }) {
                       name="role"
                       value="tourist"
                       className="h-3.5 w-3.5"
+                      checked={role === "tourist"}
+                      onChange={(e) => setRole(e.target.value)}
                       required
                     />
                     <span>Tourist</span>
@@ -203,6 +209,15 @@ export function SignupForm({ className, ...props }) {
                       <a href="#" className="text-primary underline">
                         Privacy Policy
                       </a>
+                      {role === "Guide" && (
+                        <>
+                          {" "}
+                          and{" "}
+                          <a href="#" className="text-primary underline">
+                            Guide Policy
+                          </a>
+                        </>
+                      )}
                       .
                     </label>
                   </div>
