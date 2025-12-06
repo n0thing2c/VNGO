@@ -28,6 +28,11 @@ export default function Header() {
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = !!user; // Tạo một biến boolean tiện lợi
   const profileHref = user?.role === "tourist" ? "/tourist-profile/" : "/guide-profile/";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/", { replace: true });
+  };
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   
@@ -458,7 +463,7 @@ export default function Header() {
                         Message
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={logout} className="text-[#CC3737] hover:text-[#CC3737]/10">
+                    <DropdownMenuItem onClick={handleLogout} className="text-[#CC3737] hover:text-[#CC3737]/10">
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
