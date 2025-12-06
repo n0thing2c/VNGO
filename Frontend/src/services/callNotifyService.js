@@ -5,7 +5,7 @@
  * This runs in the background so users can receive calls anywhere in the app
  */
 
-import { useAuthStore } from "../../stores/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 class CallNotifyService {
   constructor() {

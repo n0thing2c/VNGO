@@ -11,7 +11,7 @@
  * 5. Establish P2P media connection
  */
 
-import { useAuthStore } from "../../stores/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 // ICE Server configuration
 const ICE_SERVERS = {

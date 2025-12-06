@@ -3,7 +3,7 @@ import MessageList from "@/components/chat/MessageList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { chatService } from "@/services/chatService";
 import { profileService } from "@/services/profileService";
-import { useAuthStore } from "../../stores/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { notificationService } from "@/services/notifyService";
 import { useLocation } from "react-router-dom";
 

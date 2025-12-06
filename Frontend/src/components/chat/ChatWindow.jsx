@@ -3,7 +3,7 @@ import { Star, Phone, Video } from "lucide-react";
 import { websocketService } from "@/services/websocketService";
 import { chatService } from "@/services/chatService";
 import { tourService } from "@/services/tourService";
-import { useAuthStore } from "../../../stores/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import ChatInput from "./ChatInput";
 import MessagesList from "./MessagesList";
 import { useCall } from "@/components/call/CallProvider";
