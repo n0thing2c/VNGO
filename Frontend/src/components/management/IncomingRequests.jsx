@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/pagination.jsx";
 import {useState} from "react";
 export default function IncomingRequests({ incomingRequests, refreshData }) {
-    const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const requestsPerPage = 6;
 
   if (!incomingRequests || incomingRequests.length === 0) {
@@ -23,15 +23,23 @@ export default function IncomingRequests({ incomingRequests, refreshData }) {
     );
   }
 
-  const totalPages = Math.ceil(incomingRequests.length / requestsPerPage);
+  const totalPages = Math.ceil((incomingRequests?.length || 0) / requestsPerPage);
+
+  // Sort requests by date nearest to today (ascending)
+  const sortedRequests = [...(incomingRequests || [])].sort((a, b) => {
+    const dateA = new Date(`${a.tourDate}T${a.tourTime}`);
+    const dateB = new Date(`${b.tourDate}T${b.tourTime}`);
+    return dateA - dateB;
+  });
+
   const indexOfLastRequest = currentPage * requestsPerPage;
   const indexOfFirstRequest = indexOfLastRequest - requestsPerPage;
-  const currentRequests = incomingRequests.slice(indexOfFirstRequest, indexOfLastRequest);
+  const currentRequests = sortedRequests.slice(indexOfFirstRequest, indexOfLastRequest);
 
   if (!incomingRequests || incomingRequests.length === 0) {
     return (
-      <EmptyBookingState 
-        message="No incoming booking requests" 
+      <EmptyBookingState
+        message="No incoming booking requests"
         description="You will see new booking requests from tourists here."
       />
     );
@@ -41,15 +49,15 @@ export default function IncomingRequests({ incomingRequests, refreshData }) {
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {currentRequests.map((booking) => (
-          <BookingCard 
-            key={booking.id} 
-            booking={booking} 
-            showActions 
-            refreshData={refreshData} 
+          <BookingCard
+            key={booking.id}
+            booking={booking}
+            showActions
+            refreshData={refreshData}
           />
         ))}
       </div>
-        {/* Pagination */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-8 flex justify-center">
           <Pagination>

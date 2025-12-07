@@ -147,7 +147,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
 
   return (
     <div
-      className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white"
+      className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white cursor-pointer"
       onClick={handleCardClick}
     >
       {/* Full width image - no gap at top */}
@@ -217,7 +217,18 @@ export default function BookingCard({ booking, showActions = false, refreshData 
           {booking.tourTime && (
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 flex-shrink-0" />
-              <span>{booking.tourTime}</span>
+              <span>
+                {booking.tourTime.slice(0, 5)}
+                {booking.duration ? (
+                  (() => {
+                    const [hours, minutes] = booking.tourTime.split(':').map(Number);
+                    const date = new Date();
+                    date.setHours(hours, minutes);
+                    date.setHours(date.getHours() + booking.duration);
+                    return ` - ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+                  })()
+                ) : ""}
+              </span>
             </div>
           )}
 

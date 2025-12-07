@@ -26,7 +26,7 @@ export default function TourManagementCard({tour, onDelete}) {
 
     return (
         <div
-            className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white"
+            className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white cursor-pointer"
             onClick={handleCardClick}>
             {/* Full width image - no gap at top */}
             <div className="relative h-64 w-full overflow-hidden flex-shrink-0">

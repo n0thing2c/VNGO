@@ -18,10 +18,18 @@ export default function BookingList({bookings, refreshData}) {
     if (!bookings || bookings.length === 0) {
         return <EmptyBookingState/>;
     }
-    const totalPages = Math.ceil(bookings.length / bookingsPerPage);
+    const totalPages = Math.ceil((bookings?.length || 0) / bookingsPerPage);
+
+    // Sort bookings by date nearest to today (ascending)
+    const sortedBookings = [...(bookings || [])].sort((a, b) => {
+        const dateA = new Date(`${a.tourDate}T${a.tourTime}`);
+        const dateB = new Date(`${b.tourDate}T${b.tourTime}`);
+        return dateA - dateB;
+    });
+
     const indexOfLastBooking = currentPage * bookingsPerPage;
     const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
-    const currentBookings = bookings.slice(indexOfFirstBooking, indexOfLastBooking);
+    const currentBookings = sortedBookings.slice(indexOfFirstBooking, indexOfLastBooking);
 
 
     return (

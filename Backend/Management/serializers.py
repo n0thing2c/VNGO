@@ -380,6 +380,7 @@ class FrontendBookingCardSerializer(serializers.ModelSerializer):
     totalPrice = serializers.SerializerMethodField()
     tourDate = serializers.DateField(source="tour_date", read_only=True)
     tourTime = serializers.TimeField(source="tour_time", read_only=True)
+    duration = serializers.IntegerField(source="tour.duration", read_only=True)
 
     class Meta:
         model = Booking
@@ -396,6 +397,7 @@ class FrontendBookingCardSerializer(serializers.ModelSerializer):
             "image",
             "tourDate",
             "tourTime",
+            "duration",
             "number_of_guests",
             "totalPrice",
             "created_at",
@@ -422,7 +424,9 @@ class FrontendPastTourCardSerializer(serializers.ModelSerializer):
 
     title = serializers.CharField(source="tour_name", read_only=True)
     tourId = serializers.IntegerField(source="tour.id", read_only=True)
+    guideId = serializers.IntegerField(source="guide.id", read_only=True)
     guideName = serializers.CharField(source="guide_name", read_only=True)
+    touristId = serializers.IntegerField(source="tourist.id", read_only=True)
     touristName = serializers.CharField(source="tourist_name", read_only=True)
     date = serializers.SerializerMethodField()
     revenue = serializers.SerializerMethodField()
@@ -443,6 +447,8 @@ class FrontendPastTourCardSerializer(serializers.ModelSerializer):
             "revenue",
             "rating",
             "image",
+            "guideId",
+            "touristId",
         ]
         read_only_fields = fields
 
