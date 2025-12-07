@@ -35,14 +35,14 @@ export default function Header() {
   };
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
-  
+
   // State for unread messages
   const [unreadMessages, setUnreadMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
   // Calculate unread notifications for the red dot
   const unreadCount = notifications.filter((n) => !n.is_read).length;
-  
+
   // Calculate unread messages count
   const unreadMessagesCount = unreadMessages.length;
 
@@ -58,7 +58,7 @@ export default function Header() {
   // Fetch unread messages from conversations
   const fetchUnreadMessages = useCallback(async () => {
     if (!isLoggedIn) return;
-    
+
     setLoadingMessages(true);
     try {
       const data = await chatService.getConversations();
@@ -104,7 +104,7 @@ export default function Header() {
 
     const handleWsNotification = (data) => {
       if (!data) return;
-      
+
       // Handle booking notifications
       if (data.type === "booking_notification") {
         const newNotification = {
@@ -118,13 +118,13 @@ export default function Header() {
         };
         setNotifications((prev) => [newNotification, ...prev]);
       }
-      
+
       // Handle new message notifications (from other rooms)
       if (data.room && data.message && data.sender) {
         // Check if this message is from another user (not current user)
         const senderId = data.sender?.id || data.sender;
         const isFromOther = String(senderId) !== String(user?.id);
-        
+
         if (isFromOther) {
           const senderName = data.sender?.username || data.sender?.name || resolveRoomMateName(data.room);
           const newMessage = {
@@ -134,7 +134,7 @@ export default function Header() {
             lastMessage: data.message,
             lastMessageTime: data.created_at || new Date().toISOString(),
           };
-          
+
           setUnreadMessages((prev) => {
             // Update existing or add new
             const existing = prev.find((m) => m.room === data.room);
@@ -176,7 +176,7 @@ export default function Header() {
       );
     }
   };
-  
+
   // Handle clicking on a message notification - navigate to chat
   const handleMessageClick = (msg) => {
     if (!msg) return;
@@ -195,19 +195,19 @@ export default function Header() {
       },
     });
   };
-  
+
   // Format message time
   const formatMessageTime = (msg) => {
     if (!msg || !msg.lastMessageTime) return "";
     const date = new Date(msg.lastMessageTime);
     if (Number.isNaN(date.getTime())) return "";
-    
+
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
+
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -463,7 +463,7 @@ export default function Header() {
                         Message
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="text-[#CC3737] hover:text-[#CC3737]/10">
+                    <DropdownMenuItem onClick={handleLogout} className="block w-full text-left !text-[#CC3737]"> {/* '!' to keep red color */}
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>

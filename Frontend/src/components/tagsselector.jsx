@@ -9,6 +9,7 @@ export default function TagSelector({
   selectedTags = [],
   setSelectedTags,
   tagVariants = {}, // mapping: tag -> variant
+  useBadgeVariants = false, // If true, applies tagVariants values as Badge `variant` prop.
   // defaultSelectedVariant = "default", // fallback variant for selected
   // defaultUnselectedVariant = "secondary"  // fallback for unselected
 }) {
@@ -27,17 +28,26 @@ export default function TagSelector({
         // const variant = tagVariants[tag] || defaultSelectedVariant;
         const activeClass = tagVariants[tag] || "bg-neutral-800 text-white hover:bg-neutral-700";
 
+        // Logic to determine variant and className based on useBadgeVariants
+        const badgeVariant = isSelected && useBadgeVariants ? (tagVariants[tag] || "default") : "secondary";
+
         return (
           <Badge
             key={tag}
-            // variant={isSelected ? variant : defaultUnselectedVariant}
-            // className="cursor-pointer"
-            variant="secondary" 
+            // // variant={isSelected ? variant : defaultUnselectedVariant}
+            // // className="cursor-pointer"
+            // variant="secondary"
+            variant={badgeVariant}
             className={cn(
               "cursor-pointer text-sm py-1 px-3 transition-all duration-200 border select-none",
               isSelected
-                ? cn(activeClass, "border-transparent shadow-sm font-medium") // Style khi được chọn (Màu pastel)
-                : "bg-white text-gray-500 border-gray-200 hover:bg-gray-100 hover:text-gray-900 font-normal" // Style khi chưa chọn (Xám nhạt)
+                // ? cn(activeClass, "border-transparent shadow-sm font-medium") // Style khi được chọn (Màu pastel)
+                // : "bg-white text-gray-500 border-gray-200 hover:bg-gray-100 hover:text-gray-900 font-normal" // Style khi chưa chọn (Xám nhạt)
+                ? cn(
+                  !useBadgeVariants && activeClass, // Only apply activeClass as className if NOT using badge variants
+                  "border-transparent shadow-sm font-medium"
+                )
+                : "bg-white text-gray-500 border-gray-200 hover:bg-gray-100 hover:text-gray-900 font-normal"
             )}
             onClick={() => toggleTag(tag)}
           >

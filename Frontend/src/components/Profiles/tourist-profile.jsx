@@ -557,7 +557,7 @@ export function TouristProfile({ className }) {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="h-10 px-4 text-sm rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                    className="h-10 px-4 text-sm rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2 btn-vngo-hover-effect"
                                 >
                                     <Eye size={16} />
                                     View Public Profile
@@ -565,7 +565,7 @@ export function TouristProfile({ className }) {
                             </Link>
 
                             <Button
-                                className="h-10 px-6 text-sm rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg transition duration-150 ease-in-out"
+                                className="h-10 px-6 text-sm rounded-full bg-blue-700 hover:bg-blue-800 btn-vngo-hover-effect"
                                 type="submit"
                                 disabled={isSaving || isLoading}
                             >

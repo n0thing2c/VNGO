@@ -510,7 +510,7 @@ export default function TourCreate() {
                         <button
                             disabled={isSubmitting}
                             className={`
-                                bg-[#068F64] text-white px-4 py-2
+                                bg-[#068F64] text-white px-4 py-1
                                 rounded-full font-semibold text-base xl:text-lg
                                 border border-transparent
                                 hover:bg-white hover:border-1 hover:border-black hover:text-black

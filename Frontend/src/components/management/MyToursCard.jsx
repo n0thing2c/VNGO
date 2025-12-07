@@ -1,6 +1,6 @@
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
-import {Clock, Users, Star, DollarSign, BookOpen, CheckCircle, AlertCircle} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Clock, Users, Star, DollarSign, BookOpen, CheckCircle, AlertCircle } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogTrigger,
@@ -13,7 +13,7 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-export default function TourManagementCard({tour, onDelete}) {
+export default function TourManagementCard({ tour, onDelete }) {
     const handleCardClick = () => {
         // Navigate to view page
         window.location.href = `/tour/${tour.id}`;
@@ -41,13 +41,13 @@ export default function TourManagementCard({tour, onDelete}) {
                     <div className="absolute top-4 left-4 flex flex-col gap-2">
                         {tour.bookings.pending > 0 && (
                             <Badge className="bg-yellow-100 text-yellow-800 font-medium px-3 py-1 shadow-lg">
-                                <AlertCircle className="w-3 h-3 mr-1"/>
+                                <AlertCircle className="w-3 h-3 mr-1" />
                                 {tour.bookings.pending} pending
                             </Badge>
                         )}
                         {tour.bookings.accepted > 0 && (
                             <Badge className="bg-green-100 text-green-800 font-medium px-3 py-1 shadow-lg">
-                                <CheckCircle className="w-3 h-3 mr-1"/>
+                                <CheckCircle className="w-3 h-3 mr-1" />
                                 {tour.bookings.accepted} accepted
                             </Badge>
                         )}
@@ -59,7 +59,7 @@ export default function TourManagementCard({tour, onDelete}) {
                     <div
                         className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
                         <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/>
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                             <span className="font-semibold text-gray-900">{tour.rating}</span>
                         </div>
                     </div>
@@ -78,25 +78,25 @@ export default function TourManagementCard({tour, onDelete}) {
                 {/* Tour stats in 2 columns */}
                 <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-4">
                     <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 flex-shrink-0"/>
+                        <Clock className="w-4 h-4 flex-shrink-0" />
                         <span>{tour.duration}h</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 flex-shrink-0"/>
+                        <Users className="w-4 h-4 flex-shrink-0" />
                         <span>{tour.groupSize}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600"/>
+                        <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
                         <span className="font-semibold text-green-600">
-              {tour.price.toLocaleString()} ₫
-            </span>
+                            {tour.price.toLocaleString()} ₫
+                        </span>
                     </div>
 
                     {tour.bookings && (
                         <div className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4 flex-shrink-0"/>
+                            <BookOpen className="w-4 h-4 flex-shrink-0" />
                             <span>{tour.bookings.total} booking{tour.bookings.total !== 1 ? 's' : ''}</span>
                         </div>
                     )}
@@ -119,11 +119,10 @@ export default function TourManagementCard({tour, onDelete}) {
                 )}
 
                 {/* Actions - push to bottom */}
-                {/* Actions - push to bottom */}
                 <div className="flex gap-2 mt-auto">
                     <Button
                         onClick={handleEditClick}
-                        className="flex-1 justify-center gap-2 bg-[#4673E6] rounded-full border border-transparent hover:bg-white hover:border-black hover:text-black text-white h-10"
+                        className="flex-1 justify-center gap-2 rounded-full border border-[#4673E6] text-[#4673E6] bg-transparent h-10 btn-vngo-hover-effect hover:bg-white hover:text-[#4673E6]"
                     >
                         Edit
                     </Button>
@@ -134,7 +133,7 @@ export default function TourManagementCard({tour, onDelete}) {
                             <Button
                                 onClick={(e) => e.stopPropagation()}
                                 variant="outline"
-                                className="flex-1 rounded-full h-10 border bg-[#CC3737] hover:bg-white hover:border-black hover:text-black text-white"
+                                className="flex-1 rounded-full h-10 border border-[#CC3737] text-[#CC3737] bg-transparent btn-vngo-hover-effect hover:bg-white hover:text-[#CC3737]"
                             >
                                 Delete
                             </Button>

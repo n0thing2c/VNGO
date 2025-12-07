@@ -90,24 +90,42 @@ export default function TourEdit() {
         "Countryside",
         "Recreational",
     ];
-    const TOUR_TAG_VARIANTS = {
-        "Nature": "brightgreen",
-        "Beach": "sand",
-        "Trekking": "aqua",
-        "Culture": "bluelavender",
-        "History": "mustard",
-        "Local Experience": "mint",
-        "Sightseeing": "teal",
-        "Adventure": "destructive",
-        "Food & Drink": "coral",
-        "Nightlife": "violet",
-        "City Life": "orange",
-        "Shopping": "pink",
-        "Photography": "default",
-        "Relaxation": "lime",
-        "Water Sports": "sky",
-        "Countryside": "olive",
-        "Recreational": "peach",
+    // const TOUR_TAG_VARIANTS = {
+    //     "Nature": "brightgreen",
+    //     "Beach": "sand",
+    //     "Trekking": "aqua",
+    //     "Culture": "bluelavender",
+    //     "History": "mustard",
+    //     "Local Experience": "mint",
+    //     "Sightseeing": "teal",
+    //     "Adventure": "destructive",
+    //     "Food & Drink": "coral",
+    //     "Nightlife": "violet",
+    //     "City Life": "orange",
+    //     "Shopping": "pink",
+    //     "Photography": "default",
+    //     "Relaxation": "lime",
+    //     "Water Sports": "sky",
+    //     "Countryside": "olive",
+    //     "Recreational": "peach",
+    const TOUR_TAG_STYLES = {
+        Nature: "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-transparent",
+        Beach: "bg-sky-100 text-sky-800 hover:bg-sky-200 border-transparent",
+        Trekking: "bg-stone-100 text-stone-800 hover:bg-stone-200 border-transparent",
+        Culture: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-transparent",
+        History: "bg-amber-100 text-amber-800 hover:bg-amber-200 border-transparent",
+        "Local Experience": "bg-teal-100 text-teal-800 hover:bg-teal-200 border-transparent",
+        Sightseeing: "bg-blue-100 text-blue-800 hover:bg-blue-200 border-transparent",
+        Adventure: "bg-rose-100 text-rose-800 hover:bg-rose-200 border-transparent",
+        "Food & Drink": "bg-orange-100 text-orange-800 hover:bg-orange-200 border-transparent",
+        Nightlife: "bg-violet-100 text-violet-800 hover:bg-violet-200 border-transparent",
+        "City Life": "bg-slate-100 text-slate-800 hover:bg-slate-200 border-transparent",
+        Shopping: "bg-pink-100 text-pink-800 hover:bg-pink-200 border-transparent",
+        Photography: "bg-zinc-100 text-zinc-800 hover:bg-zinc-200 border-transparent",
+        Relaxation: "bg-lime-100 text-lime-800 hover:bg-lime-200 border-transparent",
+        "Water Sports": "bg-cyan-100 text-cyan-800 hover:bg-cyan-200 border-transparent",
+        Countryside: "bg-green-100 text-green-800 hover:bg-green-200 border-transparent",
+        Recreational: "bg-fuchsia-100 text-fuchsia-800 hover:bg-fuchsia-200 border-transparent",
     };
 
     const getTransportationIcon = (value) => {
@@ -241,18 +259,18 @@ export default function TourEdit() {
                 return;
             }
 
-            const placesFromBackend = Array.isArray(tour.tour_places) 
-                ? tour.tour_places.map(tp => tp.place) 
+            const placesFromBackend = Array.isArray(tour.tour_places)
+                ? tour.tour_places.map(tp => tp.place)
                 : [];
-            
+
             // Lấy descriptions từ server (nếu có)
             let descriptionsFromBackend = [];
             if (Array.isArray(tour.stops_descriptions)) {
                 descriptionsFromBackend = tour.stops_descriptions;
             } else if (typeof tour.stops_descriptions === 'string') {
-                 try {
+                try {
                     descriptionsFromBackend = JSON.parse(tour.stops_descriptions);
-                 } catch (e) { descriptionsFromBackend = []; }
+                } catch (e) { descriptionsFromBackend = []; }
             }
 
             // Gộp place và description lại thành 1 object cho addedStops
@@ -352,8 +370,8 @@ export default function TourEdit() {
                         </div>
                         <FieldSeparator/>
                         <div className="space-y-4 w-full">
-                            <div className="rounded-2xl border-[#23C491] border-2 p-3">
-                                <FieldLabel className="text-md sm:text-sm lg:text-md text-[#23C491] font-bold">
+                            <div className="rounded-2xl border-[#068F64] border-2 p-3">
+                                <FieldLabel className="text-md sm:text-sm lg:text-md text-[#068F64] font-bold">
                                     Tour Schedule
                                 </FieldLabel>
                             </div>
@@ -396,7 +414,7 @@ export default function TourEdit() {
                         {/* ROW 2: DURATION */}
                         <div className="flex justify-between gap-5">
                             <FieldLabel className="text-md flex items-center gap-1">
-                                <Clock className="w-5 h-5"/> Duration:
+                                <Clock className="w-5 h-5" /> Duration:
                             </FieldLabel>
                             <div className="flex justify-end gap-3 items-center">
                                 <FieldLabel className="hidden md:inline text-md">up to</FieldLabel>
@@ -561,7 +579,7 @@ export default function TourEdit() {
                             />
                             <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
                                 {description.length}/1000
-                              </span>
+                            </span>
                         </div>
 
 
@@ -575,7 +593,8 @@ export default function TourEdit() {
                                 tags={TagList}
                                 selectedTags={selectedTags}
                                 setSelectedTags={setSelectedTags}
-                                tagVariants={TOUR_TAG_VARIANTS}
+                                // tagVariants={TOUR_TAG_VARIANTS}
+                                tagVariants={TOUR_TAG_STYLES}
                             />
                         </div>
                     </CardContent>
@@ -584,8 +603,8 @@ export default function TourEdit() {
 
                     <CardFooter className="flex justify-end gap-4">
                         <Link to={`/tour/post/${tour_id}`}
-                              className="
-                bg-[#CC3737] text-white px-4 py-2
+                            className="
+                bg-[#CC3737] text-white px-4 py-1
                 rounded-full font-semibold text-base xl:text-lg
                 hover:bg-white hover:border-1 hover:border-black hover:text-black
               "
@@ -595,7 +614,7 @@ export default function TourEdit() {
                         </Link>
                         <button
                             className="
-                bg-[#068F64] text-white px-4 py-2
+                bg-[#068F64] text-white px-4 py-1
                 rounded-full font-semibold text-base xl:text-lg
                 hover:bg-white hover:border-1 hover:border-black hover:text-black
               "

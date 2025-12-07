@@ -986,19 +986,8 @@ export default function TourPost() {
                         Reviews
                     </FieldLabel>
 
-                    {/* Display fetched ratings */}
-                    {ratings.length > 0 ? (
-                        <div className="break-words whitespace-normal max-w-full">
-                            <RatingList ratings={ratings} type="tour" />
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 mt-4">
-                            No reviews yet. Be the first to review!
-                        </p>
-                    )}
-
                     {/* Section 2: Your Rating (Interactive) */}
-                    <div className="mt-6">
+                    <div className="mt-1">
                         {!hasRated && userRole !== "guide" ? (
                             userRole ? ( // Logged in user
                                 <Dialog>
@@ -1054,9 +1043,20 @@ export default function TourPost() {
                             </div>
                         ) : null}
                     </div>
+
+                    {/* Display fetched ratings */}
+                    {ratings.length > 0 ? (
+                        <div className="break-words whitespace-normal max-w-full">
+                            <RatingList ratings={ratings} type="tour" />
+                        </div>
+                    ) : (
+                        <p className="text-gray-500 mt-2">
+                            No reviews yet. Be the first to review!
+                        </p>
+                    )}
                 </div>
             </div>
-            <div className="mb-10">
+            <div className="mt-10 mb-10">
                 <MoreTourByGuide guide={tour.guide} currentTourId={tour.id} />
             </div>
         </div>

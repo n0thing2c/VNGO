@@ -80,6 +80,7 @@ export default function Rate({ id, onRated }) {
           selectedTags={reviewTags}
           setSelectedTags={setReviewTags}
           tagVariants={TOUR_TAG_VARIANTS}
+          useBadgeVariants={true}
         />
       </div>
 
