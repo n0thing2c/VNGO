@@ -12,9 +12,33 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Ẩn chatbot button trên các trang: chat, login, signup, verify-email
-  const hideChatbotPages = ["/chat", "/login", "/signup", "/verify-email"];
+  // Ẩn chatbot button trên các trang: chat, login, signup, verify-email, 404
+  const hideChatbotPages = ["/chat", "/login", "/signup", "/verify-email", "/forget-password", "/reset-password"];
   const shouldHideChatbot = hideChatbotPages.includes(location.pathname);
+  
+  // Kiểm tra nếu đang ở trang 404 (pathname không khớp với các route hợp lệ)
+  const validRoutePatterns = [
+    /^\/$/,
+    /^\/signup$/, 
+    /^\/verify-email$/,
+    /^\/login$/,
+    /^\/forget-password$/,
+    /^\/reset-password$/,
+    /^\/tour\/post\/.+$/,
+    /^\/tour\/[^\/]+$/,
+    /^\/tours$/,
+    /^\/public-profile\/.+$/,
+    /^\/tourist-public-profile\/.+$/,
+    /^\/chat$/,
+    /^\/management$/,
+    /^\/tourist-profile$/,
+    /^\/guide-profile$/,
+    /^\/tour\/create$/,
+    /^\/tour\/edit\/.+$/,
+  ];
+  
+  const is404Page = !validRoutePatterns.some(pattern => pattern.test(location.pathname));
+  const shouldHideChatbotOn404 = shouldHideChatbot || is404Page;
 
   // Connect to notification service when user is authenticated
   // This sets the user as "online" in the system
@@ -50,8 +74,8 @@ export default function Layout() {
       </main>
       <Footer />
 
-      {/* Floating Chat Button - ẩn trên trang chat, login, signup, verify-email */}
-      {!shouldHideChatbot && <FloatingChatbotButton />}
+      {/* Floating Chat Button - ẩn trên trang chat, login, signup, verify-email, 404 */}
+      {!shouldHideChatbotOn404 && <FloatingChatbotButton />}
     </>
   );
 }

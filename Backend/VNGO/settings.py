@@ -242,41 +242,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
 ]
 
-# Expose headers
-CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
-
-# Preflight cache duration
-CORS_PREFLIGHT_MAX_AGE = 86400
-
-# Cho phép tất cả các headers
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
-
-# Cho phép các methods
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-
-# Disable CSRF for API endpoints (since we're using JWT)
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
-
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://localhost:5173$",
     r"^http://127.0.0.1:5173$",

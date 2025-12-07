@@ -20,6 +20,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
 import ManagementTours from "./pages/ManagementTours";
 import { CallProvider } from "@/components/call/CallProvider";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -71,6 +72,9 @@ function App() {
               <Route path="/tour/create" element={<TourCreate />} />
               <Route path="/tour/edit/:tour_id" element={<TourEdit />} />
             </Route>
+
+            {/* 404 - Catch all route */}
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
         </CallProvider>
