@@ -6,6 +6,7 @@ from django.db.models import Max, Prefetch, Q
 from django.core.cache import cache
 from .models import Message, Call
 from .serializers import MessageSerializer, CallSerializer
+from .response_time import get_guide_first_response_time
 
 
 class MessageListView(generics.ListAPIView):
@@ -166,6 +167,14 @@ class ConversationListView(generics.GenericAPIView):
                         # Never seen this room, so messages from others are unread
                         has_unread = True
 
+            # Calculate response time for guide contacts
+            # Only show response time if current user is a tourist and contact is a guide
+            response_time = None
+            if contact_user and hasattr(contact_user, 'role'):
+                from Authentication.models import User as AuthUser
+                if user.role == AuthUser.ROLE_TOURIST and contact_user.role == AuthUser.ROLE_GUIDE:
+                    response_time = get_guide_first_response_time(contact_user.id)
+
             conversations.append({
                 "room": room_name,
                 "contactName": contact_name,
@@ -175,7 +184,7 @@ class ConversationListView(generics.GenericAPIView):
                 "hasUnread": has_unread,
                 "lastMessage": last_message.content if last_message else "No message yet",
                 "lastMessageTime": last_message.created_at.isoformat() if last_message else None,
-                "responseTime": "30 minutes",
+                "responseTime": response_time,
                 "rating": 3.5,
                 "reviewCount": 0,
             })

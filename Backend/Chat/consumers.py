@@ -156,7 +156,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     def create_message(self, room, sender, content):
         """Create message and return minimal data"""
         from .models import Message
+        from .response_time import invalidate_guide_response_time_cache
+        from Authentication.models import User as AuthUser
+        
         msg_obj = Message.objects.create(room=room, sender=sender, content=content)
+        
+        # Invalidate response time cache if sender is a guide
+        # This ensures the response time is recalculated with the new message
+        if hasattr(sender, 'role') and sender.role == AuthUser.ROLE_GUIDE:
+            invalidate_guide_response_time_cache(sender.id)
+        
         return msg_obj.id, msg_obj.created_at.isoformat()
 
     async def send_notifications(self, payload):

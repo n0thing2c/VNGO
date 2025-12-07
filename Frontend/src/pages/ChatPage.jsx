@@ -264,7 +264,7 @@ export default function ChatPage() {
             message?.content || existing?.lastMessage || "No message yet",
           lastMessageTime:
             message?.created_at || existing?.lastMessageTime || null,
-          responseTime: existing?.responseTime || "30 minutes",
+          responseTime: existing?.responseTime || null,
           rating: existing?.rating ?? 3.5,
           reviewCount: existing?.reviewCount ?? 0,
         };
@@ -533,7 +533,7 @@ export default function ChatPage() {
         hasUnread: false,
         lastMessage: "No message yet",
         lastMessageTime: null,
-        responseTime: "30 minutes",
+        responseTime: null, // Will be updated from backend when available
         rating: 3.5,
         reviewCount: 0,
       };
@@ -622,7 +622,7 @@ export default function ChatPage() {
         nationality: existing?.nationality || null,
         lastMessage: existing?.lastMessage || "No message yet",
         lastMessageTime: existing?.lastMessageTime || new Date().toISOString(),
-        responseTime: existing?.responseTime || "30 minutes",
+        responseTime: existing?.responseTime || null,
         rating: existing?.rating ?? 3.5,
         reviewCount: existing?.reviewCount ?? 0,
       };
