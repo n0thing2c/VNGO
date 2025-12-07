@@ -13,29 +13,41 @@ import {
     PaginationNext,
     PaginationEllipsis,
 } from "@/components/ui/pagination";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 
 export default function MyToursList({tours, refreshTours}) {
     const [currentPage, setCurrentPage] = useState(1);
     const [toursPerPage] = useState(6);
+    const [localTours, setLocalTours] = useState(tours);
+    // Keep localTours in sync if tours prop changes
+    useEffect(() => {
+        setLocalTours(tours);
+    }, [tours]);
 
     const indexOfLastTour = currentPage * toursPerPage;
     const indexOfFirstTour = indexOfLastTour - toursPerPage;
-    const currentTours = tours.slice(indexOfFirstTour, indexOfLastTour);
+    const currentTours = localTours.slice(indexOfFirstTour, indexOfLastTour);
 
     const totalPages = Math.ceil(tours.length / toursPerPage);
 
     const handleDelete = async (tourId) => {
-        if (!window.confirm("Are you sure you want to delete this tour?")) return;
+        try {
+            const res = await tourService.deleteTour(tourId);
 
-        const res = await tourService.deleteTour(tourId);
-        if (res.success) {
-            alert("Tour deleted successfully");
-            refreshTours?.(); // Optional: refresh list after deletion
-        } else {
-            alert("Failed to delete tour");
+            // Auto-refresh after deletion
+            if (res.success) {
+                // Optimistically remove tour from UI immediately
+                setLocalTours((prev) => prev.filter((t) => t.id !== tourId));
+
+                // Optional: sync with server
+                refreshTours?.();
+            }
+
+        } catch (error) {
+            console.error("Failed to delete tour:", error);
         }
     };
+
     if (!tours || tours.length === 0) {
         return (
             <div className="text-center py-20 ">
@@ -61,9 +73,10 @@ export default function MyToursList({tours, refreshTours}) {
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900">My Tours</h2>
                     <p className="text-gray-600 mt-1">
-                        You have {tours.length} tour{tours.length !== 1 ? 's' : ''}
+                        You have {localTours.length} tour{localTours.length !== 1 ? 's' : ''}
                     </p>
                 </div>
+
                 <Button asChild
                         className="bg-[#068F64] border hover:bg-white hover:border-black hover:text-black rounded-full">
                     <Link to="/tour/create">
@@ -79,58 +92,58 @@ export default function MyToursList({tours, refreshTours}) {
                 ))}
             </div>
             {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) setCurrentPage(currentPage - 1);
-                  }}
-                />
-              </PaginationItem>
+            {totalPages > 1 && (
+                <div className="mt-8 flex justify-center">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage > 1) setCurrentPage(currentPage - 1);
+                                    }}
+                                />
+                            </PaginationItem>
 
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage(i + 1);
-                    }}
-                    className={
-                      currentPage === i + 1
-                        ? "bg-gray-800 text-white"
-                        : "text-black"
-                    }
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+                            {Array.from({length: totalPages}).map((_, i) => (
+                                <PaginationItem key={i}>
+                                    <PaginationLink
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setCurrentPage(i + 1);
+                                        }}
+                                        className={
+                                            currentPage === i + 1
+                                                ? "bg-gray-800 text-white"
+                                                : "text-black"
+                                        }
+                                    >
+                                        {i + 1}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            ))}
 
-              {totalPages > 5 && (
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
+                            {totalPages > 5 && (
+                                <PaginationItem>
+                                    <PaginationEllipsis/>
+                                </PaginationItem>
+                            )}
 
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                  }}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                                    }}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
         </div>
     );
 }

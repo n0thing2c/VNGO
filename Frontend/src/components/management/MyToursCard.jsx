@@ -1,6 +1,6 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Clock, Users, Star, DollarSign, BookOpen, CheckCircle, AlertCircle } from "lucide-react";
+import {Badge} from "@/components/ui/badge";
+import {Button} from "@/components/ui/button";
+import {Clock, Users, Star, DollarSign, BookOpen, CheckCircle, AlertCircle} from "lucide-react";
 import {
     AlertDialog,
     AlertDialogTrigger,
@@ -13,7 +13,7 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-export default function TourManagementCard({ tour, onDelete }) {
+export default function TourManagementCard({tour, onDelete}) {
     const handleCardClick = () => {
         // Navigate to view page
         window.location.href = `/tour/${tour.id}`;
@@ -41,13 +41,13 @@ export default function TourManagementCard({ tour, onDelete }) {
                     <div className="absolute top-4 left-4 flex flex-col gap-2">
                         {tour.bookings.pending > 0 && (
                             <Badge className="bg-yellow-100 text-yellow-800 font-medium px-3 py-1 shadow-lg">
-                                <AlertCircle className="w-3 h-3 mr-1" />
+                                <AlertCircle className="w-3 h-3 mr-1"/>
                                 {tour.bookings.pending} pending
                             </Badge>
                         )}
                         {tour.bookings.accepted > 0 && (
                             <Badge className="bg-green-100 text-green-800 font-medium px-3 py-1 shadow-lg">
-                                <CheckCircle className="w-3 h-3 mr-1" />
+                                <CheckCircle className="w-3 h-3 mr-1"/>
                                 {tour.bookings.accepted} accepted
                             </Badge>
                         )}
@@ -59,7 +59,7 @@ export default function TourManagementCard({ tour, onDelete }) {
                     <div
                         className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
                         <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/>
                             <span className="font-semibold text-gray-900">{tour.rating}</span>
                         </div>
                     </div>
@@ -78,17 +78,17 @@ export default function TourManagementCard({ tour, onDelete }) {
                 {/* Tour stats in 2 columns */}
                 <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-4">
                     <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 flex-shrink-0" />
+                        <Clock className="w-4 h-4 flex-shrink-0"/>
                         <span>{tour.duration}h</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 flex-shrink-0" />
+                        <Users className="w-4 h-4 flex-shrink-0"/>
                         <span>{tour.groupSize}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
+                        <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600"/>
                         <span className="font-semibold text-green-600">
                             {tour.price.toLocaleString()} ₫
                         </span>
@@ -96,7 +96,7 @@ export default function TourManagementCard({ tour, onDelete }) {
 
                     {tour.bookings && (
                         <div className="flex items-center gap-2">
-                            <BookOpen className="w-4 h-4 flex-shrink-0" />
+                            <BookOpen className="w-4 h-4 flex-shrink-0"/>
                             <span>{tour.bookings.total} booking{tour.bookings.total !== 1 ? 's' : ''}</span>
                         </div>
                     )}
@@ -131,7 +131,7 @@ export default function TourManagementCard({ tour, onDelete }) {
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => e.stopPropagation()} // <-- stop card click
                                 variant="outline"
                                 className="flex-1 rounded-full h-10 border border-[#CC3737] text-[#CC3737] bg-transparent btn-vngo-hover-effect hover:bg-white hover:text-[#CC3737]"
                             >
@@ -139,7 +139,9 @@ export default function TourManagementCard({ tour, onDelete }) {
                             </Button>
                         </AlertDialogTrigger>
 
-                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                        <AlertDialogContent
+                            onClick={(e) => e.stopPropagation()} // stop clicks inside dialog from bubbling
+                        >
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Delete Tour</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -151,7 +153,10 @@ export default function TourManagementCard({ tour, onDelete }) {
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => onDelete?.(tour.id)}
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // STOP card click here too
+                                        onDelete?.(tour.id);
+                                    }}
                                     className="bg-[#CC3737] hover:bg-red-700 text-white"
                                 >
                                     Delete Tour
@@ -159,6 +164,7 @@ export default function TourManagementCard({ tour, onDelete }) {
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
+
 
                 </div>
             </div>
