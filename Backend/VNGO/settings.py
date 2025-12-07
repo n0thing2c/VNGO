@@ -44,8 +44,11 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # Enable token blacklist to store refresh tokens in database
+    "ROTATE_REFRESH_TOKENS": True,  # Rotate refresh token on each use for better security
+    "BLACKLIST_AFTER_ROTATION": True,  # Blacklist old refresh tokens after rotation
 }
 
 
@@ -63,6 +66,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",  # Enable token blacklist to store refresh tokens in DB
     "corsheaders",
     "VNGO",
     "Authentication",

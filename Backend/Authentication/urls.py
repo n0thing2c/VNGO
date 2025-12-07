@@ -8,12 +8,14 @@ from .views import (
     ResendEmailVerificationView,
     LoginWithCookieView,
     RefreshWithCookieView,
+    LogoutView,
     RequestPasswordResetView,
     ConfirmPasswordResetView,
 )
 
 urlpatterns = [
     path("login/", LoginWithCookieView.as_view(), name="login"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     path("token/refresh/", RefreshWithCookieView.as_view(), name="refresh"),
     path("signup/", SignUpView.as_view(), name="signup"),
     path("email/confirm/", ConfirmEmailView.as_view(), name="confirm_email"),

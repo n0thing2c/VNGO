@@ -12,7 +12,11 @@ from .serializers import (
 )
 from .models import EmailVerificationToken, PendingSignup
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenBlacklistView,
+)
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenRefreshSerializer,
@@ -158,16 +162,19 @@ class ResendEmailVerificationView(generics.GenericAPIView):
 
 def _set_refresh_cookie(response, refresh_token: str):
     """Attach refresh token as HttpOnly cookie."""
-    same_site = "None"
-    secure = not settings.DEBUG
-    # Lax is sufficient for same-site frontend; adjust if needed
+    # For localhost development, use Lax instead of None
+    same_site = "Lax" if settings.DEBUG else "None"
+    secure = not settings.DEBUG  # False in development, True in production
+    # Use root path so cookie is available for all /auth/* endpoints
+    cookie_path = "/" if settings.DEBUG else "/auth/token/refresh/"
+
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
         secure=secure,
         samesite=same_site,
-        path="/auth/token/refresh/",
+        path=cookie_path,
         max_age=int(
             getattr(settings, "SIMPLE_JWT", {})
             .get("REFRESH_TOKEN_LIFETIME")
@@ -202,8 +209,30 @@ class RefreshWithCookieView(TokenRefreshView):
             cookie_refresh = request.COOKIES.get("refresh_token")
             if cookie_refresh:
                 data["refresh"] = cookie_refresh
+            else:
+                # Debug: log if cookie is missing
+                import logging
+
+                logger = logging.getLogger(__name__)
+                logger.warning(
+                    f"Refresh token cookie not found. Available cookies: {list(request.COOKIES.keys())}"
+                )
+                return Response(
+                    {"detail": "Refresh token not provided in request body or cookie."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         serializer = TokenRefreshSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            # Log validation errors for debugging
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Token refresh validation failed: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         response = Response(serializer.validated_data, status=status.HTTP_200_OK)
         # Re-set (or rotate) refresh cookie if present in response data
         new_refresh = serializer.validated_data.get("refresh")
@@ -212,6 +241,32 @@ class RefreshWithCookieView(TokenRefreshView):
             # Hide refresh from body as we store it in cookie
             if "access" in serializer.validated_data:
                 response.data = {"access": serializer.validated_data["access"]}
+        return response
+
+
+class LogoutView(TokenBlacklistView):
+    """
+    Logout view that blacklists the refresh token.
+    Reads refresh token from cookie if not provided in body.
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        # If refresh not provided in body, read from cookie
+        data = request.data.copy()
+        if not data.get("refresh"):
+            cookie_refresh = request.COOKIES.get("refresh_token")
+            if cookie_refresh:
+                data["refresh"] = cookie_refresh
+
+        # Call parent to blacklist the token
+        response = super().post(request, *args, **kwargs)
+
+        # Clear the refresh token cookie
+        cookie_path = "/" if settings.DEBUG else "/auth/token/refresh/"
+        response.delete_cookie("refresh_token", path=cookie_path)
+
         return response
 
 
@@ -258,9 +313,13 @@ class RequestPasswordResetView(generics.GenericAPIView):
             active_tokens.delete()
 
         # Create new reset token
-        ttl_minutes = getattr(settings, "PASSWORD_RESET_EXPIRY", 60)  # Default 60 minutes
+        ttl_minutes = getattr(
+            settings, "PASSWORD_RESET_EXPIRY", 60
+        )  # Default 60 minutes
         token = EmailVerificationToken.create_for_user(
-            user, ttl_minutes=ttl_minutes, purpose=EmailVerificationToken.PURPOSE_RESET_PASSWORD
+            user,
+            ttl_minutes=ttl_minutes,
+            purpose=EmailVerificationToken.PURPOSE_RESET_PASSWORD,
         )
         reset_url = f"{getattr(settings, 'FRONTEND_BASE_URL', '')}/reset-password?token={token.token}"
 
@@ -286,9 +345,7 @@ class RequestPasswordResetView(generics.GenericAPIView):
                     fail_silently=False,
                 )
             else:
-                send_mail(
-                    subject, message, None, [user.email], fail_silently=True
-                )
+                send_mail(subject, message, None, [user.email], fail_silently=True)
         except Exception:
             pass
 
