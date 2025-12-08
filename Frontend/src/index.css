@@ -122,28 +122,28 @@
 }
 
 @layer components {
-  /* Class chỉ chứa hiệu ứng hover (bóng đổ, scale) */
+  /* Class containing only hover effect (shadow, scale) */
   .btn-vngo-hover-effect {
     @apply
-      /* Hiệu ứng (Shadow + Scale)*/
+      /* Effect (Shadow + Scale) */
       shadow-xl hover:shadow-2xl hover:scale-[1.03]
 
-      /* Animation mượt */
+      /* Smooth animation */
       transition-all duration-300 ease-in-out cursor-pointer;
   }
 
-  /* Class đầy đủ cho nút Gradient (như nút Apply Now) */
+  /* Full class for Gradient button (like Apply Now button) */
   .btn-vngo-gradient-primary {
     @apply
-      /* Màu Gradient & Text */
+      /* Gradient Color & Text */
       bg-gradient-to-r from-[#020765] to-[#23c491] 
       hover:from-[#23c491] hover:to-[#020765] 
       text-white font-medium
 
-      /* Hiệu ứng (Shadow + Scale)*/
+      /* Effect (Shadow + Scale) */
       shadow-xl hover:shadow-2xl hover:scale-[1.03]
 
-      /* Animation mượt */
+      /* Smooth animation */
       transition-all duration-300 ease-in-out cursor-pointer;
   }
 
@@ -155,9 +155,9 @@
 }
 
 @layer utilities {
-  /* Bạn đổi mã màu #068F64 ở đây thì toàn bộ web sẽ đổi theo */
+  /* Change color code #068F64 here and the entire website will change accordingly */
   
-  /* 1. Class cho màu chữ: text-primary */
+  /* 1. Class for text color: text-primary */
   .text-vngo-primary {
     color: #020765;
   }
@@ -174,25 +174,25 @@
     @apply text-sm sm:text-base md:text-lg;
   }
 
-  /* 2. Class cho màu nền: bg-primary */
+  /* 2. Class for background color: bg-primary */
   .bg-vngo-primary {
     background-color: #068F64;
   }
 
-  /* 3. Class cho viền: border-primary */
+  /* 3. Class for border: border-primary */
   .border-vngo-primary {
     border-color: #068F64;
   }
 
-  /* 4. Class cho viền focus (lúc bấm vào input): ring-primary */
-  /* Cái này hơi đặc biệt, nó set biến màu cho Tailwind ring */
+  /* 4. Class for focus border (when clicking on input): ring-primary */
+  /* This is a bit special, it sets the color variable for Tailwind ring */
   .ring-vngo-primary {
     --tw-ring-color: #068F64;
   }
   
-  /* 5. Màu nền nhạt (dùng cho hover): bg-primary-light */
-  /* Thay vì dùng opacity/50, ta tạo luôn 1 màu nhạt cho dễ dùng */
+  /* 5. Light background color (used for hover): bg-primary-light */
+  /* Instead of using opacity/50, we create a light color directly for easier use */
   .bg-vngo-primary-light {
-    background-color: #E6F7F0; /* Màu xanh rất nhạt pha từ màu gốc */
+    background-color: #E6F7F0; /* Very light green color mixed from base color */
   }
 }

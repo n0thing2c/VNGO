@@ -79,13 +79,13 @@ export function GuideProfile({ className }) {
     const refreshUser = useAuthStore((state) => state.refreshUser);
     const user = useAuthStore((state) => state.user);
 
-    // Set profileId từ user.id (vì Guide.id = user.id theo model)
-    // Nếu user.id không có, thử refresh user để lấy id mới
+    // Set profileId from user.id (because Guide.id = user.id according to model)
+    // If user.id is not available, try refreshing user to get new id
     useEffect(() => {
         if (user?.id) {
             setProfileId(user.id);
         } else if (user && !user.id) {
-            // Nếu user tồn tại nhưng không có id, refresh để lấy id mới từ backend
+            // If user exists but doesn't have id, refresh to get new id from backend
             refreshUser().then((updatedUser) => {
                 if (updatedUser?.id) {
                     setProfileId(updatedUser.id);
@@ -105,8 +105,8 @@ export function GuideProfile({ className }) {
         const loadProfile = async () => {
             try {
                 const data = await profileService.getMyProfile();
-                // Guide.id = user.id (vì Guide model có primary_key=True trên user field)
-                // Đảm bảo profileId được set từ user.id
+                // Guide.id = user.id (because Guide model has primary_key=True on user field)
+                // Ensure profileId is set from user.id
                 if (user?.id) {
                     setProfileId(user.id);
                 }

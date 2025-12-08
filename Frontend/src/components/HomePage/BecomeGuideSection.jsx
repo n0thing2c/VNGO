@@ -5,19 +5,19 @@ import { Heart, Users, ShieldCheck, Smile } from 'lucide-react';
 export default function BecomeGuideSection() {
   const themeBlue = "#020765";
   const themeGreen = "#068F64";
-  // --- CẤU HÌNH FONT & STYLE TẠI ĐÂY ---
+  // --- CONFIGURE FONT & STYLE HERE ---
   const customTextStyle = {
-    // Bạn thay đổi tên font ở đây (vd: 'Roboto', 'Open Sans', 'Merriweather'...)
-    // Lưu ý: Đảm bảo bạn đã import font này trong index.css hoặc index.html
+    // Change font name here (e.g., 'Roboto', 'Open Sans', 'Merriweather'...)
+    // Note: Make sure you have imported this font in index.css or index.html
     fontFamily: '"Roboto", serif',
-    fontWeight: 300, // 400 là bình thường (không bold), 300 là mỏng
+    fontWeight: 300, // 400 is normal (not bold), 300 is thin
   };
 
   return (
-    // Thêm padding cho section và bọc content bên trong container
+    // Add padding for section and wrap content inside container
     <section className="py-16 md:py-20 lg:py-24 bg-gray-50/50">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        {/* Thêm max-w-6xl, shadow, rounded và overflow-hidden để nhất quán */}
+        {/* Add max-w-6xl, shadow, rounded and overflow-hidden for consistency */}
         <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="flex flex-col md:flex-row">
             {/* Content Side */}
@@ -30,14 +30,14 @@ export default function BecomeGuideSection() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                  {/* Nút Apply Now - Link tới trang Signup */}
+                  {/* Apply Now button - Link to Signup page */}
                   <Link to="/signup">
                     <button className="btn-vngo-gradient-primary px-8 py-3 rounded-full">
                       Apply now
                     </button>
                   </Link>
 
-                  {/* Nút See More - Hiện Popup nội dung */}
+                  {/* See More button - Show Popup content */}
                   <Dialog>
                     <DialogTrigger asChild>
                       <button className="w-full sm:w-auto border-2 border-[#020765] text-[#020765] hover:bg-[#020765]/5 px-8 py-3 rounded-full transition-colors font-medium
@@ -47,7 +47,7 @@ export default function BecomeGuideSection() {
                       </button>
                     </DialogTrigger>
                     
-                    {/* Nội dung Popup */}
+                    {/* Popup content */}
                     <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto p-4 md:p-6 rounded-xl">
                       <DialogHeader>
                         <DialogTitle className="text-xl md:text-2xl font-bold text-[#020765] mb-2 pr-4">

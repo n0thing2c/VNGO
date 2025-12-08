@@ -41,8 +41,8 @@ export default function TagSelector({
             className={cn(
               "cursor-pointer text-sm py-1 px-3 transition-all duration-200 border select-none",
               isSelected
-                // ? cn(activeClass, "border-transparent shadow-sm font-medium") // Style khi được chọn (Màu pastel)
-                // : "bg-white text-gray-500 border-gray-200 hover:bg-gray-100 hover:text-gray-900 font-normal" // Style khi chưa chọn (Xám nhạt)
+                // ? cn(activeClass, "border-transparent shadow-sm font-medium") // Style when selected (Pastel color)
+                // : "bg-white text-gray-500 border-gray-200 hover:bg-gray-100 hover:text-gray-900 font-normal" // Style when not selected (Light gray)
                 ? cn(
                   !useBadgeVariants && activeClass, // Only apply activeClass as className if NOT using badge variants
                   "border-transparent shadow-sm font-medium"

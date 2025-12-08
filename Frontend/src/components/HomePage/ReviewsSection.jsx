@@ -62,7 +62,7 @@ export default function ReviewsSection() {
         <Carousel
           opts={{
             align: "start",
-            loop: true, // Cho phép lặp vô tận
+            loop: true, // Allow infinite loop
           }}
           className="w-full max-w-6xl mx-auto"
         >

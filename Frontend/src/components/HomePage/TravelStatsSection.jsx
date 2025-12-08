@@ -15,10 +15,10 @@ export default function TravelStatsSection() {
 
       <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-        {/* CHÚ Ý:
-          Bạn có thể dùng max-w-6xl (như các section khác) hoặc
-          max-w-4xl (như code cũ) tùy xem bạn muốn nó rộng bao nhiêu.
-          Ở đây để max-w-6xl cho nhất quán.
+        {/* NOTE:
+          You can use max-w-6xl (like other sections) or
+          max-w-4xl (like old code) depending on how wide you want it.
+          Here we use max-w-6xl for consistency.
         */}
           <div className="max-w-4xl mx-auto text-center">
             <p className="font-medium text-black text-lg md:text-xl mb-3">

@@ -19,10 +19,10 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Trash2, Pencil, Check, GripVertical } from "lucide-react";
 
-// Giới hạn ký tự cho mô tả
+// Character limit for description
 const MAX_DESC_LENGTH = 1000;
 
-// Component con: 1 Dòng địa điểm
+// Child component: 1 Location row
 function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }) {
     const {
         attributes,
@@ -36,22 +36,22 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(item.name);
 
-    // State cho phần Description
+    // State for Description section
     const [isEditingDesc, setIsEditingDesc] = useState(false);
-    // State để đếm ký tự realtime
+    // State to count characters in real-time
     const [descValue, setDescValue] = useState(item.description || "");
 
-    // Cập nhật lại state khi props item thay đổi (đề phòng drag drop xong bị sai content)
+    // Update state when item props change (prevent incorrect content after drag drop)
     useEffect(() => {
         setDescValue(item.description || "");
         setTempName(item.name);
     }, [item.description, item.name]);
 
-    // Style cho hiệu ứng kéo thả
+    // Style for drag and drop effect
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        zIndex: isDragging ? 50 : "auto", // Đưa item đang kéo lên trên cùng
+        zIndex: isDragging ? 50 : "auto", // Bring dragged item to the top
         opacity: isDragging ? 0.9 : 1,
     };
 
@@ -62,7 +62,7 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
     };
 
     const handleDescSave = () => {
-        // Lưu khi blur hoặc bấm nút save (ở đây ta dùng onBlur cho tiện)
+        // Save on blur or when save button is clicked (using onBlur for convenience)
         onUpdateDescription(idx, descValue);
         setIsEditingDesc(false);
     };
@@ -76,9 +76,9 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                 ${isDragging ? "bg-blue-50 border-blue-300 shadow-lg" : "bg-white border-gray-200 shadow-sm hover:shadow-md"}
             `}
         >
-            {/* --- HÀNG 1: Handle, Số thứ tự, Tên, Nút Xóa --- */}
+            {/* --- ROW 1: Handle, Order Number, Name, Delete Button --- */}
             <div className="flex items-center gap-3">
-                {/* Nút nắm để kéo (Handle) */}
+                {/* Drag handle button */}
                 <div
                     {...attributes}
                     {...listeners}
@@ -87,12 +87,12 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                     <GripVertical size={20} />
                 </div>
 
-                {/* Số thứ tự */}
+                {/* Order number */}
                 <div className="flex-shrink-0 w-7 h-7 bg-[#068F64] text-white rounded-full flex items-center justify-center font-bold text-xs">
                     {idx + 1}
                 </div>
 
-                {/* Phần Tên (View/Edit) */}
+                {/* Name section (View/Edit) */}
                 <div className="flex-1 min-w-0">
                     {isEditingName ? (
                         <div className="flex items-center gap-2">
@@ -125,10 +125,10 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                     )}
                 </div>
 
-                {/* Nút Xóa */}
+                {/* Delete button */}
                 <button
                     onClick={(e) => {
-                        e.stopPropagation(); // Ngăn sự kiện drag
+                        e.stopPropagation(); // Prevent drag event
                         onRemove();
                     }}
                     className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
@@ -138,7 +138,7 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                 </button>
             </div>
 
-            {/* --- HÀNG 2: Inline Description --- */}
+            {/* --- ROW 2: Inline Description --- */}
             <div className="pl-11 pr-2">
                 {isEditingDesc ? (
                     <div className="flex flex-col gap-1">
@@ -164,7 +164,7 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
                             <div className="text-xs text-gray-400">
                                 Click outside to save
                             </div>
-                            {/* Bộ đếm ký tự */}
+                            {/* Character counter */}
                             <div className={`
                                 text-[10px] font-medium
                                 ${descValue.length >= MAX_DESC_LENGTH ? "text-red-500" : "text-gray-400"}
@@ -198,12 +198,12 @@ function SortableItem({ item, id, idx, onRemove, onRename, onUpdateDescription }
     );
 }
 
-// Component chính
+// Main component
 export default function DragList({items, onRemoveItem, onReorder, onRenameItem, onUpdateDescription}) {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 1, // Di chuyển chuột 1px mới tính là drag (tránh click nhầm)
+                distance: 1, // Mouse must move 1px before drag is activated (prevent accidental clicks)
             },
         }),
         useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates })
@@ -213,8 +213,8 @@ export default function DragList({items, onRemoveItem, onReorder, onRenameItem, 
         const {active, over} = event;
         if (!over || active.id === over.id) return;
 
-        // Lưu ý: Dùng item.name làm ID có rủi ro nếu trùng tên. 
-        // Nếu backend có ID (item.id) thì nên dùng item.id thay vì item.name
+        // Note: Using item.name as ID has risk if names are duplicated. 
+        // If backend has ID (item.id), should use item.id instead of item.name
         const oldIndex = items.findIndex((s) => s.name === active.id);
         const newIndex = items.findIndex((s) => s.name === over.id);
 
@@ -230,7 +230,7 @@ export default function DragList({items, onRemoveItem, onReorder, onRenameItem, 
                 <ul className="space-y-1 pb-4">
                     {items.map((item, idx) => (
                         <SortableItem
-                            key={item.name + idx} // Fallback key để tránh lỗi duplicate key react
+                            key={item.name + idx} // Fallback key to avoid React duplicate key error
                             item={item}
                             id={item.name}
                             idx={idx}

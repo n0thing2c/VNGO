@@ -263,7 +263,7 @@ export default function TourEdit() {
                 ? tour.tour_places.map(tp => tp.place)
                 : [];
 
-            // Lấy descriptions từ server (nếu có)
+            // Get descriptions from server (if available)
             let descriptionsFromBackend = [];
             if (Array.isArray(tour.stops_descriptions)) {
                 descriptionsFromBackend = tour.stops_descriptions;
@@ -273,10 +273,10 @@ export default function TourEdit() {
                 } catch (e) { descriptionsFromBackend = []; }
             }
 
-            // Gộp place và description lại thành 1 object cho addedStops
+            // Merge place and description into single object for addedStops
             const mergedStops = placesFromBackend.map((place, index) => ({
                 ...place,
-                description: descriptionsFromBackend[index] || "" // Lấy description theo index tương ứng
+                description: descriptionsFromBackend[index] || "" // Get description by corresponding index
             }));
 
             // Pre-fill form fields
@@ -317,8 +317,8 @@ export default function TourEdit() {
         return <p className="text-center p-4">Tour not found.</p>;
 
     const handleSubmit = async () => {
-        // Tách description ra thành mảng chuỗi để gửi xuống backend
-        // Backend mong đợi: stops_descriptions = ["desc 1", "desc 2", ...]
+        // Extract descriptions into string array to send to backend
+        // Backend expects: stops_descriptions = ["desc 1", "desc 2", ...]
         const stopsDescriptions = addedStops.map((stop) => stop.description || "");
         const result = await tourService.updateTour({
             tour_id,
@@ -334,7 +334,7 @@ export default function TourEdit() {
             selectedTags,
             price,
             description,
-            // Thêm dòng này (lưu ý: tourService.updateTour cần được update để nhận tham số này)
+            // Add this line (note: tourService.updateTour needs to be updated to accept this parameter)
             stops_descriptions: JSON.stringify(stopsDescriptions),
         });
 

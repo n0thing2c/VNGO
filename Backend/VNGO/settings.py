@@ -33,7 +33,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-# Cấu hình Rest framework và Simple JWT
+# Configure REST framework and Simple JWT
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -139,14 +139,14 @@ AUTH_USER_MODEL = "Authentication.User"
 FRONTEND_BASE_URL = "http://localhost:5173"
 
 # SMTP config
-# Đổi thành "django.core.mail.backends.smtp.EmailBackend" để gửi email thật
+# Change to "django.core.mail.backends.smtp.EmailBackend" to send real emails
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-# Thay bằng email Gmail thật của bạn
+# Replace with your actual Gmail email
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "your-email@gmail.com")
-# Thay bằng App Password 16 ký tự từ Google (không có dấu cách)
+# Replace with 16-character App Password from Google (no spaces)
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "your-app-password")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "your-email@gmail.com")
 EMAIL_VERIFICATION_EXPIRY = 10
@@ -187,7 +187,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-# Trong settings.py
+# Static files directories
 
 STATICFILES_DIRS = [
     BASE_DIR / "Tour/static",
@@ -198,7 +198,7 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Cho phép các domain (origin) được gọi tới API (gửi request CORS).
+# Allow domains (origins) to call the API (send CORS requests)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
@@ -213,7 +213,7 @@ CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
 # Preflight cache duration
 CORS_PREFLIGHT_MAX_AGE = 86400
 
-# Cho phép tất cả các headers
+# Allow all headers
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
@@ -226,7 +226,7 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-# Cho phép các methods
+# Allow all methods
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",

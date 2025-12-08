@@ -200,7 +200,7 @@ export function TouristPublicProfile({touristId}) {
 
                         {/* Profile Section */}
                         <div className="relative px-6 pb-6">
-                            {/* Avatar - Overlap với banner */}
+                            {/* Avatar - Overlap with banner */}
                             <div className="relative -mt-16 md:-mt-20 mb-4">
                                 <Dialog>
                                     <DialogTrigger asChild>

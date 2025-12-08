@@ -56,7 +56,7 @@ export default function Footer() {
       className="w-full p-12 text-white"
     >
       <div className="container mx-auto flex justify-between items-start">
-        {/* === CỘT BÊN TRÁI: Brand và Social === */}
+        {/* === LEFT COLUMN: Brand and Social === */}
         <div className="flex flex-col gap-8">
           {/* Brand */}
           <div>
@@ -72,9 +72,9 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* === CỘT BÊN PHẢI: Links (dùng flex cho 3 cột) === */}
+        {/* === RIGHT COLUMN: Links (using flex for 3 columns) === */}
         <div className="flex gap-16">
-          {/* Cột 1: Features */}
+          {/* Column 1: Features */}
           <div className="flex flex-col gap-3">
             <h3 className="font-bold text-base mb-2">Features</h3>
             <a href="/" className="text-sm hover:underline">
@@ -88,7 +88,7 @@ export default function Footer() {
             </a>
           </div>
 
-          {/* Cột 2: Learn more */}
+          {/* Column 2: Learn more */}
           <div className="flex flex-col gap-3">
             <h3 className="font-bold text-base mb-2">Learn more</h3>
             <a href="/" className="text-sm hover:underline">
@@ -105,7 +105,7 @@ export default function Footer() {
             </a>
           </div>
 
-          {/* Cột 3: Support */}
+          {/* Column 3: Support */}
           <div className="flex flex-col gap-3">
             <h3 className="font-bold text-base mb-2">Support</h3>
             <a href="/" className="text-sm hover:underline">

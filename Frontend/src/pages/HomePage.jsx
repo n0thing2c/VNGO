@@ -56,15 +56,15 @@ export default function HomePage() {
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    // Fetch destinations cho mục "Popular dests"
+    // Fetch destinations for "Popular dests" section
     fetch(API_ENDPOINTS.GET_POPULAR_DESTINATIONS)
       .then(res => res.json())
       .then(data => {
-        // API get_all_tours đã format data (image, location, title...)
+        // API get_all_tours has formatted data (image, location, title...)
         setPopularDestinations(data);
       })
       .catch(err => console.error("Error fetching popular destinations:", err));
-  }, []); // đảm bảo chạy 1 lần
+  }, []); // Ensure it runs only once
 
   return (
     <div className="min-h-screen bg-white">
