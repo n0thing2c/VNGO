@@ -16,6 +16,7 @@ urlpatterns = [
     path('tour/rate/<int:tour_id>/', views.tour_rate, name='api-post-rate'),
     path('tour/ratings/<int:tour_id>/', views.tour_get_ratings, name='api-get-ratings'),
     path('tour/ratings/guide/<int:guide_id>/all/',views.guide_get_all_tour_ratings, name='guide-get-all-tour-ratings'),
+    path('tour/reviews/top/', views.get_top_reviews, name='api-get-top-reviews'),
     # Places & Locations
     path('places/all/', views.get_all_places, name='api-get-locations'),
     path('places/popular/', views.get_popular_destinations, name='api-get-popular-destinations'),

@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -7,46 +7,98 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import ReviewIcon from "@/assets/homepage/review.png"
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { API_ENDPOINTS } from "@/constant";
 
-// mock data
-const reviews = [
-  {
-    id: 1,
-    title: "Amazing Experience",
-    text: "The tour was absolutely incredible! Our guide was knowledgeable and made the experience unforgettable. We got to see hidden places that aren't in guidebooks."
-  },
-  {
-    id: 2,
-    title: "Highly Recommended",
-    text: "Best tour company in Vietnam. Everything was perfectly organized and the local insights were invaluable. Our guide spoke perfect English and was very patient."
-  },
-  {
-    id: 3,
-    title: "Fantastic Guides",
-    text: "The guides were so friendly and knowledgeable. They really went above and beyond to make sure we had a great time and learned about Vietnamese culture."
-  },
-  {
-    id: 4,
-    title: "Perfect Trip",
-    text: "Couldn't have asked for a better experience. The itinerary was well-planned and our guide was exceptional. Highly recommend to anyone visiting Vietnam."
-  }
-];
+const ReviewCard = ({ review }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 200;
+  const isLong = review.text.length > maxLength;
 
-const itemsPerView = {
-  mobile: 1,
-  tablet: 2,
-  desktop: 3
+  return (
+    <article className="flex flex-col h-full bg-slate-50 p-6 rounded-2xl shadow-sm border border-slate-100">
+      <div className="flex items-center gap-4 mb-4">
+        <img
+          src={review.tourist_image}
+          alt={review.tourist_name}
+          className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+          onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=" + review.tourist_name; }}
+        />
+        <div>
+          <h4 className="font-semibold text-black text-lg leading-tight">{review.tourist_name}</h4>
+          <div className="flex items-center text-yellow-400 mt-1">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                size={14}
+                fill={i < review.rating ? "currentColor" : "none"}
+                strokeWidth={2}
+                className={i < review.rating ? "text-yellow-400" : "text-gray-300"}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-black/70 leading-relaxed mb-4 flex-grow italic">
+        "
+        {isExpanded || !isLong ? review.text : `${review.text.slice(0, maxLength)}...`}
+        "
+        {isLong && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="ml-2 text-vngo-primary font-medium hover:underline focus:outline-none text-sm not-italic"
+          >
+            {isExpanded ? "See less" : "See more"}
+          </button>
+        )}
+      </div>
+
+      <div className="pt-4 border-t border-slate-200 mt-auto">
+        <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Booked Tour</p>
+        <p className="text-vngo-primary font-medium truncate" title={review.tour_name}>
+          {review.tour_name}
+        </p>
+      </div>
+    </article>
+  );
 };
 
 export default function ReviewsSection() {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.GET_TOP_REVIEWS);
+        if (response.data.success) {
+          setReviews(response.data.reviews);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, []);
+
+  if (loading) {
+    return <div className="py-20 text-center">Loading reviews...</div>;
+  }
+
+  if (reviews.length === 0) {
+    return null; // Or show a default message
+  }
+
   return (
     <section id="reviews" className="py-16 md:py-20 lg:py-24 bg-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center mb-8 md:mb-12 lg:mb-16">
           <div className="flex justify-center mb-4 md:mb-6">
-            {/* <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
-                  <span className="text-5xl">💬</span>
-                </div> */}
             <img
               src={ReviewIcon}
               alt="Review Icon"
@@ -62,7 +114,7 @@ export default function ReviewsSection() {
         <Carousel
           opts={{
             align: "start",
-            loop: true, // Allow infinite loop
+            loop: true,
           }}
           className="w-full max-w-6xl mx-auto"
         >
@@ -72,20 +124,12 @@ export default function ReviewsSection() {
                 key={review.id}
                 className="pl-4 md:pl-6 lg:pl-8 basis-full md:basis-1/2 lg:basis-1/3"
               >
-                <article
-                  key={review.id}
-                  className="flex-none border-t border-black/15 pt-6 h-full"
-                >
-                  <h3 className="mb-4 text-lg font-semibold text-black">{review.title}</h3>
-                  <p className="text-black/60 leading-relaxed">
-                    {review.text}
-                  </p>
-                </article>
+                <ReviewCard review={review} />
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
+          <CarouselPrevious className="hidden md:flex -left-12 lg:-left-16 border-2 border-vngo-primary text-vngo-primary hover:bg-vngo-primary hover:text-white transition-colors" />
+          <CarouselNext className="hidden md:flex -right-12 lg:-right-16 border-2 border-vngo-primary text-vngo-primary hover:bg-vngo-primary hover:text-white transition-colors" />
         </Carousel>
       </div>
     </section>

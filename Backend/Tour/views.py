@@ -4,7 +4,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from Management.models import Booking, PastTour, BookingStatus
-from Profiles.models import Guide
+from Profiles.models import Guide, Tourist
 from .models import Tour, Place, TourImage
 from .serializers import TourSerializer
 from django.conf import settings
@@ -586,6 +586,35 @@ def get_filter_options(request):
             'transportation': transport_options
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ------------------------
+# Top Reviews
+# ------------------------
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_top_reviews(request):
+    try:
+        # Fetch top rated reviews (4 or 5 stars), ordered by newest first
+        reviews = TourRating.objects.filter(rating__gte=4).order_by('-created_at')[:6]
+        
+        response_data = []
+        for review in reviews:
+            tourist = review.tourist
+            response_data.append({
+                'id': review.id,
+                'rating': review.rating,
+                'text': review.review,
+                'tourist_name': tourist.name if tourist else "Anonymous",
+                'tourist_image': tourist.face_image if tourist and tourist.face_image else "https://ui-avatars.com/api/?name=Anonymous",
+                'tour_name': review.tour.name,
+                'created_at': review.created_at
+            })
+            
+        return Response({'success': True, 'reviews': response_data}, status=status.HTTP_200_OK)
 
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -108,23 +108,6 @@ export default function GlobalSearchBar() {
     };
 
     const handleSearch = () => {
-        // If called from 'handleSelectSuggestion', it will have searchQuery.
-        // Otherwise (clicking search button), use 'location' state.
-        // const query = (typeof searchQuery === 'string') ? searchQuery : location;
-        // const params = new URLSearchParams();
-        // if (query) params.append('search', query);
-        // navigate(`/tours?${params.toString()}`);
-        // setShowSuggestions(false); // Hide suggestions after search
-
-        // // KHÔNG LÀM GÌ CẢ
-        // // Hoặc báo user phải chọn
-        // // (Nếu muốn thân thiện, có thể tự động chọn suggestion đầu tiên)
-        // if (filteredDestinations.length > 0) {
-        //     // Nếu có item đang chọn thì dùng item đó, không thì dùng item đầu tiên
-        //     const index = selectedIndex >= 0 ? selectedIndex : 0;
-        //     handleSelectSuggestion(filteredDestinations[index]);
-        // }
-
         // Priority 1: User explicitly selected a suggestion
         if (selectedIndex >= 0 && filteredDestinations[selectedIndex]) {
             handleSelectSuggestion(filteredDestinations[selectedIndex]);

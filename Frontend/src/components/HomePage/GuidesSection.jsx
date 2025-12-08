@@ -11,40 +11,6 @@ import {
 } from "@/components/ui/carousel"
 import GuideIcon from "@/assets/homepage/guideicon.png"
 
-// mock data
-const guides = [
-  {
-    id: 1,
-    name: "Tran Cong Hoang Tan",
-    description: "A passionate explorer who loves sharing hidden gems with travelers. Tan enjoys connecting cultures and making every trip memorable.",
-    image: "https://images.unsplash.com/photo-1597890928584-23b06b3af251?w=500&h=400&fit=crop"
-  },
-  {
-    id: 2,
-    name: "Huynh Thi Gia Khang",
-    description: "A cheerful tour guide who knows Vietnam's history inside out. Khang specializes in cultural tours and brings every story to life.",
-    image: "https://images.unsplash.com/photo-1752136805352-e4c851d55893?w=500&h=400&fit=crop"
-  },
-  {
-    id: 3,
-    name: "Truong Thi Tan Dung",
-    description: "A friendly and energetic local guide who loves outdoor adventures and helping visitors experience authentic Vietnamese life.",
-    image: "https://images.unsplash.com/photo-1590501753466-eef7148bcdf5?w=500&h=400&fit=crop"
-  },
-  {
-    id: 4,
-    name: "Nguyen Van Minh",
-    description: "Expert in food tours and culinary experiences, Minh will take you to the best local eateries and street food spots.",
-    image: "https://images.unsplash.com/photo-1741243412269-be61e7d2be0d?w=500&h=400&fit=crop"
-  }
-];
-
-const itemsPerView = {
-  mobile: 1,
-  tablet: 2,
-  desktop: 3
-};
-
 export default function GuidesSection() {
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -134,8 +100,8 @@ export default function GuidesSection() {
             ))}
           </CarouselContent>
 
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
+          <CarouselPrevious className="hidden md:flex -left-12 lg:-left-16 border-2 border-vngo-primary text-vngo-primary hover:bg-vngo-primary hover:text-white transition-colors" />
+          <CarouselNext className="hidden md:flex -right-12 lg:-right-16 border-2 border-vngo-primary text-vngo-primary hover:bg-vngo-primary hover:text-white transition-colors" />
         </Carousel>
       </div>
     </section>
