@@ -15,9 +15,9 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                 <span className="text-3xl md:text-5xl">🗺️</span>
               </div> */}
               <img
-                  src={PopDestIcon}
-                  alt="PopDest Icon"
-                  className="w-8 md:w-12 lg:w-16 h-auto object-cover"
+                src={PopDestIcon}
+                alt="PopDest Icon"
+                className="w-8 md:w-12 lg:w-16 h-auto object-cover"
               />
             </div>
             <h2 className="text-vngo-primary text-3xl md:text-4xl font-bold mb-4 text-center">
@@ -34,9 +34,10 @@ export default function PopularDestSection({ popularDestinations = [] }) {
               // 2. Lấy ảnh từ utils dựa trên name_en (English name) của API trả về
               const provinceImage = getProvincePopDestImage(dest.name_en);
               return (
-              // Bọc Card bằng Link, trỏ đến trang /tours
+                // Bọc Card bằng Link, trỏ đến trang /tours
                 <Link
-                  to={`/tours?location=${encodeURIComponent(dest.name_en)}`}
+                  // to={`/tours?location=${encodeURIComponent(dest.name_en)}`}
+                  to={`/tours?location=${encodeURIComponent(dest.name_en.replace(/\b(City|Province)\b/gi, "").trim())}`}
                   key={dest.id}
                 >
                   <div className="group h-full overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl rounded-2xl cursor-pointer bg-white flex flex-col">
@@ -44,15 +45,17 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                     <div className="relative h-72 overflow-hidden flex-shrink-0">
                       <img
                         src={provinceImage}
-                        alt={dest.name_en.split(",")[0]}
+                        // alt={dest.name_en.split(",")[0]}
+                        alt={dest.name_en.split(",")[0].replace(/\b(City|Province)\b/gi, "").trim()}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
-                      
+
                       {/* Gradient overlay: Làm tối dần để chữ dễ đọc hơn */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
-                      
+
                       <h3 className="absolute bottom-5 left-6 text-3xl font-bold text-white tracking-wide drop-shadow-md">
-                        {dest.name_en.split(",")[0]}
+                        {/* {dest.name_en.split(",")[0]} */}
+                        {dest.name_en.split(",")[0].replace(/\b(City|Province)\b/gi, "").trim()}
                       </h3>
                     </div>
 
@@ -65,7 +68,7 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                             {dest.tour_count > 1 ? "tours" : "tour"} available
                           </span>
                         </div>
-                        
+
                         <span className="text-gray-300 group-hover:text-blue-500 transition-colors duration-300">
                           ➔
                         </span>

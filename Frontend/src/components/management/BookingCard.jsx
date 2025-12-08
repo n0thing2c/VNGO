@@ -254,12 +254,16 @@ export default function BookingCard({ booking, showActions = false, refreshData 
 
         {/* Actions for Guide (Accept/Decline) - push to bottom */}
         {showActions && booking.status_key === "pending" && (
-          <div className="flex items-center gap-3 mb-3 mt-auto">
+          <div
+            className="flex items-center gap-3 mb-3 mt-auto"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <Button
               onMouseDown={(e) => e.stopPropagation()}
               onClick={handleAccept}
               disabled={isProcessing}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#068F64] rounded-full border border-transparent hover:bg-white hover:border-black hover:text-black text-white h-10 transition-all"
+              className="flex-1 justify-center gap-2 rounded-full border border-[#068F64] text-[#068F64] bg-transparent h-10 btn-vngo-hover-effect hover:bg-white hover:text-[#068F64]"
             // className="flex items-center gap-2 bg-[#068F64] rounded-full hover:bg-white hover:border-black hover:text-black hover:border-1 text-white"
             // className="w-full bg-green-600 hover:bg-green-700 rounded-full h-10"
             >
@@ -276,7 +280,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
                   onMouseDown={(e) => e.stopPropagation()}
                   variant="outline"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-1 rounded-full h-10 border bg-[#CC3737] hover:bg-white hover:border-black hover:text-black text-white"
+                  className="flex-1 rounded-full h-10 border border-[#CC3737] text-[#CC3737] bg-transparent btn-vngo-hover-effect hover:bg-white hover:text-[#CC3737]"
                 // className="w-full rounded-full h-10 border-red-300 text-red-600 hover:bg-red-50"
                 >
                   Decline
@@ -296,11 +300,11 @@ export default function BookingCard({ booking, showActions = false, refreshData 
                   className="min-h-[100px]"
                 />
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDecline}
                     disabled={isProcessing || !declineReason.trim()}
-                    className="bg-[#CC3737] hover:bg-red-700"
+                    className="rounded-full bg-[#CC3737] hover:bg-red-700"
                   >
                     {isProcessing ? "Processing..." : "Decline Booking"}
                   </AlertDialogAction>

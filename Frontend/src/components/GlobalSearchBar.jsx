@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MapPin, Loader2, Search } from 'lucide-react';
+import { MapPin, Loader2, Search, ChevronDown } from 'lucide-react';
 
 // API
 import { API_ENDPOINTS } from "@/constant";
@@ -33,7 +33,8 @@ export default function GlobalSearchBar() {
     useEffect(() => {
         const locationParam = searchParams.get('location');
         if (locationParam) {
-            setLocation(locationParam);
+            // setLocation(locationParam);
+            setLocation(locationParam.replace(/\b(City|Province)\b/gi, "").trim());
         }
     }, [searchParams]);
 
@@ -85,13 +86,25 @@ export default function GlobalSearchBar() {
         }
     };
 
+    const handleShowAll = () => {
+        if (showSuggestions) {
+            setShowSuggestions(false);
+        } else {
+            setFilteredDestinations(allDestinations);
+            setShowSuggestions(true);
+        }
+    };
+
 
     const handleSelectSuggestion = (province) => {
-        setLocation(province.province_en);
+        // setLocation(province.province_en);
+        const trimmedName = province.province_en.replace(/\b(City|Province)\b/gi, "").trim();
+        setLocation(trimmedName);
         setShowSuggestions(false);
         setSelectedIndex(-1);
         // CHUYỂN TRANG với param `location` SẠCH
-        navigate(`/tours?location=${encodeURIComponent(province.province_en)}`);
+        // navigate(`/tours?location=${encodeURIComponent(province.province_en)}`);
+        navigate(`/tours?location=${encodeURIComponent(trimmedName)}`);
     };
 
     const handleSearch = () => {
@@ -103,14 +116,30 @@ export default function GlobalSearchBar() {
         // navigate(`/tours?${params.toString()}`);
         // setShowSuggestions(false); // Ẩn gợi ý sau khi search
 
-        // KHÔNG LÀM GÌ CẢ
-        // Hoặc báo user phải chọn
-        // (Nếu muốn thân thiện, có thể tự động chọn suggestion đầu tiên)
-        if (filteredDestinations.length > 0) {
-            // Nếu có item đang chọn thì dùng item đó, không thì dùng item đầu tiên
-            const index = selectedIndex >= 0 ? selectedIndex : 0;
-            handleSelectSuggestion(filteredDestinations[index]);
+        // // KHÔNG LÀM GÌ CẢ
+        // // Hoặc báo user phải chọn
+        // // (Nếu muốn thân thiện, có thể tự động chọn suggestion đầu tiên)
+        // if (filteredDestinations.length > 0) {
+        //     // Nếu có item đang chọn thì dùng item đó, không thì dùng item đầu tiên
+        //     const index = selectedIndex >= 0 ? selectedIndex : 0;
+        //     handleSelectSuggestion(filteredDestinations[index]);
+        // }
+
+        // Priority 1: User explicitly selected a suggestion
+        if (selectedIndex >= 0 && filteredDestinations[selectedIndex]) {
+            handleSelectSuggestion(filteredDestinations[selectedIndex]);
+            return;
         }
+
+        // Priority 2: User typed something -> pick the top match
+        if (location.trim().length > 0 && filteredDestinations.length > 0) {
+            handleSelectSuggestion(filteredDestinations[0]);
+            return;
+        }
+
+        // Priority 3: Empty input & no selection -> Show all tours
+        setShowSuggestions(false);
+        navigate('/tours');
     };
 
     // Handle enter
@@ -153,11 +182,11 @@ export default function GlobalSearchBar() {
 
     return (
         <div className="bg-white rounded-full p-1 shadow-lg w-full max-w-md mx-auto">
-            <div className="flex flex-col md:flex-row items-center md:items-stretch gap-2 md:gap-0">
+            <div className="flex flex-row items-center w-full">
 
                 {/* Location Input */}
                 <div ref={inputRef}
-                    className="flex-1 px-3 md:px-4 py-2 md:py-0 flex flex-col relative">
+                    className="flex-1 px-3 md:px-4 flex flex-col relative">
                     <div className="flex flex-1 items-center gap-3">
                         <MapPin className="w-5 h-5 md:w-6 md:h-6 shrink-0 text-black/60" />
                         <input
@@ -168,6 +197,17 @@ export default function GlobalSearchBar() {
                             placeholder="WHERE TO?"
                             className="w-full border-0 outline-none bg-transparent text-vngo-normal-medium"
                         />
+
+                        {/* See All Trigger */}
+                        <div
+                            className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded-full transition-colors group"
+                            onClick={handleShowAll}
+                            title="Show all available locations"
+                        >
+                            <span className="text-xs font-semibold text-gray-500 whitespace-nowrap hidden md:group-hover:block transition-all duration-200">See all</span>
+                            <ChevronDown className="w-6 h-6 text-gray-500" />
+                        </div>
+
                         {isLoading && <Loader2 className="w-5 h-5 animate-spin text-gray-400" />}
                     </div>
 
@@ -183,7 +223,8 @@ export default function GlobalSearchBar() {
                                         onClick={() => handleSelectSuggestion(dest)}
                                         onMouseEnter={() => setSelectedIndex(index)} // Optional: sync mouse hover
                                     >
-                                        {dest.province_en}
+                                        {/* {dest.province_en} */}
+                                        {dest.province_en.replace(/\b(City|Province)\b/gi, "").trim()}
                                     </li>
                                 ))
                             ) : (
