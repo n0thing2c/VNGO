@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // <-- Rất quan trọng!
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // <-- Very important!
 import { Menu, ChevronDown, User, Map, Calendar, MessageSquare, LogOut, Bell, LogIn, UserPlus } from 'lucide-react';
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from '../ui/dropdown-menu'; // <-- Điều chỉnh đường dẫn nếu cần
+} from '../ui/dropdown-menu'; // <-- Adjust path if needed
 
 import logo from '../../assets/LogoVNGO.png'
 import GlobalSearchBar from '../GlobalSearchBar';
@@ -22,11 +22,11 @@ export default function Header() {
   const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
   const isLoginSignupPage = location.pathname === '/login' || location.pathname === '/signup';
-  // Dùng "selector" (hàm mũi tên) để component chỉ
-  // re-render khi 'user' thay đổi, chứ không phải khi 'loading' thay đổi.
+  // Use "selector" (arrow function) so component only
+  // re-renders when 'user' changes, not when 'loading' changes.
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  const isLoggedIn = !!user; // Tạo một biến boolean tiện lợi
+  const isLoggedIn = !!user; // Create a convenient boolean variable
   const profileHref = user?.role === "tourist" ? "/tourist-profile/" : "/guide-profile/";
 
   const handleLogout = async () => {
@@ -262,15 +262,15 @@ export default function Header() {
               <img
                 src={logo}
                 alt="VNGO"
-                className="h-15 w-auto" // điều chỉnh kích thước tại đây
+                className="h-15 w-auto" // adjust size here
               />
             </Link>
           </div>
 
-          {/* Hiển thị search bar ở giữa NẾU KHÔNG PHẢI trang chủ và LoginSignup*/}
+          {/* Display search bar in the center IF NOT on home page and LoginSignup pages */}
           {!isHomePage && !isLoginSignupPage && (
             <div className="hidden md:flex justify-center flex-1 min-w-0 px-4">
-              {/* DÙNG COMPONENT TOÀN CỤC */}
+              {/* USE GLOBAL COMPONENT */}
               <GlobalSearchBar />
             </div>
           )}

@@ -178,8 +178,8 @@ class ResendEmailVerificationSerializer(serializers.Serializer):
 
 class ConfirmEmailSerializer(serializers.Serializer):
     """
-    Xác thực email bằng token UUID.
-    Nếu có pending_signup, tạo User mới. Nếu có user, chỉ mark verified.
+    Verify email using UUID token.
+    If there is a pending_signup, create a new User. If there is a user, just mark as verified.
     """
 
     token = serializers.UUIDField()
@@ -216,7 +216,7 @@ class ConfirmEmailSerializer(serializers.Serializer):
                     # Just delete this expired token
                     token_obj.delete()
             raise serializers.ValidationError("Token has expired")
-        # attach token_obj vào serializer để view dùng tiếp
+        # Attach token_obj to serializer for view to use
         self.context["token_obj"] = token_obj
         return value
 

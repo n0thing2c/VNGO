@@ -46,52 +46,52 @@ const ALL_LANGUAGES = [
 ].sort();
 
 const ToursShowPage = () => {
-    // LẤY searchParams TỪ URL
+    // Get searchParams from URL
     const [searchParams] = useSearchParams();
-    // Đọc các param từ URL khi component mount
+    // Read URL parameters when component mounts
     const searchTermFromUrl = searchParams.get('search') || '';
     const locationFromUrl = searchParams.get('location') || '';
 
-    // --- State cho Data từ API ---
+    // --- State for API Data ---
     const [tours, setTours] = useState([]);
     const [locations, setLocations] = useState([]);
     const [filterOptions, setFilterOptions] = useState({tags: [], transportation: []});
     const [isLoading, setIsLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    // State cho search/location (đồng bộ với URL)
+    // State for search/location (synchronized with URL)
     const [searchTerm, setSearchTerm] = useState(searchTermFromUrl);
     const [selectedLocation, setSelectedLocation] = useState(locationFromUrl);
 
-    // --- State cho Filter nâng cao ---
+    // --- State for Advanced Filters ---
     const defaultFilters = {
-        price: [0, 10000000], // 0 - 10 triệu
-        duration: [1, 24],     // 0 - 24 giờ
+        price: [0, 10000000], // 0 - 10 million VND
+        duration: [1, 24],     // 1 - 24 hours
         groupSize: 0,
         rating: 0,           // 0 = All
-        transportation: [],  // array rỗng
-        tags: [],            // array rỗng
+        transportation: [],  // empty array
+        tags: [],            // empty array
         guideGender: '',
         guideLanguage: '',
     };
 
-    // State filter ĐANG ÁP DỤNG (dùng để fetch API)
+    // State for ACTIVE filters (used for API fetching)
     const [filters, setFilters] = useState(defaultFilters);
 
-    // State filter TẠM THỜI (dùng trong Dialog)
+    // State for TEMPORARY filters (used in Dialog)
     const [tempFilters, setTempFilters] = useState(defaultFilters);
 
     const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
 
-    // --- State khác ---
+    // --- Other State ---
     //const [favorites, setFavorites] = useState(new Set());
     const [currency, setCurrency] = useState("USD"); // VND or USD
     const exchangeRate = 25000; // 1 VND ≈ 0.000043 USD (update as needed)
 
-    // // Thêm tiêu đề cho Hero
+    // // Add title for Hero section
     // const heroTitle = searchTerm || selectedLocation || "Discover All Tours";
 
-    // State cho ảnh hero
-    const [heroImage, setHeroImage] = useState(getProvinceHeroImage('')) // Lấy ảnh default ban đầu
+    // State for hero image
+    const [heroImage, setHeroImage] = useState(getProvinceHeroImage('')) // Get default image initially
 
     //Sorting
     const SORT_OPTIONS = [
@@ -102,7 +102,7 @@ const ToursShowPage = () => {
     ];
     const [sort, setSort] = useState('');
 
-    // --- Hàm Format ---
+    // --- Format Functions ---
     const formatPrice = (price) => {
         if (currency === "VND") {
             return new Intl.NumberFormat('vi-VN', {
@@ -115,7 +115,7 @@ const ToursShowPage = () => {
     };
 
 
-    // --- Fetch Data ban đầu (Locations & Filter Options) ---
+    // --- Initial Data Fetch (Locations & Filter Options) ---
     useEffect(() => {
         // 1. Fetch locations
         fetch(API_ENDPOINTS.GET_ALL_PROVINCES)
@@ -128,9 +128,9 @@ const ToursShowPage = () => {
             .then(res => res.json())
             .then(data => setFilterOptions(data))
             .catch(err => console.error("Error fetching filter options:", err));
-    }, []); // [] = chạy 1 lần
+    }, []); // [] = run once on mount
 
-    // Đồng bộ state với URL params khi URL thay đổi VÀ set ảnh hero
+    // Synchronize state with URL params when URL changes AND set hero image
     useEffect(() => {
         const currentSearch = searchParams.get('search') || '';
         const currentLocation = searchParams.get('location') || '';
@@ -145,20 +145,20 @@ const ToursShowPage = () => {
             queryForImage = currentSearch;
         }
         setHeroImage(getProvinceHeroImage(queryForImage));
-    }, [searchParams]); // Hook chạy mỗi khi URL param thay đổi
+    }, [searchParams]); // Hook runs whenever URL params change
 
-    // --- Fetch Tours (khi filter thay đổi) ---
+    // --- Fetch Tours (when filters change) ---
     useEffect(() => {
         setIsLoading(true);
         const params = new URLSearchParams();
 
-        // Filter cơ bản
+        // Basic filters
         if (searchTerm) params.append('search', searchTerm);
         if (selectedLocation) params.append('location', selectedLocation);
 
-        // Filter nâng cao từ state 'filters'
+        // Advanced filters from 'filters' state
         if (filters.price[0] > 0) params.append('price_min', filters.price[0]);
-        if (filters.price[1] < 10000000) params.append('price_max', filters.price[1]); // Sửa 50tr thành 10tr cho khớp defaultFilters
+        if (filters.price[1] < 10000000) params.append('price_max', filters.price[1]); // Changed from 50M to 10M to match defaultFilters
 
         if (filters.duration[0] > 1) params.append('duration_min', filters.duration[0]);
         if (filters.duration[1] < 24) params.append('duration_max', filters.duration[1]);
@@ -175,7 +175,7 @@ const ToursShowPage = () => {
         //Sort
         if (sort) params.append('sort', sort);
 
-        // Gọi API
+        // Call API
         console.log("Fetching with params:", params.toString());
         fetch(`${API_ENDPOINTS.GET_ALL_TOURS}?${params.toString()}`)
             .then(res => res.json())
@@ -189,13 +189,13 @@ const ToursShowPage = () => {
                 setIsLoading(false);
             });
 
-    }, [searchTerm, selectedLocation, filters, sort]); // Re-fetch khi các filter này thay đổi
+    }, [searchTerm, selectedLocation, filters, sort]); // Re-fetch when these filters change
 
-    // --- Các hàm xử lý Filter ---
+    // --- Filter Handler Functions ---
 
     const handleApplyFilters = () => {
-        setFilters(tempFilters); // Áp dụng filter
-        setIsFilterDialogOpen(false); // Đóng dialog
+        setFilters(tempFilters); // Apply filters
+        setIsFilterDialogOpen(false); // Close dialog
     };
 
     const handleClearFilters = () => {
@@ -203,13 +203,13 @@ const ToursShowPage = () => {
         setTempFilters(defaultFilters);
     };
 
-    // Hàm xử lý khi check/uncheck 1 checkbox (tags, transportation)
+    // Handler function for checkbox check/uncheck (tags, transportation)
     const handleCheckboxChange = (group, value) => {
         setTempFilters(prev => {
-            const currentValues = prev[group]; // vd: prev.tags
+            const currentValues = prev[group]; // e.g., prev.tags
             const newValues = currentValues.includes(value)
-                ? currentValues.filter(item => item !== value) // Bỏ check
-                : [...currentValues, value]; // Thêm check
+                ? currentValues.filter(item => item !== value) // Uncheck
+                : [...currentValues, value]; // Check
             return {...prev, [group]: newValues};
         });
     };
@@ -237,7 +237,7 @@ const ToursShowPage = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* --- Quick Filters & Dialog Trigger --- */}
                 <div className="flex flex-wrap items-center gap-4 mb-8">
-                    {/* Nút mở Dialog Filter */}
+                    {/* Button to open Filter Dialog */}
                     <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
                         <DialogTrigger asChild>
                             <Button variant="outline" className="rounded-2xl h-10 px-6">
@@ -404,7 +404,7 @@ const ToursShowPage = () => {
                         </DialogContent>
                     </Dialog>
 
-                    {/* Nút Clear All (bên ngoài) */}
+                    {/* Clear All button (outside dialog) */}
                     <Button variant="ghost" onClick={handleClearFilters} className="rounded-2xl h-10 px-6 text-gray-600">
                         <X className="w-4 h-4 mr-2" />
                         Clear Filters
@@ -418,8 +418,8 @@ const ToursShowPage = () => {
 
 
 
-                    {/* Quick Filter: Tags (Ví dụ) */}
-                    {/* Bạn có thể thêm các nút quick filter cho tags ở đây nếu muốn */}
+                    {/* Quick Filter: Tags (Example) */}
+                    {/* You can add quick filter buttons for tags here if needed */}
                     {/* <Button variant="outline" size="sm" onClick={() => setFilters(prev => ({...prev, tags: ['food']}))}>
             <Sparkles className="w-4 h-4 mr-2" />
             Tour ẩm thực

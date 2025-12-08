@@ -13,14 +13,14 @@ export default function TourStopsTimeline({ stops = [] }) {
     //     (s, i) => s.description || `This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}. This is a mock description for stop #${i + 1}.`
     // );
 
-    // --- LOGIC LẤY DESCRIPTION ---
-    // Dựa vào scrollProgress để tính index hiện tại
+    // --- LOGIC TO GET DESCRIPTION ---
+    // Calculate current index based on scrollProgress
     const currentIndex = Math.min(
-        Math.floor(scrollProgress * (stops.length - 1) + 0.1), // +0.1 để fix lỗi làm tròn
+        Math.floor(scrollProgress * (stops.length - 1) + 0.1), // +0.1 to fix rounding error
         stops.length - 1
     );
 
-    // Lấy description thật, nếu không có thì hiện fallback text
+    // Get actual description, if not available show fallback text
     const currentDescription = stops[currentIndex]?.description || "No description available for this stop.";
 
     const totalSegments = stops.length - 1;

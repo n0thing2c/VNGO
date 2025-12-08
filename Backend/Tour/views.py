@@ -441,7 +441,7 @@ def tour_rate(request, tour_id):
     if tourist_profile is None:
         return Response({"success": False, "error": "User is not a tourist"}, status=403)
 
-        # Không cho rate trùng
+        # Prevent duplicate ratings
     if TourRating.objects.filter(tour=tour, tourist=tourist_profile).exists():
         return Response({"success": False, "error": "You already rated this tour"}, status=400)
 
@@ -651,8 +651,8 @@ def get_all_tours(request):
             tours_queryset = tours_queryset.filter(min_people__lte=group_size, max_people__gte=group_size)
 
         if rating_min:
-            # Lọc dựa trên rating trung bình
-            # (Giả định rating > 0, rates > 0)
+            # Filter based on average rating
+            # (Assumes rating > 0, rates > 0)
             try:
                 min_r = int(rating_min)
                 if min_r > 0:
@@ -661,7 +661,7 @@ def get_all_tours(request):
                         rating_total__gte=(min_r * F('rating_count'))
                     )
             except (ValueError, TypeError):
-                pass # Bỏ qua nếu rating_min không hợp lệ
+                pass # Skip if rating_min is invalid
 
         if transport:
             transport_list = transport.split(',')
@@ -751,7 +751,7 @@ def get_all_tours(request):
 
     except Exception as e:
         print("Error in get_all_tours:", e)  # debug
-        return Response([], status=status.HTTP_200_OK)  # luôn trả về list
+        return Response([], status=status.HTTP_200_OK)  # Always return a list
 
 
 # ------------------------
@@ -761,9 +761,9 @@ def get_all_tours(request):
 @permission_classes([AllowAny])
 def get_popular_destinations(request):
     try:
-        # 1. Nhóm các Place theo 'province_en' (vì DL đã sạch)
-        #    và đếm số lượng tour 'distinct' (duy nhất) liên quan đến mỗi tỉnh.
-        # Thêm exclude để loại bỏ các Place chưa điền tên tỉnh
+        # 1. Group Places by 'province_en' (data is already clean)
+        #    and count the number of 'distinct' (unique) tours related to each province.
+        # Add exclude to remove Places that don't have province names filled in
         popular_provinces = Place.objects.exclude(
             Q(province_en__isnull=True) | Q(province_en="")
         ).values('province', 'province_en').annotate(
@@ -772,31 +772,31 @@ def get_popular_destinations(request):
 
         response_data = []
 
-        # 2. Lấy ảnh đại diện cho mỗi tỉnh
+        # 2. Get representative image for each province
         for province in popular_provinces:
             # image_url = "https://unsplash.com/photos/aerial-view-of-cars-on-road-during-daytime-5QbZIJV8k4E"
             
-            # # 3. Tìm một tour bất kỳ thuộc tỉnh này để lấy ảnh
-            # #    Tìm Place đầu tiên trong 'province' này MÀ CÓ tour
+            # # 3. Find any tour in this province to get an image
+            # #    Find the first Place in this 'province' that HAS a tour
             # first_place_in_province = Place.objects.filter(
             #     province_en=province['province_en'], 
             #     tours__isnull=False
             # ).first()
 
             # if first_place_in_province:
-            #     # Lấy tour đầu tiên của place đó
+            #     # Get the first tour of that place
             #     first_tour = first_place_in_province.tours.first()
             #     if first_tour:
-            #         # Lấy ảnh đầu tiên của tour đó
+            #         # Get the first image of that tour
             #         image_obj = TourImage.objects.filter(tour=first_tour).first()
             #         if image_obj:
             #             image_url = request.build_absolute_uri(image_obj.image.url)
 
             response_data.append({
-                # Dùng province_en làm 'id' hoặc key cho React
+                # Use province_en as 'id' or key for React
                 'id': province['province_en'], 
-                'name': province['province'], # Tên tiếng Việt
-                'name_en': province['province_en'], # Tên tiếng Anh
+                'name': province['province'], # Vietnamese name
+                'name_en': province['province_en'], # English name
                 'tour_count': province['tour_count'],
                 # 'image': image_url
             })
@@ -810,12 +810,12 @@ def get_popular_destinations(request):
 @permission_classes([AllowAny])
 def get_all_provinces(request):
     try:
-        # Lấy các giá trị province và province_en, và loại bỏ trùng lặp
+        # Get province and province_en values, and remove duplicates
         provinces = Place.objects.values('province', 'province_en').distinct().order_by('province_en')
-        # Format lại data cho dễ dùng ở frontend
+        # Format data for easier use in frontend
         response_data = [
             {'province_vi': p['province'], 'province_en': p['province_en']}
-            for p in provinces if p['province_en'] # Đảm bảo không lấy giá trị null
+            for p in provinces if p['province_en'] # Ensure we don't get null values
         ]
         return Response(response_data, status=status.HTTP_200_OK)
     except Exception as e:

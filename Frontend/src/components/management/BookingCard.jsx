@@ -1,4 +1,4 @@
-// dùng cho incoming request luôn
+// Used for incoming requests
 // src/components/management/BookingCard.jsx
 
 import { Badge } from "@/components/ui/badge";
@@ -171,7 +171,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
           {booking.title}
         </h3>
 
-        {/* Info cho Tourist: hiển thị guide name */}
+        {/* Info for Tourist: display guide name */}
         {booking.guideName && !showActions && (
           <p className="text-sm text-gray-600 mb-3">
             Tour guide:{" "}
@@ -185,7 +185,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
           </p>
         )}
 
-        {/* Info cho Guide: hiển thị tourist name */}
+        {/* Info for Guide: display tourist name */}
         {booking.touristName && showActions && (
           <p className="text-sm text-gray-600 mb-3">
             Tourist:{" "}

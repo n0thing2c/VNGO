@@ -97,7 +97,7 @@ export default function GuidesSection() {
             {guides.map((guide) => (
               <CarouselItem
                 key={guide.id}
-                // Tailwind lo hết responsive: 1 cột, 2 cột, 3 cột
+                // Tailwind handles all responsive: 1 column, 2 columns, 3 columns
                 className="pl-4 md:pl-6 lg:pl-8 basis-full md:basis-1/2 lg:basis-1/3"
               >
                 <div

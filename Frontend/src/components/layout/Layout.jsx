@@ -12,11 +12,11 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Ẩn chatbot button trên các trang: chat, login, signup, verify-email, 404
+  // Hide chatbot button on pages: chat, login, signup, verify-email, 404
   const hideChatbotPages = ["/chat", "/login", "/signup", "/verify-email", "/forget-password", "/reset-password"];
   const shouldHideChatbot = hideChatbotPages.includes(location.pathname);
   
-  // Kiểm tra nếu đang ở trang 404 (pathname không khớp với các route hợp lệ)
+  // Check if currently on 404 page (pathname doesn't match any valid routes)
   const validRoutePatterns = [
     /^\/$/,
     /^\/signup$/, 
@@ -69,12 +69,12 @@ export default function Layout() {
     <>
       <Header />
       <main>
-        {/* Tất cả các trang của bạn (Home, Tours...) sẽ được render ở đây */}
+        {/* All your pages (Home, Tours...) will be rendered here */}
         <Outlet />
       </main>
       <Footer />
 
-      {/* Floating Chat Button - ẩn trên trang chat, login, signup, verify-email, 404 */}
+      {/* Floating Chat Button - hidden on chat, login, signup, verify-email, 404 pages */}
       {!shouldHideChatbotOn404 && <FloatingChatbotButton />}
     </>
   );

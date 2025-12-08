@@ -353,18 +353,18 @@ export default function TourPost() {
 
     const { tour } = tourData;
 
-    // Chuẩn bị dữ liệu stops có description thật
+    // Prepare stops data with actual descriptions
     const timelineStops = (tour.tour_places || []).map((tp, index) => {
         let desc = "";
-        // Parse stops_descriptions nếu nó chưa phải là array (tuỳ backend trả về)
-        // Nhưng thường serializer DRF trả về List/Array JSONField dưới dạng Array JS luôn.
+        // Parse stops_descriptions if it's not already an array (depends on backend response)
+        // Usually DRF serializer returns List/Array JSONField as JS Array directly.
         if (Array.isArray(tour.stops_descriptions) && tour.stops_descriptions[index]) {
             desc = tour.stops_descriptions[index];
         }
 
         return {
-            ...tp.place, // Lấy thông tin lat, lon, name
-            description: desc // Inject description thật vào
+            ...tp.place, // Get lat, lon, name information
+            description: desc // Inject actual description
         };
     });
 
@@ -606,11 +606,11 @@ export default function TourPost() {
                         <div className="bg-white">
                             {viewMode === "timeline" ? (
                                 //<TourStopsTimeline stops={tour.tour_places?.map((tp) => tp.place) || []}/>
-                                // Truyền biến timelineStops đã merge thay vì tour.tour_places direct
+                                // Pass merged timelineStops variable instead of tour.tour_places directly
                                 <TourStopsTimeline stops={timelineStops} />
                             ) : (
                                 // <TourRoute Stops={tour.tour_places?.map((tp) => tp.place) || []}/>
-                                // Map vẫn dùng places gốc cũng được, hoặc dùng timelineStops đều ok
+                                // Map can use original places or timelineStops, both work
                                 <TourRoute Stops={timelineStops} />
                             )}
                         </div>

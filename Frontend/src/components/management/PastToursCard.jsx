@@ -24,7 +24,7 @@ export default function PastTours({ role, pastTours }) {
     navigate(`/tour/${tourId}`);
   };
   
-  // // Không được vì model Tour không có guideId và touristId
+  // // Not allowed because Tour model doesn't have guideId and touristId
   // const handleProfileClick = (e, id, type) => {
   //   e.stopPropagation();
   //   if (type === "guide") {

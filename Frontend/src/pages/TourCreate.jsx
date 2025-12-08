@@ -214,17 +214,17 @@ export default function TourCreate() {
     };
 
     const handleSubmit = async () => {
-        // Validation cơ bản (tuỳ chọn)
+        // Basic validation (optional)
         if (!tourname || !price || addedStops.length === 0) {
              toast.error("Please fill in required fields");
              return;
         }
-        if (isSubmitting) return; // chặn spam khi chưa xử lý xong
+        if (isSubmitting) return; // Prevent spam while processing
 
         setIsSubmitting(true);
 
-        // Tách description ra thành mảng chuỗi để gửi xuống backend
-        // Backend mong đợi: stops_descriptions = ["desc 1", "desc 2", ...] (JSON list string)
+        // Extract descriptions into string array to send to backend
+        // Backend expects: stops_descriptions = ["desc 1", "desc 2", ...] (JSON list string)
         const stopsDescriptions = addedStops.map((stop) => stop.description || "");
         const result = await tourService.createTour({
             tourname,
@@ -233,17 +233,17 @@ export default function TourCreate() {
             maxpeople,
             transportation,
             meeting,
-            addedStops, // Gửi list địa điểm
+            addedStops, // Send list of locations
             imageData,
             selectedTags,
             price,
             description, 
-            // Gửi thêm mảng mô tả đã tách
+            // Also send extracted description array
             stops_descriptions: JSON.stringify(stopsDescriptions), 
-            // Lưu ý: Nếu tourService của bạn tự stringify thì bỏ JSON.stringify ở đây đi
-            // Căn cứ vào views.py bạn gửi, backend có đoạn json.loads(stops_descriptions), 
-            // nên ở đây ta gửi JSON string hoặc array tùy theo cách tourService xử lý FormData.
-            // An toàn nhất với FormData là gửi string JSON.
+            // Note: If your tourService auto-stringifies, remove JSON.stringify here
+            // Based on views.py, backend has json.loads(stops_descriptions), 
+            // so here we send JSON string or array depending on how tourService handles FormData.
+            // Safest with FormData is to send JSON string.
         });
 
         if (result.success) {

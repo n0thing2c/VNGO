@@ -1,10 +1,10 @@
-// ẢNH FALLBACK: Dùng khi user tìm kiếm linh tinh
+// FALLBACK IMAGE: Used when user searches for invalid or unrecognized locations
 const DEFAULT_PROVINCE_HERO_IMAGE = 'https://www.tripnstay.com/wp-content/uploads/2023/01/vietnam.jpg';
 // const DEFAULT_PROVINCE_POPDEST_IMAGE = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80';
 const DEFAULT_PROVINCE_POPDEST_IMAGE = 'https://www.tripnstay.com/wp-content/uploads/2023/01/vietnam.jpg';
 
 const PROVINCE_HERO_IMAGE_MAP = {
-  // Miền Bắc 
+  // Northern Region 
   "ha-noi": "https://images.unsplash.com/photo-1710141968143-7ea1f6d89025?q=80&w=2117&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   "hanoi": 'https://images.unsplash.com/photo-1710141968143-7ea1f6d89025?q=80&w=2117&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   "hai-phong": "https://images.unsplash.com/photo-1581077747250-3ffdeba79d0a?q=80&w=1740",
@@ -22,7 +22,7 @@ const PROVINCE_HERO_IMAGE_MAP = {
   "phu-tho": "https://images.unsplash.com/photo-1534351590666-13e3e4c948fd?q=80&w=1740",
   "ninh-binh": "https://images.unsplash.com/photo-1508264165352-258a6b1fbbd4?q=80&w=1740",
   
-  // Miền Trung
+  // Central Region
   'thanh-hoa': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
   'nghe-an': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
   'ha-tinh': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
@@ -36,7 +36,7 @@ const PROVINCE_HERO_IMAGE_MAP = {
   'lam-dong': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
   'dak-lak': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
   
-  // Miền Nam
+  // Southern Region
   'ho-chi-minh': 'https://images.unsplash.com/photo-1521019795854-14e15f600980?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   'saigon': 'https://images.unsplash.com/photo-1521019795854-14e15f600980?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   "dong-nai": "https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=1740",
@@ -49,7 +49,7 @@ const PROVINCE_HERO_IMAGE_MAP = {
 };
 
 const PROVINCE_POPDEST_IMAGE_MAP = {
-  // Miền Bắc 
+  // Northern Region 
   "ha-noi": "https://images.unsplash.com/photo-1710141968143-7ea1f6d89025?q=80&w=2117&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   "hanoi": 'https://images.unsplash.com/photo-1710141968143-7ea1f6d89025?q=80&w=2117&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   "hai-phong": "https://images.unsplash.com/photo-1581077747250-3ffdeba79d0a?q=80&w=1740",
@@ -67,7 +67,7 @@ const PROVINCE_POPDEST_IMAGE_MAP = {
   "phu-tho": "https://images.unsplash.com/photo-1534351590666-13e3e4c948fd?q=80&w=1740",
   "ninh-binh": "https://images.unsplash.com/photo-1508264165352-258a6b1fbbd4?q=80&w=1740",
   
-  // Miền Trung
+  // Central Region
   'thanh-hoa': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
   'nghe-an': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
   'ha-tinh': 'https://images.unsplash.com/photo-1561570777-2c1b8b63b86a?auto=format&fit=crop&w=1740&q=80',
@@ -81,7 +81,7 @@ const PROVINCE_POPDEST_IMAGE_MAP = {
   'lam-dong': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
   'dak-lak': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1740&q=80',
   
-  // Miền Nam
+  // Southern Region
   'ho-chi-minh': 'https://images.unsplash.com/photo-1521019795854-14e15f600980?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   'saigon': 'https://images.unsplash.com/photo-1521019795854-14e15f600980?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   "dong-nai": "https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=1740",
@@ -93,22 +93,22 @@ const PROVINCE_POPDEST_IMAGE_MAP = {
   "can-tho": "https://th.bing.com/th/id/R.71d24d7207405d97d6c9effb819ff188?rik=w9yqumSvwzkpMw&pid=ImgRaw&r=0",
 };
 
-// Hàm chuẩn hóa chuỗi input (quan trọng)
+// Normalize input string (important for matching)
 const normalizeString = (str) => {
   if (!str) return "";
   return str
-    .normalize("NFD") // Tách dấu
-    .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
+    .normalize("NFD") // Separate diacritics
+    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
     .toLowerCase()
     .trim()
-    .replace(/ /g, "-") // Thay khoảng trắng bằng gạch nối
-    .replace("thanh-pho-", "") // Bỏ chữ thành phố nếu có
-    .replace("tinh-", "") // Bỏ chữ tỉnh nếu có
-    .replace("city-", "") // thêm cho chắc
-    .replace("province-", ""); // thêm cho chắc
+    .replace(/ /g, "-") // Replace spaces with hyphens
+    .replace("thanh-pho-", "") // Remove "thanh-pho-" prefix if present
+    .replace("tinh-", "") // Remove "tinh-" prefix if present
+    .replace("city-", "") // Remove "city-" prefix if present
+    .replace("province-", ""); // Remove "province-" prefix if present
 };
 
-// Hàm tìm ảnh dựa trên query
+// Find image based on query string
 export const getProvinceHeroImage = (query) => {
   if (!query) {
     return DEFAULT_PROVINCE_HERO_IMAGE;
@@ -116,14 +116,14 @@ export const getProvinceHeroImage = (query) => {
 
   const lowerQuery = normalizeString(query);
 
-  // Tìm từ khóa đầu tiên khớp
+  // Find first matching keyword
   for (const key in PROVINCE_HERO_IMAGE_MAP) {
     if (lowerQuery.includes(key)) {
       return PROVINCE_HERO_IMAGE_MAP[key];
     }
   }
 
-  // Nếu không tìm thấy, trả về ảnh mặc định
+  // Return default image if no match found
   return DEFAULT_PROVINCE_HERO_IMAGE;
 };
 
@@ -134,13 +134,13 @@ export const getProvincePopDestImage = (query) => {
 
   const lowerQuery = normalizeString(query);
 
-  // Tìm từ khóa đầu tiên khớp
+  // Find first matching keyword
   for (const key in PROVINCE_POPDEST_IMAGE_MAP) {
     if (lowerQuery.includes(key)) {
       return PROVINCE_POPDEST_IMAGE_MAP[key];
     }
   }
 
-  // Nếu không tìm thấy, trả về ảnh mặc định
+  // Return default image if no match found
   return DEFAULT_PROVINCE_POPDEST_IMAGE;
 };

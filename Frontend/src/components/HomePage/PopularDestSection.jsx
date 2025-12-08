@@ -29,12 +29,12 @@ export default function PopularDestSection({ popularDestinations = [] }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {/* Lấy 3 hoặc 6 điểm đến đầu tiên (API trả về 6 */}
+            {/* Get first 3 or 6 destinations (API returns 6) */}
             {popularDestinations.slice(0, 6).map((dest) => {
-              // 2. Lấy ảnh từ utils dựa trên name_en (English name) của API trả về
+              // 2. Get image from utils based on name_en (English name) returned by API
               const provinceImage = getProvincePopDestImage(dest.name_en);
               return (
-              // Bọc Card bằng Link, trỏ đến trang /tours
+              // Wrap Card with Link, pointing to /tours page
                 <Link
                   to={`/tours?location=${encodeURIComponent(dest.name_en)}`}
                   key={dest.id}
@@ -48,7 +48,7 @@ export default function PopularDestSection({ popularDestinations = [] }) {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                       
-                      {/* Gradient overlay: Làm tối dần để chữ dễ đọc hơn */}
+                      {/* Gradient overlay: Gradually darken to make text more readable */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
                       
                       <h3 className="absolute bottom-5 left-6 text-3xl font-bold text-white tracking-wide drop-shadow-md">

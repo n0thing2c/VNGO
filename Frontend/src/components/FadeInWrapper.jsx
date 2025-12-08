@@ -2,8 +2,8 @@ import { useInView } from 'react-intersection-observer';
 
 export default function FadeInWrapper({ children, className = "" }) {
   const { ref, inView } = useInView({
-    triggerOnce: true, // Chỉ chạy hiệu ứng 1 lần
-    threshold: 0.1,    // Kích hoạt khi 10% component xuất hiện
+    triggerOnce: true, // Only run animation once
+    threshold: 0.1,    // Trigger when 10% of component is visible
   });
 
   return (

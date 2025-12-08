@@ -11,18 +11,18 @@ import { tourService } from "@/services/tourService";
 import BookingCardSkeleton from "@/components/management/BookingCardSkeleton";
 import { Globe, Compass, Clock, Send } from "lucide-react";
 
-const IS_MOCK_TEST = 0; // Đổi thành FALSE khi deploy hoặc test API thật
-const TEST_ROLE = "guide"; // Đổi thành "tourist" để test Tourist Tabs
+const IS_MOCK_TEST = 0; // Change to FALSE when deploying or testing real API
+const TEST_ROLE = "guide"; // Change to "tourist" to test Tourist Tabs
 
 const mockDataTourist = {
     role: "tourist",
     
-    // Dữ liệu cho tab "My bookings"
+    // Data for "My bookings" tab
     bookings: [
         {
             id: 101,
             tourId: "101",
-            image: "https://picsum.photos/id/237/300/200", // Thay bằng ảnh thực
+            image: "https://picsum.photos/id/237/300/200", // Replace with actual image
             title: "Ha Long Bay: 3-Day Cruise & Kayaking",
             status: "Confirmed",
             status_key: "confirmed",
@@ -30,7 +30,7 @@ const mockDataTourist = {
             tourTime: "07:00 AM",
             number_of_guests: 2,
             totalPrice: 4500000,
-            guideName: "Alex Hướng Dẫn", // Tourist cần xem tên Guide
+            guideName: "Alex Hướng Dẫn", // Tourist needs to see Guide name
             touristName: null,
         },
         {
@@ -76,7 +76,7 @@ const mockDataGuide = {
             image: "https://picsum.photos/id/240/300/200",
             title: "Tour ẩm thực Sài Gòn đêm",
             status: "Pending",
-            status_key: "pending", // QUAN TRỌNG: để hiện nút Accept/Decline
+            status_key: "pending", // IMPORTANT: to show Accept/Decline buttons
             tourDate: "2025-12-15T00:00:00Z",
             tourTime: "06:30 PM",
             number_of_guests: 3,
@@ -105,12 +105,12 @@ const mockDataGuide = {
 const mockMyTours = [
     { 
         id: 'MT-001', 
-        name: 'City Tour Đà Nẵng', // Một số component dùng 'name'
-        title: 'City Tour Đà Nẵng', // Một số component dùng 'title'
+        name: 'City Tour Đà Nẵng', // Some components use 'name'
+        title: 'City Tour Đà Nẵng', // Some components use 'title'
         image: "https://picsum.photos/id/101/300/200",
         status: 'Active',
         status_key: 'active',
-        price: 5000000, // Thêm giá tiền (quan trọng)
+        price: 5000000, // Add price (important)
         duration: "2",
         max_guests: 15,
         rating: 4.8,
@@ -124,7 +124,7 @@ const mockMyTours = [
         image: "https://picsum.photos/id/102/300/200",
         status: 'Draft',
         status_key: 'draft',
-        price: 2500000, // Thêm giá tiền (quan trọng)
+        price: 2500000, // Add price (important)
         duration: "3",
         max_guests: 20,
         rating: 0,
@@ -149,13 +149,13 @@ export default function ManagementTours() {
     ? (TEST_ROLE === "guide" ? "my-tours" : "bookings") 
     : "bookings";
   const [activeTab, setActiveTab] = useState(initialTab);
-  // const [activeTab, setActiveTab] = useState("bookings"); // Thêm dòng này
+  // const [activeTab, setActiveTab] = useState("bookings"); // Add this line
 
   useEffect(() => {
     const fetchManagementData = async () => {
       setIsLoading(true);
       if (IS_MOCK_TEST) {
-        // Mô phỏng độ trễ của API
+        // Simulate API delay
         setTimeout(() => {
             setManagementData(MOCK_MANAGEMENT_DATA);
             
@@ -174,7 +174,7 @@ export default function ManagementTours() {
         
         if (result.success) {
           setManagementData(result.data);
-          setActiveTab(result.data.role === "guide" ? "my-tours" : "bookings"); // Set tab đúng ngay khi có role
+          setActiveTab(result.data.role === "guide" ? "my-tours" : "bookings"); // Set correct tab as soon as role is available
           
           if (result.data.role === "guide") {
             const toursResult = await tourService.getMyTours();
@@ -234,7 +234,7 @@ export default function ManagementTours() {
   <div className="min-h-screen bg-gray-100 py-8 px-4">
     <div className="max-w-7xl mx-auto space-y-4">
 
-      {/* THẺ 1: TabsList*/}
+      {/* CARD 1: TabsList */}
       
       <div className="bg-white rounded-4xl shadow-lg overflow-hidden">
         <div className="px-8">
@@ -269,7 +269,7 @@ export default function ManagementTours() {
         </div>
       </div>
 
-      {/* THẺ 2: Nội dung */}
+      {/* CARD 2: Content */}
       <div className="bg-white rounded-4xl shadow-lg overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="p-8 pt-10 min-h-[500px]">
