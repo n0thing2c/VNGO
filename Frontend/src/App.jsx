@@ -21,6 +21,9 @@ import ProtectedRoute from "@/components/Auth/ProtectedRoute.jsx";
 import ManagementTours from "./pages/ManagementTours";
 import { CallProvider } from "@/components/call/CallProvider";
 import NotFoundPage from "./pages/NotFoundPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import GuidePolicyPage from "./pages/GuidePolicyPage";
 
 function App() {
   return (
@@ -42,6 +45,9 @@ function App() {
             <Route path="/login" element={<LogInPage />} />
             <Route path="/forget-password" element={<ForgetPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/guide-policy" element={<GuidePolicyPage />} />
             <Route path="/tour/post/:tour_id" element={<TourPost />} />
             <Route path="/tour/:tour_id" element={<TourPost />} />
             <Route index element={<HomePage />} />

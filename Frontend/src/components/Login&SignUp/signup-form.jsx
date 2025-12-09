@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input.jsx";
 import { toast } from "sonner";
 import SignUpImg from "@/assets/sign_up_img.png";
 import { useAuthStore } from "@/stores/useAuthStore.js";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { useState } from "react";
 
 // Helper function to extract error message from API response
@@ -202,20 +202,29 @@ export function SignupForm({ className, ...props }) {
                     />
                     <label htmlFor="tos-agree" className="select-none text-left">
                       By clicking, you agree to our{" "}
-                      <a href="#" className="text-primary underline">
+                      <Link
+                        to="/terms-of-service"
+                        className="text-primary underline"
+                      >
                         Terms of Service
-                      </a>{" "}
+                      </Link>{" "}
                       and{" "}
-                      <a href="#" className="text-primary underline">
+                      <Link
+                        to="/privacy-policy"
+                        className="text-primary underline"
+                      >
                         Privacy Policy
-                      </a>
+                      </Link>
                       {role === "Guide" && (
                         <>
                           {" "}
                           and{" "}
-                          <a href="#" className="text-primary underline">
+                          <Link
+                            to="/guide-policy"
+                            className="text-primary underline"
+                          >
                             Guide Policy
-                          </a>
+                          </Link>
                         </>
                       )}
                       .
