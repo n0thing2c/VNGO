@@ -1,11 +1,13 @@
 import GlobalSearchBar from "../GlobalSearchBar"
+import defaultBanner from "@/assets/banner.svg";
 
 export default function HeroSection() {
     return(
         <section className="relative min-h-[500px] md:min-h-[600px] lg:min-h-[660px] flex items-center justify-center overflow-hidden bg-gradient-to-b from-blue-100 to-blue-50">
           {/* Background image */}
           <img
-            src="https://6ixgo.com/_next/static/media/Banner.dd1e0ea6.svg?fbclid=IwY2xjawNzqBFleHRuA2FlbQIxMQABHoZRcRU5rejwr7vbckhvtLzAsQWbXN-PY_3Xo3KXl9XwlcknXI7651mx4gKJ_aem_E_758frw4cYczKIHiSZopA"
+            // src="https://6ixgo.com/_next/static/media/Banner.dd1e0ea6.svg?fbclid=IwY2xjawNzqBFleHRuA2FlbQIxMQABHoZRcRU5rejwr7vbckhvtLzAsQWbXN-PY_3Xo3KXl9XwlcknXI7651mx4gKJ_aem_E_758frw4cYczKIHiSZopA"
+            src={defaultBanner}
             alt="Hero background"
             className="absolute inset-0 w-full h-full object-cover opacity-70"
           />

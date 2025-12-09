@@ -43,9 +43,9 @@ export default function InfoSection() {
               <div className="w-16 h-16 rounded-2xl bg-yellow-50 flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-110">
                 <Star className="w-8 h-8 text-yellow-600" />
               </div>
-              <h3 className="font-semibold mb-2 text-vngo-normal-medium-responsive">5 Star Rated</h3>
+              <h3 className="font-semibold mb-2 text-vngo-normal-medium-responsive">Highly Rated</h3>
               <p className="text-vngo-normal-small-responsive text-gray-600">
-                Verified by thousands of travelers
+                Verified by many travelers
               </p>
             </div>
           </div>

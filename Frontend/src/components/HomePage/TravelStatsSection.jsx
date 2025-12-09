@@ -21,7 +21,7 @@ export default function TravelStatsSection() {
           Here we use max-w-6xl for consistency.
         */}
           <div className="max-w-4xl mx-auto text-center">
-            <p className="font-medium text-black text-lg md:text-xl mb-3">
+            <p className="text-vngo-normal-medium-responsive font-medium text-black mb-3">
               Travel with us
             </p>
             <h2 className="text-3xl md:text-5xl lg:text-6xl font-light text-black mb-4">
@@ -35,18 +35,18 @@ export default function TravelStatsSection() {
               {/* Stat 1 */}
               <div className="bg-white/80 backdrop-blur-sm rounded-full p-4 shadow-md">
                 <div className="flex items-center justify-between px-6">
-                  <span className="text-lg font-medium text-gray-700">Travellers served</span>
-                  <span className="text-2xl font-bold text-black">
-                    <AnimatedStat end={10000} suffix="+" />
+                  <span className="text-vngo-normal-small-responsive font-medium text-gray-700">Travellers served</span>
+                  <span className="text-vngo-normal-large-responsive font-bold text-black">
+                    <AnimatedStat end={1000} suffix="+" />
                   </span>
                 </div>
               </div>
               {/* Stat 2 */}
               <div className="bg-white/80 backdrop-blur-sm rounded-full p-4 shadow-md">
                 <div className="flex items-center justify-between px-6">
-                  <span className="text-lg font-medium text-gray-700">Tour guides</span>
-                  <span className="text-2xl font-bold text-black">
-                    <AnimatedStat end={500} suffix="+" />
+                  <span className="text-vngo-normal-small-responsive font-medium text-gray-700">Tour guides</span>
+                  <span className="text-vngo-normal-large-responsive font-bold text-black">
+                    <AnimatedStat end={100} suffix="+" />
                   </span>
                 </div>
               </div>

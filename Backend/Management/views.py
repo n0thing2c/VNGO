@@ -6,7 +6,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .models import Booking, BookingNotification, BookingStatus, PastTour
 from .serializers import (
@@ -457,51 +457,39 @@ class BookingViewSet(viewsets.ModelViewSet):
                 {"message": "Booking accepted successfully", "booking": serializer.data}
             )
 
-        else:  # decline - notify and delete immediately
+        else:  # decline - update status and notify
             decline_reason = response_serializer.validated_data.get(
                 "decline_reason", ""
             )
-            tour_name = booking.tour.name
-            tour_date = booking.tour_date
-            tourist_user = booking.tourist.user
+            
+            # Soft delete: Update status to DECLINED instead of deleting
+            booking.status = BookingStatus.DECLINED
+            booking.responded_at = timezone.now()
+            booking.save()
 
-            # Create notification before deleting
-            # Note: We create notification without FK to booking since it will be deleted
-            from Authentication.models import User
-            from django.core.mail import send_mail
+            message = f"Your booking for {booking.tour.name} on {booking.tour_date} was declined."
+            if decline_reason:
+                message += f" Reason: {decline_reason}"
 
-            # Send in-app notification or email (since booking will be deleted, we can't link to it)
-            # For now, we'll skip creating BookingNotification since it requires a booking FK
-            # Instead, you might want to implement a separate NotificationLog model for deleted bookings
-            # However, we still send a realtime WebSocket notification so the tourist is informed.
+            # Create persistent notification in database
             try:
-                temp_notification = BookingNotification(
+                notification = BookingNotification.objects.create(
                     booking=booking,
-                    recipient=tourist_user,
+                    recipient=booking.tourist.user,
                     notification_type="booking_declined",
-                    message=(
-                        f"Your booking for {tour_name} on {tour_date} was declined. "
-                        f"Reason: {decline_reason or 'No reason provided.'}"
-                    ),
+                    message=message,
                 )
-                # This object is not saved to DB, so id/created_at are null.
-                # send_booking_ws_notification can still use recipient_id/booking_id
-                # to target the correct user in realtime.
-                send_booking_ws_notification(temp_notification)
+                
+                # Send realtime WebSocket notification
+                send_booking_ws_notification(notification)
             except Exception as e:
-                print(f"Error sending decline notification for booking {booking.id}: {str(e)}")
+                print(f"Error creating decline notification for booking {booking.id}: {str(e)}")
 
-            # Delete the booking immediately
-            booking.delete()
-
+            serializer = BookingSerializer(booking)
             return Response(
                 {
-                    "message": "Booking declined and removed from system",
-                    "details": {
-                        "tour_name": tour_name,
-                        "tour_date": str(tour_date),
-                        "reason": decline_reason,
-                    },
+                    "message": "Booking declined",
+                    "booking": serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -908,8 +896,15 @@ def frontend_management_snapshot(request):
             if booking_datetime >= now:
                 future_bookings.append(booking.id)
 
+        # Date cutoff for hiding declined/cancelled bookings
+        cutoff_time = timezone.now() - timedelta(hours=24)
+
         bookings = (
             Booking.objects.filter(id__in=future_bookings)
+            .exclude(
+                status__in=[BookingStatus.DECLINED, BookingStatus.CANCELLED],
+                responded_at__lt=cutoff_time
+            )
             .select_related("tourist", "guide", "tour")
             .prefetch_related("tour__tour_images")
             .order_by("-created_at")
@@ -959,8 +954,15 @@ def frontend_management_snapshot(request):
             if booking_datetime >= now:
                 future_bookings.append(booking.id)
 
+        # Date cutoff for hiding declined/cancelled bookings
+        cutoff_time = timezone.now() - timedelta(hours=24)
+
         incoming = (
             Booking.objects.filter(id__in=future_bookings)
+            .exclude(
+                status__in=[BookingStatus.DECLINED, BookingStatus.CANCELLED],
+                responded_at__lt=cutoff_time
+            )
             .select_related("tourist", "guide", "tour")
             .prefetch_related("tour__tour_images")
             .order_by("-created_at")

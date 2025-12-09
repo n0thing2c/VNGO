@@ -318,6 +318,16 @@ export default function BookingCard({ booking, showActions = false, refreshData 
         {/* <Button asChild className={`w-full bg-green-600 hover:bg-green-700 rounded-full h-12 ${!showActions || booking.status_key !== "pending" ? 'mt-auto' : ''}`}>
           <Link to={`/tour/${booking.tourId}`}>View tour</Link>
         </Button> */}
+
+        {/* 24h Removal Notice */}
+        {(booking.status_key === 'declined' ||
+          booking.status_key === 'cancelled' ||
+          booking.status?.toLowerCase().includes('decline') ||
+          booking.status?.toLowerCase().includes('cancel')) && (
+            <p className="text-xs text-center text-gray-400 italic mt-auto pt-2">
+              Automatically removed after 24h
+            </p>
+          )}
       </div>
     </div>
   );

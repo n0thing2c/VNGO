@@ -62,9 +62,8 @@ const StarRating = ({rating = 0}) => {
                 return (
                     <Star
                         key={idx}
-                        className={`w-4 h-4 ${
-                            isFilled ? "text-yellow-400" : "text-gray-300"
-                        }`}
+                        className={`w-4 h-4 ${isFilled ? "text-yellow-400" : "text-gray-300"
+                            }`}
                         fill="currentColor"
                     />
                 );
@@ -72,11 +71,11 @@ const StarRating = ({rating = 0}) => {
         </div>
     );
 };
-const HeartRating = ({rating = 0}) => {
+const HeartRating = ({ rating = 0 }) => {
     const value = Number(rating) || 0;
     return (
         <div className="flex items-center space-x-0.5">
-            {Array.from({length: 5}).map((_, idx) => {
+            {Array.from({ length: 5 }).map((_, idx) => {
                 const isFilled = idx + 1 <= Math.round(value);
                 return (
                     <Heart
@@ -90,7 +89,7 @@ const HeartRating = ({rating = 0}) => {
     );
 };
 
-const TourCard = ({tour, onViewTour}) => (
+const TourCard = ({ tour, onViewTour }) => (
     <div
         className="flex flex-col min-w-[300px] w-[300px] h-[400px] bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
         <img
@@ -112,10 +111,10 @@ const TourCard = ({tour, onViewTour}) => (
             </p>
 
             <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
-                <StarRating rating={tour.rating}/>
+                <StarRating rating={tour.rating} />
                 <span className="font-medium">
-          {(tour.rating || 0).toFixed(1)} ({tour.reviews || 0})
-        </span>
+                    {(tour.rating || 0).toFixed(1)} ({tour.reviews || 0})
+                </span>
             </div>
 
             {/* Button always at bottom */}
@@ -131,8 +130,8 @@ const TourCard = ({tour, onViewTour}) => (
     </div>
 );
 
-export function GuidePublicProfile({guideId}) {
-    const {user} = useAuthStore();
+export function GuidePublicProfile({ guideId }) {
+    const { user } = useAuthStore();
     const userRole = user?.role;
     const navigate = useNavigate();
     const [guide, setGuide] = useState(null);
@@ -179,7 +178,7 @@ export function GuidePublicProfile({guideId}) {
         return (data || []).map((r) => ({
             ...r,
             review_tags: Array.isArray(r.review_tags) ? r.review_tags : [],
-            tourist: r.tourist || {username: "Anonymous", avatar: null},
+            tourist: r.tourist || { username: "Anonymous", avatar: null },
         }));
     };
 
@@ -342,20 +341,20 @@ export function GuidePublicProfile({guideId}) {
 
                                 {/* Rating */}
                                 <div className="flex items-center mb-4">
-                                    <HeartRating rating={averageRating}/>
+                                    <HeartRating rating={averageRating} />
                                     <span className="text-sm md:text-base text-gray-600 ml-2 whitespace-nowrap">
-                    {averageRating.toFixed(1)} ({reviews.length} review
+                                        {averageRating.toFixed(1)} ({reviews.length} review
                                         {reviews.length === 1 ? "" : "s"})
-                  </span>
+                                    </span>
                                 </div>
 
                                 {/* Location & Languages */}
                                 <div className="space-y-2 mb-4">
                                     <div className="flex items-center text-gray-600 text-base md:text-lg">
-                                        <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0"/>
+                                        <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-600 shrink-0" />
                                         <span className="truncate">
-                      {guide.location || "Location not provided"}
-                    </span>
+                                            {guide.location || "Location not provided"}
+                                        </span>
                                     </div>
                                     <div className="flex items-center text-gray-600 text-base md:text-lg">
                                         {guide.gender === "Male" && (
@@ -373,26 +372,25 @@ export function GuidePublicProfile({guideId}) {
                                         <span>{guide.gender ? ` ${guide.gender}` : ""}</span>
                                     </div>
                                     <div className="flex items-center text-gray-600 text-base md:text-lg">
-                                        <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0"/>
+                                        <Languages className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-700 shrink-0" />
                                         <span className="truncate">
-                      {guide.languages?.length
-                          ? guide.languages.join(", ")
-                          : "Languages not set"}
-                    </span>
+                                            {guide.languages?.length
+                                                ? guide.languages.join(", ")
+                                                : "Languages not set"}
+                                        </span>
                                     </div>
                                 </div>
 
                                 {/* Message Button */}
                                 {userRole !== "guide" && (
                                     <Button
-                                        className={`rounded-lg flex items-center justify-center gap-2 btn-vngo-hover-effect px-6 py-2 ${
-                                            userRole === "tourist"
+                                        className={`rounded-lg flex items-center justify-center gap-2 btn-vngo-hover-effect px-6 py-2 ${userRole === "tourist"
                                                 ? "bg-[#068F64] text-white hover:bg-[#057A56]"
                                                 : "bg-gray-300 text-gray-500 cursor-not-allowed hover:scale-100 hover:shadow-none"
-                                        }`}
+                                            }`}
                                         onClick={handleMessageClick}
                                     >
-                                        <MessageCircleMore className="w-4 h-4"/>
+                                        <MessageCircleMore className="w-4 h-4" />
                                         Message{" "}
                                         {guide.name
                                             ? guide.name.trim().split(" ").slice(-1).join(" ")
@@ -410,7 +408,7 @@ export function GuidePublicProfile({guideId}) {
                             <div
                                 className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
                                 <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-center">
-                                    <Calendar className="w-6 h-6 text-blue-600"/>
+                                    <Calendar className="w-6 h-6 text-blue-600" />
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-600">Completed tours</p>
@@ -424,7 +422,7 @@ export function GuidePublicProfile({guideId}) {
                             <div
                                 className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-4">
                                 <div className="p-3 bg-purple-50 rounded-lg flex items-center justify-center">
-                                    <LandPlot className="w-6 h-6 text-purple-600"/>
+                                    <LandPlot className="w-6 h-6 text-purple-600" />
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-600">Offered tours</p>
@@ -441,7 +439,7 @@ export function GuidePublicProfile({guideId}) {
                         className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
                             <div className="p-2 bg-amber-50 rounded-lg">
-                                <Award className="w-6 h-6 text-amber-600"/>
+                                <Award className="w-6 h-6 text-amber-600" />
                             </div>
                             <div className="flex justify-between w-full">
                                 <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary">
@@ -449,14 +447,14 @@ export function GuidePublicProfile({guideId}) {
                                 </h3>
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <CircleQuestionMark color="gray" className="h-5 w-5"/>
+                                        <CircleQuestionMark color="gray" className="h-5 w-5" />
                                     </DialogTrigger>
                                     <DialogContent>
                                         <div className="flex flex-col gap-2">
                                             <DialogTitle> All Achievements </DialogTitle>
                                             <DialogDescription>Hover over a locked badge to see how to unlock it</DialogDescription>
                                         </div>
-                                        <AchievementDialog achieved={achievements}/>
+                                        <AchievementDialog achieved={achievements} />
                                     </DialogContent>
 
                                 </Dialog>
@@ -469,7 +467,7 @@ export function GuidePublicProfile({guideId}) {
                             {achievements?.length > 0 ? (
                                 achievements.map((ach, idx) => (
                                     <div key={idx} className="flex justify-center relative">
-                                        <AchievementBadge variant={ach.toLowerCase()} label={ach}/>
+                                        <AchievementBadge variant={ach.toLowerCase()} label={ach} />
                                     </div>
                                 ))
                             ) : (
@@ -500,7 +498,7 @@ export function GuidePublicProfile({guideId}) {
                         className="w-full flex flex-col space-y-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
                             <div className="p-2 bg-blue-50 rounded-lg">
-                                <BookOpen className="w-6 h-6 text-vngo-primary"/>
+                                <BookOpen className="w-6 h-6 text-vngo-primary" />
                             </div>
                             <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary">
                                 About me
@@ -516,7 +514,7 @@ export function GuidePublicProfile({guideId}) {
                     <div className="w-full p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         <div className="flex items-center gap-3 border-b border-gray-200 pb-3 mb-6">
                             <div className="p-2 bg-green-50 rounded-lg">
-                                <MapPin className="w-6 h-6 text-green-600"/>
+                                <MapPin className="w-6 h-6 text-green-600" />
                             </div>
                             <div className="flex items-center justify-between flex-1">
                                 <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary">
@@ -530,16 +528,16 @@ export function GuidePublicProfile({guideId}) {
                                 This guide has not published any tours yet.
                             </p>
                         ) : (
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-between gap-4 w-full">
                                 <Button
                                     className="p-5 rounded-full bg-white border border-gray-200 hover:bg-gray-100 shadow-sm hidden md:flex items-center justify-center shrink-0"
                                     onClick={() => scrollTours("left")}
                                 >
-                                    <ChevronLeft className="w-5 h-5 text-gray-700"/>
+                                    <ChevronLeft className="w-5 h-5 text-gray-700" />
                                 </Button>
                                 <div
                                     ref={tourListRef}
-                                    className="flex overflow-x-auto scrollbar-hide space-x-5 py-2 snap-x snap-mandatory scroll-smooth"
+                                    className="flex-1 flex overflow-x-auto scrollbar-hide space-x-5 py-2 snap-x snap-mandatory scroll-smooth"
                                 >
                                     {tours.map((tour) => (
                                         <TourCard
@@ -561,7 +559,7 @@ export function GuidePublicProfile({guideId}) {
                                     className="p-5 rounded-full bg-white border border-gray-200 hover:bg-gray-100 shadow-sm hidden md:flex items-center justify-center shrink-0"
                                     onClick={() => scrollTours("right")}
                                 >
-                                    <ChevronRight className="w-5 h-5 text-gray-700"/>
+                                    <ChevronRight className="w-5 h-5 text-gray-700" />
                                 </Button>
                             </div>
                         )}
@@ -571,7 +569,7 @@ export function GuidePublicProfile({guideId}) {
                     <div className="w-full p-6 bg-white rounded-xl shadow-sm border border-gray-200">
                         <div className="flex items-center gap-3 border-b border-gray-200 pb-3 mb-6">
                             <div className="p-2 bg-purple-50 rounded-lg">
-                                <MessageSquare className="w-6 h-6 text-purple-600"/>
+                                <MessageSquare className="w-6 h-6 text-purple-600" />
                             </div>
                             <div className="flex items-center justify-between flex-1">
                                 <h3 className="text-2xl md:text-3xl font-semibold text-vngo-primary">
@@ -580,7 +578,7 @@ export function GuidePublicProfile({guideId}) {
                                 {!!reviews.length && (
                                     <span className="text-base md:text-lg text-gray-500">
                                         {reviews.length} review{reviews.length === 1 ? "" : "s"}
-                                      </span>
+                                    </span>
                                 )}
                             </div>
                         </div>
@@ -590,7 +588,7 @@ export function GuidePublicProfile({guideId}) {
                             </p>
                         ) : (
                             <div className="text-lg">
-                                <RatingList ratings={reviews} showTourName={true}/>
+                                <RatingList ratings={reviews} showTourName={true} />
                             </div>
                         )}
                     </div>
