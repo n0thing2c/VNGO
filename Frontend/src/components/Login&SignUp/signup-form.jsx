@@ -111,7 +111,7 @@ export function SignupForm({ className, ...props }) {
                   type="email"
                   placeholder="m@example.com"
                   required
-                  className="h-9 text-sm"
+                  className="rounded-full h-9 text-sm"
                 />
               </Field>
 
@@ -124,7 +124,7 @@ export function SignupForm({ className, ...props }) {
                   name="username"
                   type="username"
                   required
-                  className="h-9 text-sm"
+                  className="rounded-full h-9 text-sm"
                 />
               </Field>
 
@@ -139,7 +139,7 @@ export function SignupForm({ className, ...props }) {
                       name="password"
                       type="password"
                       required
-                      className="h-9 text-sm"
+                      className="rounded-full h-9 text-sm"
                     />
                   </Field>
 
@@ -152,16 +152,19 @@ export function SignupForm({ className, ...props }) {
                       name="confirm-password"
                       type="password"
                       required
-                      className="h-9 text-sm"
+                      className="rounded-full h-9 text-sm"
                     />
                   </Field>
                 </Field>
-                <FieldDescription className="text-xs">
+                <FieldDescription className="text-xs text-gray-400">
                   Must be at least 8 characters long.
                 </FieldDescription>
               </Field>
 
               <Field>
+                <FieldLabel className="text-sm font-medium">
+                  Choose your role
+                </FieldLabel>
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-10 md:gap-12">
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -223,7 +226,7 @@ export function SignupForm({ className, ...props }) {
                   </div>
                 </div>
                 <Button
-                  className="w-full md:w-auto h-9 px-4 text-sm mt-3"
+                  className="rounded-full w-full md:w-auto h-9 px-4 text-sm mt-3"
                   type="submit"
                   disabled={loading}
                 >

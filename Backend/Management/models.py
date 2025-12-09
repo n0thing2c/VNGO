@@ -7,6 +7,8 @@ from Tour.models import Tour
 class BookingStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     ACCEPTED = "accepted", "Accepted"
+    DECLINED = "declined", "Declined"
+    CANCELLED = "cancelled", "Cancelled"
 
 
 class Booking(models.Model):
@@ -129,6 +131,8 @@ class BookingNotification(models.Model):
     NOTIFICATION_TYPE_CHOICES = [
         ("new_booking", "New Booking Request"),
         ("booking_accepted", "Booking Accepted"),
+        ("booking_declined", "Booking Declined"),
+        ("booking_cancelled", "Booking Cancelled"),
         ("booking_reminder", "Booking Reminder"),
     ]
 

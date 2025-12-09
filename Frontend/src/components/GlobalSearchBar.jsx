@@ -120,9 +120,9 @@ export default function GlobalSearchBar() {
             return;
         }
 
-        // Priority 3: Empty input & no selection -> Show all tours
-        setShowSuggestions(false);
-        navigate('/tours');
+        // // Priority 3: Empty input & no selection -> Show all tours
+        // setShowSuggestions(false);
+        // navigate('/tours');
     };
 
     // Handle enter

@@ -17,6 +17,51 @@ import { managementService } from '@/services/managementService';
 import { notificationService } from '@/services/notifyService';
 import { chatService } from '@/services/chatService';
 
+// Separated component to handle "Read More" state individually
+const NotificationItem = ({ notification, onClick, getTitle, formatTime }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 60; // Characters to show before truncating
+  const message = notification.message || "";
+  const isLongMessage = message.length > maxLength;
+
+  const toggleExpand = (e) => {
+    e.stopPropagation(); // Prevent triggering the card click (mark as read)
+    setIsExpanded(!isExpanded);
+  };
+
+  return (
+    <div
+      onClick={onClick}
+      className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notification.is_read ? 'bg-blue-50/50' : ''}`}
+    >
+      <div className="flex justify-between items-start mb-1">
+        <h4 className={`text-sm ${!notification.is_read ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
+          {getTitle(notification)}
+        </h4>
+        <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
+          {formatTime(notification)}
+        </span>
+      </div>
+      <div>
+        <p className={`text-xs text-gray-500 ${isExpanded ? '' : 'line-clamp-2'} whitespace-pre-wrap`}>
+          {isExpanded ? message : (
+            isLongMessage ? `${message.substring(0, maxLength)}...` : message
+          )}
+        </p>
+
+        {isLongMessage && (
+          <button
+            onClick={toggleExpand}
+            className="text-[10px] font-semibold text-blue-500 hover:text-blue-700 mt-1 focus:outline-none"
+          >
+            {isExpanded ? "Show less" : "Read more"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -380,23 +425,13 @@ export default function Header() {
                     <div className="max-h-[300px] overflow-y-auto">
                       {notifications.length > 0 ? (
                         notifications.map((notif) => (
-                          <div
+                          <NotificationItem
                             key={notif.id}
+                            notification={notif}
                             onClick={() => handleNotificationClick(notif)}
-                            className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-blue-50/50' : ''}`}
-                          >
-                            <div className="flex justify-between items-start mb-1">
-                              <h4 className={`text-sm ${!notif.is_read ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
-                                {getNotificationTitle(notif)}
-                              </h4>
-                              <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
-                                {formatNotificationTime(notif)}
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-2">
-                              {notif.message}
-                            </p>
-                          </div>
+                            getTitle={getNotificationTitle}
+                            formatTime={formatNotificationTime}
+                          />
                         ))
                       ) : (
                         <div className="p-4 text-center text-sm text-gray-500">
