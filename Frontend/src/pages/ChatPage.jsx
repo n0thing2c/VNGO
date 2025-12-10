@@ -439,10 +439,10 @@ export default function ChatPage() {
           const merged = normalizeAndEnhance([...prev, ...withOnlineStatus]);
           return merged;
         });
-        // Ensure targetRoom remains selected if it exists
-        if (targetRoomRef.current) {
-          setSelectedRoom(targetRoomRef.current);
-        }
+        // Removed aggressive auto-selection that caused jumping
+        // if (targetRoomRef.current) {
+        //   setSelectedRoom(targetRoomRef.current);
+        // }
       } catch { }
     };
 
@@ -785,9 +785,9 @@ export default function ChatPage() {
   return (
     <div>
       {/* Main Content */}
-      <div className="flex px-[1%] py-[1%] gap-4 bg-gray-200" >
+      <div className="flex px-[1%] py-[1%] gap-4 bg-gray-200 h-[calc(100vh-80px)]" >
         {/* Left Sidebar - Messages List */}
-        <div className={`flex-shrink-0 rounded-2xl bg-white w-full md:w-[240px] lg:w-[280px] xl:w-[320px] ${selectedRoom ? 'hidden md:block' : 'block'}`}>
+        <div className={`flex flex-col flex-shrink-0 rounded-2xl bg-white w-full md:w-[240px] lg:w-[280px] xl:w-[320px] ${selectedRoom ? 'hidden md:flex' : 'flex'}`}>
           <MessageList
             conversations={filteredConversations}
             selectedRoom={selectedRoom}
@@ -799,7 +799,7 @@ export default function ChatPage() {
         </div>
 
         {/* Right Side - Chat Window */}
-        <div className={`flex-1 rounded-2xl overflow-hidden bg-white ${selectedRoom ? 'block' : 'hidden md:block'}`}>
+        <div className={`flex flex-col flex-1 rounded-2xl overflow-hidden bg-white ${selectedRoom ? 'flex' : 'hidden md:flex'}`}>
           {selectedContact ? (
             <ChatWindow
               roomName={selectedRoom}
@@ -818,10 +818,10 @@ export default function ChatPage() {
                 // but keeping it might be smoother if they click back/forth.
                 // setSelectedContact(null); 
               }}
-              heightClass="min-h-[62vh] max-h-[62vh]"
+              heightClass=""
             />
           ) : (
-            <div className="flex-1 flex items-center justify-center min-h-[79vh]">
+            <div className={`flex-1 flex items-center justify-center h-full`}>
               <p className="text-gray-500">
                 Select a conversation to start chatting
               </p>

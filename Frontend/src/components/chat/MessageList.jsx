@@ -65,7 +65,7 @@ const ConversationItem = memo(
                 <span
                   className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
                     conversation.isOnline ? "bg-green-500" : "bg-gray-400"
-                  }`}
+                    }`}
                 />
               </div>
             )}
@@ -75,9 +75,9 @@ const ConversationItem = memo(
             <div className="flex items-center justify-between mb-1">
               <h3 className={`truncate ${
                 conversation.hasUnread 
-                  ? "font-bold text-gray-900" 
+                  ? "font-bold text-gray-900"
                   : "font-semibold text-gray-900"
-              }`}>
+                }`}>
                 {conversation.contactName || "Unknown"}
               </h3>
               <div className="flex items-center gap-1.5 ml-2">
@@ -87,7 +87,7 @@ const ConversationItem = memo(
                 {conversation.lastMessageTime && (
                   <span className={`text-xs flex-shrink-0 ${
                     conversation.hasUnread ? "text-blue-500 font-semibold" : "text-gray-500"
-                  }`}>
+                    }`}>
                     {new Date(conversation.lastMessageTime).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -98,9 +98,9 @@ const ConversationItem = memo(
             </div>
             <p className={`text-sm truncate ${
               conversation.hasUnread 
-                ? "text-gray-900 font-semibold" 
+                ? "text-gray-900 font-semibold"
                 : "text-gray-500"
-            }`}>
+              }`}>
               {conversation.lastMessage || "No message yet"}
             </p>
           </div>
@@ -137,8 +137,8 @@ function MessageList({
   return (
     <div className={`flex flex-col h-[100%] relative`}>
       {/* Header */}
-      <div className="p-6 border-b">
-        <h1 className="text-3xl font-bold mb-4">Messages</h1>
+      <div className="p-4 md:p-6 border-b">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Messages</h1>
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -147,7 +147,7 @@ function MessageList({
             placeholder="Search messages"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-black rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-1 border border-black rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -159,10 +159,10 @@ function MessageList({
             <p className="text-gray-500">No conversations yet</p>
           </div>
         ) : (
-          <div className="pb-24">{renderedConversations}</div>
+          <div className="pb-20">{renderedConversations}</div>
         )}
       </div>
-      
+
       {/* Floating Chatbot Button - Fixed position */}
       <FloatingChatbotButton
         className="absolute bottom-4 left-4 z-10"
