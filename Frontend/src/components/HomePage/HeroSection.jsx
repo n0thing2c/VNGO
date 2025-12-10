@@ -20,16 +20,17 @@ export default function HeroSection() {
             <div className="max-w-4xl mx-auto text-center">
               {/* Hero Text */}
               <h1
-                className="font-inria italic text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 lg:mb-8
+                className="font-inria italic text-4xl md:text-5xl lg:text-6xl font-bold mb-8 md:mb-10 lg:mb-12
                   tracking-[-1.2px] leading-[1.1] text-center
                   bg-clip-text bg-gradient-to-r from-[#020765] via-60% via-[#068f64] via-5% to-[#666666] via-35%"
                 style={{ WebkitTextFillColor: 'transparent' }}
               >
-                Take a friendlier route
+                Skip the tourist traps<br />
+                Unlock the hidden Vietnam
               </h1>
-              <p className="text-lg md:text-xl mb-8 md:mb-10 lg:mb-12 text-black/90 max-w-2xl mx-auto">
-                Truly get to know Vietnam from people who know it best
-              </p>
+              {/* <p className="text-vngo-normal-small-responsive mb-8 md:mb-10 lg:mb-12 text-black/90 max-w-2xl mx-auto">
+                The best spots aren't advertised. Discover authentic Vietnam with us.
+              </p> */}
 
               {/* Search Bar */}
               <GlobalSearchBar />

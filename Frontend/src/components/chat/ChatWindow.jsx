@@ -97,6 +97,7 @@ export default function ChatWindow({
   contactIsOnline: contactIsOnlineProp,
   responseTime,
   onMessageUpdate,
+  onBack,
   heightClass = "max-h-[70vh]",
 }) {
   const [messages, setMessages] = useState([]);
@@ -112,7 +113,7 @@ export default function ChatWindow({
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const userAvatar = user?.avatar || user?.avatar_url;
-  
+
   // Call functionality
   const { callUser, isInCall } = useCall();
 
@@ -131,17 +132,17 @@ export default function ChatWindow({
 
   useEffect(() => {
     // Skip for chatbot (case-insensitive check)
-    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" || 
-                      contactId === "chatbot" || 
-                      roomName?.endsWith("chatbot");
+    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" ||
+      contactId === "chatbot" ||
+      roomName?.endsWith("chatbot");
     if (isChatbot) return;
-    
+
     if (!contactId || user?.role === "guide") return;
 
     const fetchGuideRating = async () => {
       setAverageRating(0);
       setTotalReviews(0);
-      
+
       // Fetch reviews from guide like in guide-public-profile
       const res = await tourService.getAllTourRatingsByGuide(contactId);
       if (res.success && Array.isArray(res.data)) {
@@ -166,9 +167,9 @@ export default function ChatWindow({
   // Sync online status from parent prop (conversation list already polls this)
   // Also fetch directly if contactId is missing (new room where other user hasn't replied yet)
   useEffect(() => {
-    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" || 
-                      contactId === "chatbot" || 
-                      roomName?.endsWith("chatbot");
+    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" ||
+      contactId === "chatbot" ||
+      roomName?.endsWith("chatbot");
     if (isChatbot) {
       setIsContactOnline(false);
       return;
@@ -184,7 +185,7 @@ export default function ChatWindow({
     // This handles the case where A sends to B but B hasn't replied yet
     const fetchOnlineStatusByUsername = async () => {
       if (!contactName) return;
-      
+
       try {
         const status = await chatService.getUserOnlineStatusByUsername(contactName);
         if (status && status.is_online !== undefined) {
@@ -205,9 +206,9 @@ export default function ChatWindow({
 
   // Fetch initial seen status for room
   useEffect(() => {
-    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" || 
-                      contactId === "chatbot" || 
-                      roomName?.endsWith("chatbot");
+    const isChatbot = contactName?.toLowerCase().trim() === "chatbot" ||
+      contactId === "chatbot" ||
+      roomName?.endsWith("chatbot");
     if (isChatbot || !roomName) {
       setContactSeenAt(null);
       return;
@@ -318,7 +319,7 @@ export default function ChatWindow({
 
         setMessages((prev) => {
           let newMessages = [...prev];
-          
+
           // 1. If incoming is from chatbot, remove the "Thinking..." placeholder
           if (incoming.sender?.username === "chatbot") {
             newMessages = newMessages.filter(m => !m.isLoading);
@@ -353,10 +354,10 @@ export default function ChatWindow({
         // Backend sends typing event with user_id, not sender object
         const typingUserId = data.user_id;
         const currentUserId = user?.id;
-        
+
         // Only show typing indicator if it's from the other person, not from current user
         const isFromCurrentUser = currentUserId && typingUserId && String(typingUserId) === String(currentUserId);
-        
+
         if (!isFromCurrentUser) {
           setIsTyping(true);
           // Clear existing timeout if any
@@ -486,6 +487,16 @@ export default function ChatWindow({
       {/* Chat Header */}
       <div className="p-4 border-b-1 border-black rounded-b-3xl  flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {/* Back Button (Mobile Only) */}
+          <button
+            onClick={onBack}
+            className="md:hidden mr-1 p-1 hover:bg-gray-100 rounded-full"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+          </button>
+
           {roomName.endsWith("chatbot") ?
             (<div className="h-10 w-10 text-[#020765] rounded-full bg-gradient-to-r from-[#020765]/10 to-[#23c491]/20 flex items-center justify-center">
               <svg
@@ -527,9 +538,8 @@ export default function ChatWindow({
               )}
               {/* Online status indicator */}
               <span
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                  isContactOnline ? "bg-green-500" : "bg-gray-400"
-                }`}
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${isContactOnline ? "bg-green-500" : "bg-gray-400"
+                  }`}
                 title={isContactOnline ? "Online" : "Offline"}
               />
             </div>)}
@@ -537,35 +547,34 @@ export default function ChatWindow({
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="font-semibold text-gray-900">{contactName || "Unknown"}</h2>
               {!(contactName?.toLowerCase().trim() === "chatbot" || contactId === "chatbot" || roomName?.endsWith("chatbot")) && (
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  isContactOnline 
-                    ? "bg-green-100 text-green-700" 
+                <span className={`text-xs px-2 py-0.5 rounded-full ${isContactOnline
+                    ? "bg-green-100 text-green-700"
                     : "bg-gray-100 text-gray-500"
-                }`}>
+                  }`}>
                   {isContactOnline ? "Online" : "Offline"}
                 </span>
               )}
               {/* Rating display next to name (for tourists viewing guides) */}
-              {(user?.role !== "guide" && 
-                contactName?.toLowerCase().trim() !== "chatbot" && 
-                contactId !== "chatbot" && 
+              {(user?.role !== "guide" &&
+                contactName?.toLowerCase().trim() !== "chatbot" &&
+                contactId !== "chatbot" &&
                 !roomName?.endsWith("chatbot")) && (
-                <div className="flex items-center gap-1">
-                  <div className="flex items-center">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-3.5 h-3.5 ${star <= Math.round(averageRating)
-                          ? "text-yellow-400"
-                          : "text-gray-300"
-                          }`}
-                        fill="currentColor"
-                      />
-                    ))}
+                  <div className="flex items-center gap-1">
+                    <div className="flex items-center">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-3.5 h-3.5 ${star <= Math.round(averageRating)
+                            ? "text-yellow-400"
+                            : "text-gray-300"
+                            }`}
+                          fill="currentColor"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-500">({totalReviews})</span>
                   </div>
-                  <span className="text-xs text-gray-500">({totalReviews})</span>
-                </div>
-              )}
+                )}
             </div>
             {(contactName?.toLowerCase().trim() === "chatbot" || contactId === "chatbot" || roomName?.endsWith("chatbot")) ? (
               <p className="text-sm text-gray-500">Tell Me Your Dream Trip — I'll Find It</p>
@@ -582,35 +591,35 @@ export default function ChatWindow({
           </div>
         </div>
         {/* Call buttons - hide for chatbot */}
-        {!(contactName?.toLowerCase().trim() === "chatbot" || 
-           contactId === "chatbot" || 
-           roomName?.endsWith("chatbot")) && (
-          <div className="flex items-center gap-2">
-            {/* Audio Call Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => callUser(contactId, contactName, false)}
-              disabled={isInCall || !isContactOnline}
-              className="h-9 w-9 rounded-full hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
-              title={!isContactOnline ? "User is offline" : "Voice Call"}
-            >
-              <Phone className="h-5 w-5" />
-            </Button>
-            
-            {/* Video Call Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => callUser(contactId, contactName, true)}
-              disabled={isInCall || !isContactOnline}
-              className="h-9 w-9 rounded-full hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
-              title={!isContactOnline ? "User is offline" : "Video Call"}
-            >
-              <Video className="h-5 w-5" />
-            </Button>
-          </div>
-        )}
+        {!(contactName?.toLowerCase().trim() === "chatbot" ||
+          contactId === "chatbot" ||
+          roomName?.endsWith("chatbot")) && (
+            <div className="flex items-center gap-2">
+              {/* Audio Call Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => callUser(contactId, contactName, false)}
+                disabled={isInCall || !isContactOnline}
+                className="h-9 w-9 rounded-full hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+                title={!isContactOnline ? "User is offline" : "Voice Call"}
+              >
+                <Phone className="h-5 w-5" />
+              </Button>
+
+              {/* Video Call Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => callUser(contactId, contactName, true)}
+                disabled={isInCall || !isContactOnline}
+                className="h-9 w-9 rounded-full hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+                title={!isContactOnline ? "User is offline" : "Video Call"}
+              >
+                <Video className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
       </div>
 
       {/* Messages Area */}
@@ -640,4 +649,3 @@ export default function ChatWindow({
     </div>
   );
 }
-
