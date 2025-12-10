@@ -62,7 +62,7 @@ export default function ChatPage() {
   const targetRoomRef = useRef(targetRoom);
   const openChatbotRef = useRef(openChatbot);
   const chatbotOpenedRef = useRef(false);
-  
+
   // Update refs when targetRoom or openChatbot changes
   useEffect(() => {
     targetRoomRef.current = targetRoom;
@@ -144,7 +144,7 @@ export default function ChatPage() {
       // Last resort: strip "Room:" prefix if present
       const stripped =
         conversation.contactName?.replace(/^Room:\s*/i, "").trim() || "";
-      
+
       // If stripped still looks like room name, try to parse it one more time
       if (stripped.includes(" & ") && user?.username) {
         const parts = stripped.split(" & ").map(p => p.trim()).filter(Boolean);
@@ -274,7 +274,7 @@ export default function ChatPage() {
         const otherUserIdLower = otherUserId?.toLowerCase();
         const otherUserNameLower = otherUserName?.toLowerCase().trim();
         const roomNameLower = roomName?.toLowerCase();
-        const isChatbot = 
+        const isChatbot =
           otherUserIdLower === "chatbot" ||
           otherUserNameLower === "chatbot" ||
           roomNameLower?.endsWith("chatbot") ||
@@ -301,7 +301,7 @@ export default function ChatPage() {
                     return conv;
                   });
                 });
-                
+
                 // Update selectedContact if it matches
                 if (selectedRoom === roomName) {
                   setSelectedContact((prev) => {
@@ -347,15 +347,15 @@ export default function ChatPage() {
           contactId: conv.contactId && conv.contactId !== conv.room ? conv.contactId : null
         }));
         const normalized = normalizeAndEnhance(cleaned);
-        
+
         // Fetch online status by username for conversations without contactId
         const withOnlineStatus = await Promise.all(
           normalized.map(async (conv) => {
             // Skip chatbot
-            const isChatbot = 
+            const isChatbot =
               conv.contactName?.toLowerCase().trim() === "chatbot" ||
               conv.room?.endsWith("chatbot");
-            
+
             // If no contactId but has contactName, fetch online status by username
             if (!conv.contactId && conv.contactName && !isChatbot) {
               try {
@@ -374,7 +374,7 @@ export default function ChatPage() {
             return conv;
           })
         );
-        
+
         setConversations(withOnlineStatus);
 
         // Auto-select first conversation if available and no room is selected
@@ -405,15 +405,15 @@ export default function ChatPage() {
           contactId: conv.contactId && conv.contactId !== conv.room ? conv.contactId : null
         }));
         const normalized = normalizeAndEnhance(cleaned);
-        
+
         // Fetch online status by username for conversations without contactId
         const withOnlineStatus = await Promise.all(
           normalized.map(async (conv) => {
             // Skip chatbot
-            const isChatbot = 
+            const isChatbot =
               conv.contactName?.toLowerCase().trim() === "chatbot" ||
               conv.room?.endsWith("chatbot");
-            
+
             // If no contactId but has contactName, fetch online status by username
             if (!conv.contactId && conv.contactName && !isChatbot) {
               try {
@@ -433,7 +433,7 @@ export default function ChatPage() {
             return conv;
           })
         );
-        
+
         setConversations((prev) => {
           // Merge keeping latest info and order
           const merged = normalizeAndEnhance([...prev, ...withOnlineStatus]);
@@ -448,7 +448,7 @@ export default function ChatPage() {
 
     // Fetch immediately to sync with ChatWindow header timing
     tick();
-    
+
     const id = setInterval(tick, 5000); // 5s refresh
     return () => {
       isCancelled = true;
@@ -459,20 +459,20 @@ export default function ChatPage() {
   // Sync selectedContact with conversations when isOnline or contactId changes
   useEffect(() => {
     if (!selectedRoom || !conversations.length) return;
-    
+
     const currentConv = conversations.find(c => c.room === selectedRoom);
     if (!currentConv) return;
-    
+
     // Update selectedContact if isOnline or contactId changed
     setSelectedContact(prev => {
       if (!prev) return currentConv;
-      
+
       // Check if relevant fields changed
-      const needsUpdate = 
+      const needsUpdate =
         prev.isOnline !== currentConv.isOnline ||
         prev.contactId !== currentConv.contactId ||
         prev.contactAvatar !== currentConv.contactAvatar;
-      
+
       if (needsUpdate) {
         return { ...prev, ...currentConv };
       }
@@ -513,14 +513,14 @@ export default function ChatPage() {
   const handleSelectRoom = (roomName) => {
     setSelectedRoom(roomName);
     const contact = normalizedConversations.find((c) => c.room === roomName);
-    
+
     // Clear unread status for this room when user opens it
     setConversations((prev) =>
       prev.map((conv) =>
         conv.room === roomName ? { ...conv, hasUnread: false } : conv
       )
     );
-    
+
     // If contact not found, create a temporary contact from room name
     // contactId will be null initially and updated when messages arrive
     if (!contact && roomName) {
@@ -609,7 +609,7 @@ export default function ChatPage() {
 
     // Set selectedRoom immediately to prevent auto-selection of latest room
     setSelectedRoom(targetRoom);
-    
+
     setConversations((prev) => {
       const existing = prev.find((c) => c.room === targetRoom);
       const updatedConversation = {
@@ -626,7 +626,7 @@ export default function ChatPage() {
         rating: existing?.rating ?? 3.5,
         reviewCount: existing?.reviewCount ?? 0,
       };
-      const filtered = prev.filter((c) => c.room === targetRoom);
+      const filtered = prev.filter((c) => c.room !== targetRoom);
       // Put targetRoom conversation first to ensure it's selected even after normalization
       const normalized = normalizeAndEnhance([
         updatedConversation,
@@ -644,15 +644,15 @@ export default function ChatPage() {
   useEffect(() => {
     // Only fetch if user is a guide and we have a selected contact with an ID
     if (user?.role !== "guide" || !selectedContact?.contactId) return;
-    
+
     // Skip if nationality is already set
     if (selectedContact.nationality) return;
-    
+
     // Skip chatbot - check multiple conditions
     const contactIdLower = selectedContact.contactId?.toLowerCase();
     const contactNameLower = selectedContact.contactName?.toLowerCase().trim();
     const roomName = selectedContact.room?.toLowerCase();
-    
+
     if (
       contactIdLower === "chatbot" ||
       contactNameLower === "chatbot" ||
@@ -669,7 +669,7 @@ export default function ChatPage() {
         const res = await profileService.getTouristPublicProfile(selectedContact.contactId);
         if (res.success && res.data?.profile?.nationality) {
           const nationality = res.data.profile.nationality;
-          
+
           // Update the conversation with nationality
           setConversations((prev) => {
             return prev.map((conv) => {
@@ -679,7 +679,7 @@ export default function ChatPage() {
               return conv;
             });
           });
-          
+
           // Update selectedContact if it matches
           if (selectedContact.room === selectedRoom) {
             setSelectedContact((prev) => {
@@ -702,12 +702,12 @@ export default function ChatPage() {
   useEffect(() => {
     // Skip if no contactId or already has avatar
     if (!selectedContact?.contactId || selectedContact.contactAvatar) return;
-    
+
     // Skip chatbot
     const contactIdLower = selectedContact.contactId?.toLowerCase();
     const contactNameLower = selectedContact.contactName?.toLowerCase().trim();
     const roomName = selectedContact.room?.toLowerCase();
-    
+
     if (
       contactIdLower === "chatbot" ||
       contactNameLower === "chatbot" ||
@@ -723,14 +723,14 @@ export default function ChatPage() {
     const fetchContactAvatar = async () => {
       try {
         let avatar = null;
-        
+
         // If current user is guide, contact must be tourist
         if (user?.role === "guide") {
           const touristRes = await profileService.getTouristPublicProfile(selectedContact.contactId);
           if (touristRes.success && touristRes.data?.profile?.face_image) {
             avatar = touristRes.data.profile.face_image;
           }
-        } 
+        }
         // If current user is tourist, contact must be guide
         else if (user?.role === "tourist") {
           const guideRes = await profileService.getGuidePublicProfile(selectedContact.contactId);
@@ -763,7 +763,7 @@ export default function ChatPage() {
               return conv;
             });
           });
-          
+
           // Update selectedContact if it matches
           if (selectedContact.room === selectedRoom) {
             setSelectedContact((prev) => {
@@ -787,7 +787,7 @@ export default function ChatPage() {
       {/* Main Content */}
       <div className="flex px-[1%] py-[1%] gap-4 bg-gray-200" >
         {/* Left Sidebar - Messages List */}
-        <div className="w-[17%] rounded-2xl bg-white">
+        <div className={`flex-shrink-0 rounded-2xl bg-white w-full md:w-[240px] lg:w-[280px] xl:w-[320px] ${selectedRoom ? 'hidden md:block' : 'block'}`}>
           <MessageList
             conversations={filteredConversations}
             selectedRoom={selectedRoom}
@@ -799,7 +799,7 @@ export default function ChatPage() {
         </div>
 
         {/* Right Side - Chat Window */}
-        <div className="flex-1 rounded-2xl overflow-hidden bg-white">
+        <div className={`flex-1 rounded-2xl overflow-hidden bg-white ${selectedRoom ? 'block' : 'hidden md:block'}`}>
           {selectedContact ? (
             <ChatWindow
               roomName={selectedRoom}
@@ -812,6 +812,12 @@ export default function ChatPage() {
               rating={selectedContact.rating}
               reviewCount={selectedContact.reviewCount}
               onMessageUpdate={handleConversationUpdate}
+              onBack={() => {
+                setSelectedRoom(null);
+                // Optional: clear selectedContact if desired, 
+                // but keeping it might be smoother if they click back/forth.
+                // setSelectedContact(null); 
+              }}
               heightClass="min-h-[62vh] max-h-[62vh]"
             />
           ) : (

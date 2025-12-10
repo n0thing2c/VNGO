@@ -44,8 +44,8 @@
 //     );
 // }
 import Ig from "@/assets/ig.png";
+import Facebook from "@/assets/facebook.svg";
 import LinkedIn from "@/assets/linkedIn.png";
-import X from "@/assets/x.png";
 
 export default function Footer() {
   return (
@@ -66,9 +66,15 @@ export default function Footer() {
 
           {/* Social Icons */}
           <div className="flex gap-4 items-center">
-            <img src={Ig} alt="Instagram" className="w-6 h-6" />
-            <img src={LinkedIn} alt="LinkedIn" className="w-6 h-6" />
-            <img src={X} alt="X" className="w-5 h-5" />
+            <a href="https://www.instagram.com/vngo.travel/" target="_blank" rel="noopener noreferrer">
+              <img src={Ig} alt="Instagram" className="w-6 h-6 hover:opacity-80 transition-opacity" />
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=61584966714875" target="_blank" rel="noopener noreferrer">
+              <img src={Facebook} alt="Facebook" className="w-6 h-6 hover:opacity-80 transition-opacity" />
+            </a>
+            <a href="https://www.linkedin.com/in/vngo-travel-927952393/" target="_blank" rel="noopener noreferrer">
+              <img src={LinkedIn} alt="LinkedIn" className="w-6 h-6 hover:opacity-80 transition-opacity" />
+            </a>
           </div>
         </div>
 
