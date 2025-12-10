@@ -148,6 +148,8 @@ class WebRTCService {
    */
   handleSignalingMessage(data) {
     const { type } = data;
+    const { user } = useAuthStore.getState();
+    const currentUserId = user?.id != null ? String(user.id) : null;
 
     switch (type) {
       case "call.initiated":
@@ -157,6 +159,14 @@ class WebRTCService {
         break;
 
       case "call.incoming":
+        // Ignore if this incoming call targets someone else or is from self
+        if (
+          (data.callee_id != null && String(data.callee_id) !== currentUserId) ||
+          (data.caller_id != null && String(data.caller_id) === currentUserId)
+        ) {
+          console.log("WebRTCService: Ignoring incoming call not meant for this user", data);
+          break;
+        }
         this.emit("incoming_call", data);
         break;
 

@@ -115,9 +115,20 @@ class CallNotifyService {
    */
   handleMessage(data) {
     const { type } = data;
+    const { user } = useAuthStore.getState();
+    const currentUserId = user?.id != null ? String(user.id) : null;
 
     switch (type) {
       case "call.incoming":
+        // Ignore if this incoming call is not for the current user
+        if (
+          (data.callee_id != null && String(data.callee_id) !== currentUserId) ||
+          (data.caller_id != null && String(data.caller_id) === currentUserId)
+        ) {
+          console.log("CallNotifyService: Ignoring incoming call not meant for this user", data);
+          break;
+        }
+
         console.log("CallNotifyService: Incoming call", data);
         this.emit("incoming_call", data);
         // Play ringtone sound
