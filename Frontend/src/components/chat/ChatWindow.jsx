@@ -254,7 +254,7 @@ export default function ChatWindow({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Load messages from API
+  // Load messages from API - only when roomName changes
   useEffect(() => {
     if (!roomName) {
       setMessages([]);
@@ -268,7 +268,7 @@ export default function ChatWindow({
     const loadMessages = async () => {
       try {
         const data = await chatService.getMessages(roomName);
-        const normalized = normalizeMessages(Array.isArray(data) ? data : []).map(enrichSender);
+        const normalized = normalizeMessages(Array.isArray(data) ? data : []);
         setMessages(normalized);
 
         if (normalized.length > 0) {
@@ -282,7 +282,16 @@ export default function ChatWindow({
     };
 
     loadMessages();
-  }, [roomName, enrichSender]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomName]); // Only reload when room changes, not when contact info changes
+
+  // Re-enrich messages when contact info changes (without reloading)
+  useEffect(() => {
+    if (messages.length === 0) return;
+    
+    setMessages(prev => prev.map(enrichSender));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactId, contactName, contactAvatar]);
 
   // After messages render on a room switch, jump instantly to the bottom (no animation)
   useLayoutEffect(() => {
