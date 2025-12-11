@@ -54,7 +54,7 @@ export default function TourCard({ tour }) {
   return (
     <Link to={`/tour/post/${id}`} className="block rounded-3xl bg-white shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col h-full text-left">
       {/* Full width image - no gap at top */}
-      <div className="relative h-56 w-full overflow-hidden flex-shrink-0 group">
+      <div className="relative h-36 md:h-56 w-full overflow-hidden flex-shrink-0 group">
         <img
           src={image}
           alt={title}
@@ -80,7 +80,7 @@ export default function TourCard({ tour }) {
       </div>
 
       {/* Info bar (Duration, Group Size, Transport) */}
-      <div className="bg-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-700">
+      <div className="bg-gray-100 px-2 py-1 md:px-4 md:py-3 flex items-center justify-between text-xs md:text-sm text-gray-700">
         <div className="flex items-center gap-2 min-w-0">
           <Car size={16} className="text-gray-600 flex-shrink-0" />
           <span className="capitalize truncate">{transportation}</span>
@@ -96,10 +96,10 @@ export default function TourCard({ tour }) {
       </div>
 
       {/* Main Content */}
-      <div className="p-5 flex flex-col gap-2">
+      <div className="p-3 md:p-5 flex flex-col gap-2">
 
         {/* Title */}
-        <h3 className="text-xl font-bold text-gray-900 truncate" title={title}>
+        <h3 className="text-base md:text-xl font-bold text-gray-900 truncate" title={title}>
           {title}
         </h3>
 
@@ -108,13 +108,13 @@ export default function TourCard({ tour }) {
           <div className="flex items-center gap-0.5">
             {renderStars()}
           </div>
-          <span className="text-sm text-gray-600">
-            {rating.toFixed(1)} <span className="text-gray-400">({reviews} reviews)</span>
+          <span className="text-xs md:text-sm text-gray-600">
+            {rating.toFixed(1)} <span className="text-gray-400">({reviews})</span>
           </span>
         </div>
 
         {/* Description */}
-        <p className="text-gray-600 text-sm line-clamp-2 mt-1 mb-2">
+        <p className="text-gray-600 text-xs md:text-sm line-clamp-2 mt-1 mb-2">
           {description}
         </p>
 

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 
 export default function FloatingChatbotButton({
   className = "fixed bottom-6 right-6 z-50",
@@ -10,7 +11,7 @@ export default function FloatingChatbotButton({
     navigate("/chat", { state: { openChatbot: true } });
   };
 
-  return (
+  return createPortal(
     <div className={className}>
       <button
         className="p-4 bg-gradient-to-r from-[#020765] to-[#23c491] hover:from-[#23c491] hover:to-[#020765] text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-[#23c491]/40 flex items-center justify-center group animate-bounce-slow"
@@ -61,6 +62,7 @@ export default function FloatingChatbotButton({
           animation: none;
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }

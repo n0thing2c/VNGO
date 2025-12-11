@@ -116,47 +116,43 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html,
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-clip;
   }
 }
 
 @layer components {
+
   /* Class containing only hover effect (shadow, scale) */
   .btn-vngo-hover-effect {
     @apply
-      /* Effect (Shadow + Scale) */
-      shadow-xl hover:shadow-2xl hover:scale-[1.03]
-
-      /* Smooth animation */
-      transition-all duration-300 ease-in-out cursor-pointer;
+    /* Effect (Shadow + Scale) */
+    shadow-xl hover:shadow-2xl hover:scale-[1.03]
+    /* Smooth animation */
+    transition-all duration-300 ease-in-out cursor-pointer;
   }
 
   /* Full class for Gradient button (like Apply Now button) */
   .btn-vngo-gradient-primary {
     @apply
-      /* Gradient Color & Text */
-      bg-gradient-to-r from-[#020765] to-[#23c491] 
-      hover:from-[#23c491] hover:to-[#020765] 
-      text-white font-medium
-
-      /* Effect (Shadow + Scale) */
-      shadow-xl hover:shadow-2xl hover:scale-[1.03]
-
-      /* Smooth animation */
-      transition-all duration-300 ease-in-out cursor-pointer;
+    /* Gradient Color & Text */
+    bg-gradient-to-r from-[#020765] to-[#23c491] hover:from-[#23c491] hover:to-[#020765] text-white font-medium
+    /* Effect (Shadow + Scale) */
+    shadow-xl hover:shadow-2xl hover:scale-[1.03]
+    /* Smooth animation */
+    transition-all duration-300 ease-in-out cursor-pointer;
   }
 
   .btn-vngo-gradient-simple {
-    @apply
-      bg-gradient-to-r from-[#020765] to-[#23c491]
-      hover:opacity-80;
+    @apply bg-gradient-to-r from-[#020765] to-[#23c491] hover:opacity-80;
   }
 }
 
 @layer utilities {
   /* Change color code #068F64 here and the entire website will change accordingly */
-  
+
   /* 1. Class for text color: text-primary */
   .text-vngo-primary {
     color: #020765;
@@ -189,10 +185,11 @@
   .ring-vngo-primary {
     --tw-ring-color: #068F64;
   }
-  
+
   /* 5. Light background color (used for hover): bg-primary-light */
   /* Instead of using opacity/50, we create a light color directly for easier use */
   .bg-vngo-primary-light {
-    background-color: #E6F7F0; /* Very light green color mixed from base color */
+    background-color: #E6F7F0;
+    /* Very light green color mixed from base color */
   }
 }

@@ -23,7 +23,7 @@ export default function PastTours({ role, pastTours }) {
   const handleCardClick = (tourId) => {
     navigate(`/tour/${tourId}`);
   };
-  
+
   // // Not allowed because Tour model doesn't have guideId and touristId
   // const handleProfileClick = (e, id, type) => {
   //   e.stopPropagation();
@@ -49,12 +49,12 @@ export default function PastTours({ role, pastTours }) {
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 cursor-pointer">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 cursor-pointer">
         {currentTours.map((tour) => (
           <div key={tour.id} onClick={() => handleCardClick(tour.tourId)} className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-white">
             {/* Full width image - no gap at top */}
             {tour.image && (
-              <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
+              <div className="relative h-28 md:h-64 w-full overflow-hidden flex-shrink-0">
                 <img
                   src={tour.image}
                   alt={tour.title}
@@ -64,7 +64,7 @@ export default function PastTours({ role, pastTours }) {
                 {role === "tourist" && tour.rating && (
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
                     <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                      <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
                       <span className="font-semibold text-gray-900">{tour.rating}</span>
                     </div>
                   </div>
@@ -72,12 +72,12 @@ export default function PastTours({ role, pastTours }) {
               </div>
             )}
 
-            <div className="p-6 flex-1 flex flex-col">
+            <div className="p-2 md:p-6 flex-1 flex flex-col">
               {role === "tourist" ? (
                 // Tourist view
                 <>
-                  <h3 className="font-bold text-xl text-gray-900 mb-2 line-clamp-2">{tour.title}</h3>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <h3 className="font-bold text-sm md:text-xl text-gray-900 mb-1 md:mb-2 line-clamp-2">{tour.title}</h3>
+                  <p className="text-xs md:text-sm text-gray-600 mb-0.5 md:mb-1">
                     Guide: <span className="font-medium">{tour.guideName}</span>
                   </p>
                   {/* <p className="text-sm text-gray-600 mb-4"><Calendar className="w-4 h-4 flex-shrink-0" /> {tour.date}</p> */}
@@ -89,17 +89,17 @@ export default function PastTours({ role, pastTours }) {
               ) : (
                 // Guide view
                 <>
-                  <h3 className="font-bold text-xl text-gray-900 mb-2 line-clamp-2">{tour.title}</h3>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <h3 className="font-bold text-sm md:text-xl text-gray-900 mb-1 md:mb-2 line-clamp-2">{tour.title}</h3>
+                  <p className="text-xs md:text-sm text-gray-600 mb-0.5 md:mb-1">
                     Tourist: <span className="font-medium">{tour.touristName}</span>
                   </p>
                   {/* <p className="text-sm text-gray-600 mb-4"><Calendar className="w-4 h-4 flex-shrink-0" /> {tour.date}</p> */}
                 </>
               )}
-              <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="mb-2 md:mb-4 grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-3 text-xs md:text-sm">
                 {tour.date && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <Calendar className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                     <span className="truncate">
                       {new Date(tour.date).toLocaleDateString()}
                     </span>
@@ -107,7 +107,7 @@ export default function PastTours({ role, pastTours }) {
                 )}
                 {tour.duration && (
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 flex-shrink-0" />
+                    <Clock className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                     <span>{tour.duration}h</span>
                   </div>
                 )}
@@ -130,11 +130,11 @@ export default function PastTours({ role, pastTours }) {
                   </div>
                 )} */}
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <Users className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                   <span>{tour.number_of_guests} guest{tour.number_of_guests > 1 ? 's' : ''}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
+                  <DollarSign className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0 text-green-600" />
                   <span className="font-semibold text-green-600">{tour.revenue}</span>
                 </div>
               </div>

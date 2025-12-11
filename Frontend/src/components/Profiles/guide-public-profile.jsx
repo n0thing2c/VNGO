@@ -463,7 +463,7 @@ export function GuidePublicProfile({ guideId }) {
 
                         </div>
                         <div
-                            className="grid xl:grid-cols-12 lg:grid-cols-10 md:grid-cols-7 sm:grid-cols-5 gap-3 mb-6 w-full max-w-full justify-center">
+                            className="grid grid-cols-5 xl:grid-cols-12 lg:grid-cols-10 md:grid-cols-7 sm:grid-cols-5 gap-3 mb-6 w-full max-w-full justify-center">
                             {achievements?.length > 0 ? (
                                 achievements.map((ach, idx) => (
                                     <div key={idx} className="flex justify-center relative">

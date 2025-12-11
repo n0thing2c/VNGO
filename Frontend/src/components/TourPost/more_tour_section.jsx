@@ -1,9 +1,9 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import TourCard from "@/components/TourCard.jsx";
-import {tourService} from "@/services/tourService.js";
-import {toast} from "sonner";
-import {FieldLabel} from "@/components/ui/field.jsx";
-import {LucidePersonStanding} from "lucide-react";
+import { tourService } from "@/services/tourService.js";
+import { toast } from "sonner";
+import { FieldLabel } from "@/components/ui/field.jsx";
+import { LucidePersonStanding } from "lucide-react";
 
 export default function MoreTourByGuide({ guide, currentTourId }) {
     const [tours, setTours] = useState([]);
@@ -34,9 +34,9 @@ export default function MoreTourByGuide({ guide, currentTourId }) {
     const displayedTours = expanded ? tours : tours.slice(0, 3);
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex flex-col items-center text-center -mt-8">
-            <LucidePersonStanding className="w-10 h-10 mb-2 text-gray-600"/>
-            <FieldLabel className="text-4xl font-semibold mb-10 text-gray-600">
+        <div className="w-full max-w-6xl mx-auto flex flex-col items-center text-center -mt-8 px-4 md:px-0">
+            <LucidePersonStanding className="w-10 h-10 mb-2 text-gray-600" />
+            <FieldLabel className="text-xl md:text-4xl font-semibold mb-10 text-gray-600">
                 More Tours by {guide.name}
             </FieldLabel>
 
@@ -45,7 +45,7 @@ export default function MoreTourByGuide({ guide, currentTourId }) {
                 <p className="text-gray-500">No other tours available from this guide.</p>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
                 {displayedTours.map((tour) => (
                     <TourCard key={tour.id} tour={tour}/>
                 ))}

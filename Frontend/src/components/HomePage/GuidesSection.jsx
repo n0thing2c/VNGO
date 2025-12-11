@@ -64,7 +64,7 @@ export default function GuidesSection() {
               <CarouselItem
                 key={guide.id}
                 // Tailwind handles all responsive: 1 column, 2 columns, 3 columns
-                className="pl-4 md:pl-6 lg:pl-8 basis-full md:basis-1/2 lg:basis-1/3"
+                className="pl-4 md:pl-6 lg:pl-8 basis-1/2 md:basis-1/2 lg:basis-1/3"
               >
                 <div
                   className="flex-none bg-white rounded-xl overflow-hidden shadow-sm border border-black/10 h-full transition-transform hover:-translate-y-1 duration-300"

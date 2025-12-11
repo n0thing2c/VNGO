@@ -3,7 +3,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Users, DollarSign } from "lucide-react";
+import { Calendar, Clock, Users, DollarSign, Check, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { managementService } from "@/services/managementService";
@@ -151,7 +151,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
       onClick={handleCardClick}
     >
       {/* Full width image - no gap at top */}
-      <div className="relative h-64 w-full overflow-hidden flex-shrink-0">
+      <div className="relative h-28 md:h-64 w-full overflow-hidden flex-shrink-0">
         <img
           src={booking.image || "/placeholder.jpg"}
           alt={booking.title}
@@ -166,14 +166,14 @@ export default function BookingCard({ booking, showActions = false, refreshData 
         </Badge>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col">
-        <h3 className="font-bold text-xl text-gray-900 mb-2">
+      <div className="p-2 md:p-6 flex-1 flex flex-col">
+        <h3 className="font-bold text-sm md:text-xl text-gray-900 mb-1 md:mb-2 line-clamp-2">
           {booking.title}
         </h3>
 
         {/* Info for Tourist: display guide name */}
         {booking.guideName && !showActions && (
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-xs md:text-sm text-gray-600 mb-1.5 md:mb-3">
             Tour guide:{" "}
             <button
               type="button"
@@ -187,7 +187,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
 
         {/* Info for Guide: display tourist name */}
         {booking.touristName && showActions && (
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-xs md:text-sm text-gray-600 mb-1.5 md:mb-3">
             Tourist:{" "}
             {booking.touristName ? (
               <button
@@ -204,10 +204,10 @@ export default function BookingCard({ booking, showActions = false, refreshData 
         )}
 
         {/* Booking details in 2 columns */}
-        <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-3 text-xs md:text-sm text-gray-600 mb-2 md:mb-4">
           {booking.tourDate && (
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 flex-shrink-0" />
+              <Calendar className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
               <span className="truncate">
                 {new Date(booking.tourDate).toLocaleDateString()}
               </span>
@@ -216,7 +216,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
 
           {booking.tourTime && (
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 flex-shrink-0" />
+              <Clock className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
               <span>
                 {booking.tourTime.slice(0, 5)}
                 {booking.duration ? (
@@ -234,7 +234,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
 
           {booking.number_of_guests && (
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 flex-shrink-0" />
+              <Users className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
               <span>
                 {booking.number_of_guests} guest
                 {booking.number_of_guests > 1 ? "s" : ""}
@@ -244,7 +244,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
 
           {booking.totalPrice && (
             <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
+              <DollarSign className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0 text-green-600" />
               <span className="font-semibold text-green-600 truncate">
                 {booking.totalPrice.toLocaleString()} ₫
               </span>
@@ -255,7 +255,7 @@ export default function BookingCard({ booking, showActions = false, refreshData 
         {/* Actions for Guide (Accept/Decline) - push to bottom */}
         {showActions && booking.status_key === "pending" && (
           <div
-            className="flex items-center gap-3 mb-3 mt-auto"
+            className="flex flex-row md:flex-row items-center gap-2 md:gap-3 mb-1.5 md:mb-3 mt-auto w-full"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -263,11 +263,12 @@ export default function BookingCard({ booking, showActions = false, refreshData 
               onMouseDown={(e) => e.stopPropagation()}
               onClick={handleAccept}
               disabled={isProcessing}
-              className="flex-1 justify-center gap-2 rounded-full border border-[#068F64] text-[#068F64] bg-transparent h-10 btn-vngo-hover-effect hover:bg-white hover:text-[#068F64]"
-            // className="flex items-center gap-2 bg-[#068F64] rounded-full hover:bg-white hover:border-black hover:text-black hover:border-1 text-white"
-            // className="w-full bg-green-600 hover:bg-green-700 rounded-full h-10"
+              className="flex-1 justify-center gap-2 rounded-full border border-[#068F64] text-[#068F64] bg-transparent h-7 md:h-10 text-xs md:text-sm btn-vngo-hover-effect hover:bg-white hover:text-[#068F64]"
             >
-              {isProcessing ? "Processing..." : "Accept"}
+              <Check className="w-4 h-4" />
+              <span className="hidden md:inline">
+                {isProcessing ? "Processing..." : "Accept"}
+              </span>
             </Button>
 
             <AlertDialog
@@ -280,10 +281,10 @@ export default function BookingCard({ booking, showActions = false, refreshData 
                   onMouseDown={(e) => e.stopPropagation()}
                   variant="outline"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-1 rounded-full h-10 border border-[#CC3737] text-[#CC3737] bg-transparent btn-vngo-hover-effect hover:bg-white hover:text-[#CC3737]"
-                // className="w-full rounded-full h-10 border-red-300 text-red-600 hover:bg-red-50"
+                  className="flex-1 justify-center gap-2 rounded-full h-7 md:h-10 text-xs md:text-sm border border-[#CC3737] text-[#CC3737] bg-transparent btn-vngo-hover-effect hover:bg-white hover:text-[#CC3737]"
                 >
-                  Decline
+                  <X className="w-4 h-4" />
+                  <span className="hidden md:inline">Decline</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>

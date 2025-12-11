@@ -57,7 +57,7 @@ export default function MyToursList({tours, refreshTours}) {
                     Create your first tour to start accepting bookings.
                 </p>
                 <Button asChild
-                        className="bg-[#068F64] hover:bg-white border hover:border-black hover:text-black text-white rounded-full">
+                    className="bg-[#068F64] hover:bg-white border hover:border-black hover:text-black text-white rounded-full">
                     <Link to="/tour/create">
                         <PlusCircle className="w-5 h-5"/>
                         Create Tour
@@ -78,7 +78,7 @@ export default function MyToursList({tours, refreshTours}) {
                 </div>
 
                 <Button asChild
-                        className="bg-[#068F64] border hover:bg-white hover:border-black hover:text-black rounded-full">
+                    className="bg-[#068F64] border hover:bg-white hover:border-black hover:text-black rounded-full">
                     <Link to="/tour/create">
                         <PlusCircle className="w-5 h-5 mr-2"/>
                         Create New Tour
@@ -86,7 +86,7 @@ export default function MyToursList({tours, refreshTours}) {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                 {currentTours.map((tour) => (
                     <TourManagementCard key={tour.id} tour={tour} onDelete={handleDelete}/>
                 ))}
