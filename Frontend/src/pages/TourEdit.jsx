@@ -549,7 +549,7 @@ export default function TourEdit() {
                             <FieldLabel className="text-md flex items-center gap-1">
                                 <PictureInPicture2Icon className="w-5 h-5"/> Photos:
                             </FieldLabel>
-                            {/* ✅ STEP 4: Point to the new handler */}
+                            {/* STEP 4: Point to the new handler */}
                             <ImageUploader
                                 images={imageData.images}
                                 allowThumbnail={true}

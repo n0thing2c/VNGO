@@ -32,12 +32,11 @@ class TourPlaceSerializer(serializers.ModelSerializer):
         fields = ['place', 'order']
 
 class TourRatingSerializer(serializers.ModelSerializer):
-    images = TourImageSerializer(many=True, read_only=True)
     tourist = serializers.SerializerMethodField()
 
     class Meta:
         model = TourRating
-        fields = ['tourist', 'rating', 'review', 'review_tags', 'images', 'created_at']
+        fields = ['tourist', 'rating', 'review', 'review_tags', 'created_at']
 
     def get_tourist(self, obj):
         if obj.tourist:
@@ -48,8 +47,6 @@ class TourRatingSerializer(serializers.ModelSerializer):
                 "avatar": obj.tourist.face_image,
             }
         return None
-
-
 
 class TourSerializer(serializers.ModelSerializer):
     tour_places = TourPlaceSerializer(many=True, read_only=True)

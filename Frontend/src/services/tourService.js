@@ -55,7 +55,7 @@ export const tourService = {
                 if (img?.file) formData.append("images", img.file); // "images" must match Django field
             });
 
-            // ✅ Use axios helper
+            // Use axios helper
             const res = await api.post("/api/tour/post/", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data", // optional, axios can detect automatically

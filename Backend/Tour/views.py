@@ -1,13 +1,8 @@
-from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from Management.models import Booking, PastTour, BookingStatus
 from Profiles.models import Guide, Tourist
-from .models import Tour, Place, TourImage
-from .serializers import TourSerializer
-from django.conf import settings
 import json
 from rest_framework import status
 from .models import Tour, Place, TourImage, Transportation, TourPlace, TourRating, TourRatingImage
@@ -15,7 +10,6 @@ from .serializers import TourSerializer, PlaceSerializer, TourRatingSerializer, 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from django.db.models import Count, Q, F, FloatField, ExpressionWrapper, Case, When, Value
-from collections import Counter
 # --- CREATE TOUR ---
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -95,7 +89,8 @@ def tour_post(request):
                     province_en=province_en
                 )
             place_instances.append(place_obj)
-        tour.places.set(place_instances)
+        for idx, place in enumerate(place_instances):
+            TourPlace.objects.create(tour=tour, place=place, order=idx)
 
         # --- Images ---
         thumb_idx = int(data.get('thumbnail_idx', 0))
@@ -497,7 +492,12 @@ def tour_get_ratings(request, tour_id):
     except Tour.DoesNotExist:
         return Response({"success": False, "error": "Tour not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    ratings = TourRating.objects.filter(tour=tour).order_by('-created_at')  # newest first
+    ratings = (
+        TourRating.objects
+        .filter(tour=tour)
+        .prefetch_related('images')  # <-- Important: use prefetched images
+        .order_by('-created_at')
+    )
     serialized_ratings = []
 
     for rating in ratings:
@@ -505,9 +505,9 @@ def tour_get_ratings(request, tour_id):
         rating_data = serializer.data
 
         # Include images for this rating
-        images = TourRatingImage.objects.filter(rating=rating)
         rating_data['images'] = [
-            request.build_absolute_uri(img.image.url) for img in images
+            request.build_absolute_uri(img.image.url)
+            for img in rating.images.all()
         ]
         serialized_ratings.append(rating_data)
 
@@ -883,9 +883,9 @@ def get_my_tours(request):
             image_url = request.build_absolute_uri(image_obj.image.url) if image_obj else None
             
             # Get location string
-            places = tour.places.all()
-            if places:
-                names = [p.name_en.split(',')[0] for p in places]
+            tour_places = tour.tour_places.select_related('place').all()
+            if tour_places:
+                names = [tp.place.name_en.split(',')[0] for tp in tour_places]
                 names = names[:4]
                 location_str = " - ".join(names)
             else:
