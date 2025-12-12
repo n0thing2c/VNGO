@@ -49,13 +49,8 @@ import LinkedIn from "@/assets/linkedIn.png";
 
 export default function Footer() {
   return (
-    <div
-      style={{
-        background: "black",
-      }}
-      className="w-full p-12 text-white"
-    >
-      <div className="container mx-auto flex justify-between items-start">
+    <div className="w-full bg-black text-white p-12">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-8 flex-wrap">
         {/* === LEFT COLUMN: Brand and Social === */}
         <div className="flex flex-col gap-8">
           {/* Brand */}

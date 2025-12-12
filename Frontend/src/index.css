@@ -116,11 +116,17 @@
   * {
     @apply border-border outline-ring/50;
   }
-
+html {
+  scrollbar-gutter: stable; /* prevents layout shift when scrollbar disappears */
+}
   html,
   body {
-    @apply bg-background text-foreground overflow-x-clip;
+    @apply bg-background text-foreground;
   }
+  body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important; /* keeps sticky header aligned */
+}
 }
 
 @layer components {

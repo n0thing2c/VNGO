@@ -44,61 +44,62 @@ export default function Rate({ id, onRated }) {
   };
 
   return (
-    <div className="w-[90vw] sm:max-w-2xl mx-auto p-4 bg-transparent relative">
-      <h3 className="text-lg sm:text-xl md:text-2xl mb-4 text-center sm:text-left">
-        Rate this tour
-      </h3>
+    <div className="w-full p-4 bg-transparent relative">
+  <h3 className="text-lg sm:text-xl md:text-2xl mb-4 text-center sm:text-left font-semibold">
+    Rate this tour
+  </h3>
 
-      {/* Star Rating */}
-      <div className="flex justify-center sm:justify-start mb-4">
-        <Rating value={rating} onValueChange={setRating}>
-          {[...Array(5)].map((_, idx) => (
-            <RatingButton key={idx} size={20} className="text-yellow-500" />
-          ))}
-        </Rating>
-      </div>
+  {/* Star Rating */}
+  <div className="flex justify-center sm:justify-start mb-4">
+    <Rating value={rating} onValueChange={setRating}>
+      {[...Array(5)].map((_, idx) => (
+        <RatingButton key={idx} size={20} className="text-yellow-500" />
+      ))}
+    </Rating>
+  </div>
 
-      {/* Review */}
-      <div className="relative mb-5 w-full">
-        <Textarea
-          placeholder="Enter a short description of your review"
-          value={review}
-          onChange={(e) => setReview(e.target.value.slice(0, 1000))}
-          rows={5}
-          maxLength={1000}
-          className="w-full bg-transparent break-words whitespace-normal resize-none"
-        />
-        <span className="absolute bottom-1 right-2 text-xs xl:text-sm text-gray-400 select-none">
-          {review.length}/1000
-        </span>
-      </div>
+  {/* Review */}
+  <div className="relative mb-5 w-full">
+    <Textarea
+  placeholder="Enter a short description of your review"
+  value={review}
+  onChange={(e) => setReview(e.target.value.slice(0, 1000))}
+  rows={5}
+  maxLength={1000}
+  className="w-full bg-gray-50 break-words break-all overflow-hidden resize-none px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-black"
+/>
+    <span className="absolute bottom-1 right-2 text-xs sm:text-sm text-gray-400 select-none">
+      {review.length}/1000
+    </span>
+  </div>
 
-      {/* Tags */}
-      <div className="mb-4 w-full overflow-x-auto">
-        <TagSelector
-          tags={predefinedTags}
-          selectedTags={reviewTags}
-          setSelectedTags={setReviewTags}
-          tagVariants={TOUR_TAG_VARIANTS}
-          useBadgeVariants={true}
-        />
-      </div>
+  {/* Tags */}
+  <div className="mb-4 w-full overflow-x-auto">
+    <TagSelector
+      tags={predefinedTags}
+      selectedTags={reviewTags}
+      setSelectedTags={setReviewTags}
+      tagVariants={TOUR_TAG_VARIANTS}
+      useBadgeVariants={true}
+    />
+  </div>
 
-      {/* Image DropBox */}
-      <div className="mb-4 w-full">
-        <ImageDropBox images={images} onImagesChange={handleImagesChange} />
-      </div>
+  {/* Image DropBox */}
+  <div className="mb-4 w-full">
+    <ImageDropBox images={images} onImagesChange={handleImagesChange} />
+  </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end w-full">
-        <Button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full sm:w-auto bg-black text-white hover:bg-white hover:border-1 hover:border-black hover:text-black py-2 sm:py-3 px-6 rounded-xl transition"
-        >
-          {loading ? "Submitting..." : "Submit Rating"}
-        </Button>
-      </div>
-    </div>
+  {/* Submit Button */}
+  <div className="flex justify-center sm:justify-end w-full">
+    <Button
+      onClick={handleSubmit}
+      disabled={loading}
+      className="w-full sm:w-auto bg-black text-white hover:bg-white hover:border hover:border-black hover:text-black py-2 sm:py-3 px-6 rounded-xl transition"
+    >
+      {loading ? "Submitting..." : "Submit Rating"}
+    </Button>
+  </div>
+</div>
+
   );
 }
