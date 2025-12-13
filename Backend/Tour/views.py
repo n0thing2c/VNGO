@@ -122,24 +122,18 @@ def tour_put(request, tour_id):
 
     now = timezone.now()
 
-    has_locked_bookings = tour.bookings.filter(
-        Q(status=BookingStatus.PENDING) |
-        Q(
-            status=BookingStatus.ACCEPTED,
-            tour_date__gt=now.date()  # Future date
-        ) |
-        Q(
-            status=BookingStatus.ACCEPTED,
-            tour_date=now.date(),
-            tour_time__gte=now.time()  # Same day but time still upcoming
-        )
+    has_active_accepted_bookings = tour.bookings.filter(
+        status=BookingStatus.ACCEPTED
+    ).filter(
+        Q(tour_date__gt=now.date()) |  # future date
+        Q(tour_date=now.date(), tour_time__gte=now.time())  # today but time not passed
     ).exists()
 
-    if has_locked_bookings:
+    if has_active_accepted_bookings:
         return Response(
             {
                 'success': False,
-                'error': 'This tour cannot be edited because it has upcoming pending or accepted bookings.'
+                'error': 'This tour cannot be edited because it has upcoming accepted bookings.'
             },
             status=403
         )
