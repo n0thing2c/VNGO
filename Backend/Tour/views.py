@@ -702,7 +702,7 @@ def get_all_tours(request):
         if guide_gender:
             tours_queryset = tours_queryset.filter(guide__gender__iexact=guide_gender)
         if guide_language:
-            tours_queryset = tours_queryset.filter(guide__language__icontains=guide_language)
+            tours_queryset = tours_queryset.filter(guide__languages__icontains=guide_language)
 
         # -------------------
         # Sorting
