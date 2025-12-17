@@ -120,6 +120,22 @@ def migrate_past_bookings_to_history():
                 if not PastTour.objects.filter(booking=booking).exists():
                     PastTour.create_from_booking(booking)
                     migrated_count += 1
+                    
+                    # Track completed tour for ML recommendation
+                    try:
+                        from Recommendation.models import TourInteraction
+                        TourInteraction.objects.create(
+                            user=booking.tourist.user,
+                            tour=booking.tour,
+                            interaction_type='complete',
+                            metadata={
+                                'booking_id': booking.id,
+                                'tour_date': str(booking.tour_date),
+                                'group_size': booking.number_of_guests,
+                            },
+                        )
+                    except Exception as e:
+                        print(f"Error tracking tour completion for ML: {e}")
 
                 # Create "review your tour" reminder notification once per booking
                 try:
@@ -451,6 +467,22 @@ class BookingViewSet(viewsets.ModelViewSet):
 
             # Send realtime WebSocket notification (best-effort)
             send_booking_ws_notification(notification)
+            
+            # Track booking for ML recommendation
+            try:
+                from Recommendation.models import TourInteraction
+                TourInteraction.objects.create(
+                    user=booking.tourist.user,
+                    tour=booking.tour,
+                    interaction_type='book',
+                    metadata={
+                        'booking_id': booking.id,
+                        'tour_date': str(booking.tour_date),
+                        'group_size': booking.number_of_guests,
+                    },
+                )
+            except Exception as e:
+                print(f"Error tracking booking for ML: {e}")
 
             serializer = BookingSerializer(booking)
             return Response(

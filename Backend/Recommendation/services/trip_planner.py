@@ -7,6 +7,7 @@ import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import time, datetime, timedelta
 from django.db.models import Q, Avg, Count
+from sklearn.metrics.pairwise import cosine_similarity
 import json
 
 
@@ -81,10 +82,21 @@ class TripPlannerService:
                 'total_duration': 0,
             }
         
+        # Fit feature extractor on tours for ML-based scoring
+        tour_features = None
+        feature_extractor = None
+        try:
+            from Recommendation.ml.feature_extractor import TourFeatureExtractor
+            feature_extractor = TourFeatureExtractor()
+            feature_extractor.fit(tours)
+            tour_features = feature_extractor.transform(tours)
+        except Exception as e:
+            print(f"Error fitting feature extractor: {e}")
+        
         # Get user profile for personalization
         user_profile_vector = None
         if user_id:
-            user_profile_vector = self._get_user_profile_vector(user_id, tours)
+            user_profile_vector = self._get_user_profile_vector(user_id, tours, feature_extractor)
         
         # Score and rank tours
         scored_tours = self._score_tours(
@@ -94,6 +106,7 @@ class TripPlannerService:
             num_people,
             preferred_tags,
             user_profile_vector,
+            tour_features,
         )
         
         # Generate daily schedules using greedy algorithm
@@ -228,7 +241,8 @@ class TripPlannerService:
     def _get_user_profile_vector(
         self,
         user_id: int,
-        tours: List[Dict[str, Any]]
+        tours: List[Dict[str, Any]],
+        feature_extractor=None
     ) -> Optional[np.ndarray]:
         """Get user's preference vector for personalization."""
         try:
@@ -241,9 +255,10 @@ class TripPlannerService:
             if not history['viewed'] and not history['booked']:
                 return None
             
-            # Build profile
-            feature_extractor = TourFeatureExtractor()
-            feature_extractor.fit(tours)
+            # Use provided feature_extractor or create new one
+            if feature_extractor is None:
+                feature_extractor = TourFeatureExtractor()
+                feature_extractor.fit(tours)
             
             profile_builder = UserProfileBuilder(feature_extractor)
             profile = profile_builder.build_profile_from_history(
@@ -267,20 +282,40 @@ class TripPlannerService:
         num_people: int,
         preferred_tags: Optional[List[str]],
         user_profile_vector: Optional[np.ndarray],
+        tour_features: Optional[np.ndarray] = None,
     ) -> List[Dict[str, Any]]:
         """
         Score and rank tours based on multiple factors.
+        
+        Scoring breakdown (total max = 100 points):
+        - Rating: 0-25 points (Bayesian average)
+        - Price fit: 0-25 points (within budget = higher)
+        - Tag match: 0-20 points (matching preferred tags)
+        - Duration fit: 0-10 points (2-4 hours ideal)
+        - Personalization: 0-20 points (cosine similarity with user profile)
         """
         budget_per_day = budget / num_days
         budget_per_person_per_day = budget_per_day / num_people
         
         scored_tours = []
         
-        for tour in tours:
+        # Pre-compute similarities if we have user profile and tour features
+        similarities = None
+        if user_profile_vector is not None and tour_features is not None:
+            try:
+                # Reshape user vector for cosine_similarity
+                user_vector = user_profile_vector.reshape(1, -1)
+                # Calculate similarity between user and all tours at once
+                similarities = cosine_similarity(user_vector, tour_features)[0]
+            except Exception as e:
+                print(f"Error computing similarities: {e}")
+                similarities = None
+        
+        for idx, tour in enumerate(tours):
             score = 0.0
             reasons = []
             
-            # 1. Rating score (0-30 points)
+            # 1. Rating score (0-25 points)
             avg_rating = tour.get('avg_rating', 0)
             rating_count = tour.get('rating_count', 0)
             if rating_count > 0:
@@ -288,7 +323,7 @@ class TripPlannerService:
                 global_avg = 3.5
                 min_reviews = 5
                 bayesian = (rating_count * avg_rating + min_reviews * global_avg) / (rating_count + min_reviews)
-                rating_score = (bayesian / 5.0) * 30
+                rating_score = (bayesian / 5.0) * 25
                 score += rating_score
                 if bayesian >= 4.0:
                     reasons.append(f"Highly rated ({bayesian:.1f}★)")
@@ -321,30 +356,42 @@ class TripPlannerService:
                     matched_tags = [tag for tag in preferred_tags if tag.lower() in [t.lower() for t in tour_tags]]
                     reasons.append(f"Matches: {', '.join(matched_tags[:2])}")
             
-            # 4. Duration fit score (0-15 points)
+            # 4. Duration fit score (0-10 points)
             duration = tour.get('duration', 0)
-            # Prefer tours between 2-4 hours (ideal for day trips)
-            if 2 <= duration <= 4:
-                duration_score = 15
-            elif duration < 2:
+            # Prefer tours between 3-5 hours (ideal for day trips)
+            if 3 <= duration <= 5:
                 duration_score = 10
-            elif duration <= 6:
-                duration_score = 12
-            else:
+            elif duration < 3:
+                duration_score = 7
+            elif duration <= 7:
                 duration_score = 8
+            else:
+                duration_score = 5
             score += duration_score
             
-            # 5. Personalization score (0-10 points)
-            if user_profile_vector is not None:
-                # This would use cosine similarity with user profile
-                # For now, use a simplified approach
-                personalization_score = 5  # Base score
+            # 5. Personalization score (0-20 points) using REAL cosine similarity
+            if similarities is not None:
+                # similarity is in range [-1, 1], normalize to [0, 20]
+                similarity = similarities[idx]
+                # Clamp similarity to [0, 1] range (negative similarity means very different)
+                similarity_clamped = max(0, similarity)
+                personalization_score = similarity_clamped * 20
                 score += personalization_score
+                
+                if similarity >= 0.7:
+                    reasons.append("Matches your preferences")
+                elif similarity >= 0.5:
+                    reasons.append("Similar to your interests")
             
             # Store score and reasons
             tour_copy = tour.copy()
             tour_copy['recommendation_score'] = round(score, 2)
             tour_copy['recommendation_reasons'] = reasons
+            
+            # Also store similarity for transparency (optional)
+            if similarities is not None:
+                tour_copy['personalization_similarity'] = round(float(similarities[idx]), 3)
+            
             scored_tours.append(tour_copy)
         
         # Sort by score descending

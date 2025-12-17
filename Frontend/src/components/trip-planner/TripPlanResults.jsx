@@ -29,7 +29,7 @@ const transportIcons = {
 export default function TripPlanResults({ tripPlan }) {
     const navigate = useNavigate();
     const [expandedDays, setExpandedDays] = useState(
-        tripPlan.days.map((_, i) => i === 0) // First day expanded by default
+        tripPlan.days.map(() => true) // All days expanded by default
     );
 
     // Toggle day expansion
@@ -41,9 +41,9 @@ export default function TripPlanResults({ tripPlan }) {
         });
     };
 
-    // Format currency
-    const formatVND = (value) => {
-        return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
+    // Format currency to USD (VND / 25000)
+    const formatUSD = (value) => {
+        return "$" + new Intl.NumberFormat("en-US").format(Math.round(value / 25000));
     };
 
     return (
@@ -63,13 +63,13 @@ export default function TripPlanResults({ tripPlan }) {
                         <div>
                             <p className="text-emerald-100 text-sm">Est. Cost</p>
                             <p className="text-xl font-bold">
-                                {formatVND(tripPlan.total_cost)}
+                                {formatUSD(tripPlan.total_cost)}
                             </p>
                         </div>
                         <div>
                             <p className="text-emerald-100 text-sm">Budget Left</p>
                             <p className="text-xl font-bold">
-                                {formatVND(tripPlan.budget_remaining)}
+                                {formatUSD(tripPlan.budget_remaining)}
                             </p>
                         </div>
                     </div>
@@ -79,13 +79,13 @@ export default function TripPlanResults({ tripPlan }) {
             {/* Timeline */}
             <div className="relative">
                 {/* Vertical Line */}
-                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-emerald-200" />
+                <div className="absolute left-4 sm:left-6 top-0 bottom-0 w-0.5 bg-emerald-200" />
 
                 {/* Day Cards */}
                 {tripPlan.days.map((day, dayIndex) => (
-                    <div key={dayIndex} className="relative pl-14 pb-6">
+                    <div key={dayIndex} className="relative pl-12 sm:pl-14 pb-6">
                         {/* Day Circle */}
-                        <div className="absolute left-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                        <div className="absolute left-0 sm:left-0 w-10 h-10 sm:w-12 sm:h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
                             {day.day_number}
                         </div>
 
@@ -154,9 +154,9 @@ export default function TripPlanResults({ tripPlan }) {
 function TourCard({ tour, isFirst, onViewTour }) {
     const TransportIcon = transportIcons[tour.transportation] || Bus;
 
-    // Format currency
-    const formatVND = (value) => {
-        return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
+    // Format currency to USD (VND / 25000)
+    const formatUSD = (value) => {
+        return "$" + new Intl.NumberFormat("en-US").format(Math.round(value / 25000));
     };
 
     return (
@@ -165,31 +165,31 @@ function TourCard({ tour, isFirst, onViewTour }) {
                 isFirst ? "" : "mt-3"
             }`}
         >
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-3 md:gap-4">
                 {/* Thumbnail */}
                 <div className="flex-shrink-0">
                     {tour.thumbnail ? (
                         <img
                             src={tour.thumbnail}
                             alt={tour.name}
-                            className="w-24 h-24 md:w-32 md:h-24 object-cover rounded-lg"
+                            className="w-24 h-20 sm:w-28 sm:h-24 md:w-32 md:h-24 object-cover rounded-lg"
                         />
                     ) : (
-                        <div className="w-24 h-24 md:w-32 md:h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <div className="w-24 h-20 sm:w-28 sm:h-24 md:w-32 md:h-24 bg-gray-200 rounded-lg flex items-center justify-center">
                             <MapPin className="w-8 h-8 text-gray-400" />
                         </div>
                     )}
                 </div>
 
                 {/* Tour Info */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                        <div>
-                            <h4 className="font-semibold text-gray-900 truncate">
+                        <div className="min-w-0">
+                            <h4 className="font-semibold text-gray-900 line-clamp-2">
                                 {tour.name}
                             </h4>
                             {tour.guide_name && (
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 line-clamp-1">
                                     with {tour.guide_name}
                                 </p>
                             )}
@@ -203,7 +203,7 @@ function TourCard({ tour, isFirst, onViewTour }) {
                     </div>
 
                     {/* Meta Info */}
-                    <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-600">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                         {tour.suggested_start_time && (
                             <span className="flex items-center gap-1">
                                 <Clock className="w-3.5 h-3.5" />
@@ -228,7 +228,7 @@ function TourCard({ tour, isFirst, onViewTour }) {
 
                     {/* Tags */}
                     {tour.tags && tour.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="flex flex-wrap gap-1 mt-1">
                             {tour.tags.slice(0, 3).map((tag, i) => (
                                 <Badge
                                     key={i}
@@ -242,17 +242,17 @@ function TourCard({ tour, isFirst, onViewTour }) {
                     )}
 
                     {/* Price & Action */}
-                    <div className="flex items-center justify-between mt-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
                         <span className="font-bold text-emerald-700">
-                            {formatVND(tour.price)}
-                            <span className="text-xs text-gray-500 font-normal">
+                            {formatUSD(tour.price)}
+                            <span className="text-xs text-gray-500 font-normal ml-1">
                                 /person
                             </span>
                         </span>
                         <Button
                             size="sm"
                             variant="outline"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                             onClick={onViewTour}
                         >
                             <ExternalLink className="w-3.5 h-3.5 mr-1" />

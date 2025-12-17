@@ -129,6 +129,7 @@ import TimeInput from "@/components/timeinput.jsx";
 import MoreTourByGuide from "@/components/TourPost/more_tour_section.jsx";
 import { managementService } from "@/services/managementService.js";
 import { useNavigate } from "react-router-dom";
+import { tripPlannerService } from "@/services/tripPlannerService.js";
 
 const TOUR_TAG_ICONS = {
     Nature: <Binoculars className="w-3 h-3" />,
@@ -236,6 +237,24 @@ export default function TourPost() {
 
         fetchTour();
     }, [tour_id]);
+
+    // Track tour view for ML recommendation system
+    useEffect(() => {
+        if (!tour_id || !user) return;
+
+        const startTime = Date.now();
+        
+        // Track view immediately when user opens the page
+        tripPlannerService.trackTourView(tour_id, 0);
+
+        // Track duration when user leaves the page
+        return () => {
+            const duration = Math.round((Date.now() - startTime) / 1000); // in seconds
+            if (duration > 5) { // Only track if viewed for more than 5 seconds
+                tripPlannerService.trackTourView(tour_id, duration);
+            }
+        };
+    }, [tour_id, user]);
 
     useEffect(() => {
         async function fetchAchievements() {

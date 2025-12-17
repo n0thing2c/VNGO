@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import HeroSection from "@/components/HomePage/HeroSection";
 import PopularDestSection from "@/components/HomePage/PopularDestSection";
+import RecommendedToursSection from "@/components/HomePage/RecommendedToursSection";
 import GuidesSection from "@/components/HomePage/GuidesSection";
 import TravelStatsSection from "@/components/HomePage/TravelStatsSection";
 import InfoSection from "@/components/HomePage/InfoSection";
@@ -71,6 +72,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <FadeInWrapper><PopularDestSection popularDestinations={popularDestinations}/></FadeInWrapper>
+        <FadeInWrapper><RecommendedToursSection /></FadeInWrapper>
         <FadeInWrapper><GuidesSection /></FadeInWrapper>
         <FadeInWrapper><TravelStatsSection /></FadeInWrapper>
         <FadeInWrapper><InfoSection /></FadeInWrapper>

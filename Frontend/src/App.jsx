@@ -67,6 +67,7 @@ function App() {
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/management" element={<ManagementTours />} />
               <Route path="/trip-planner" element={<TripPlannerPage />} />
+              <Route path="/trip-planner/:planId" element={<TripPlannerPage />} />
             </Route>
 
             {/* Tourist only routes */}

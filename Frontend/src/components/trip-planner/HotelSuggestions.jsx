@@ -26,9 +26,9 @@ export default function HotelSuggestions({ hotels }) {
         );
     }
 
-    // Format currency
-    const formatVND = (value) => {
-        return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
+    // Format currency to USD
+    const formatUSD = (value) => {
+        return "$" + new Intl.NumberFormat("en-US").format(Math.round(value));
     };
 
     return (
@@ -61,9 +61,13 @@ export default function HotelSuggestions({ hotels }) {
 }
 
 function HotelCard({ hotel, rank }) {
-    // Format currency
-    const formatVND = (value) => {
-        return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
+    // Format currency to USD
+    // If price has 3 extra zeros (e.g., 1,320,000 instead of 1,320), divide by 1000
+    const formatUSD = (value) => {
+        if (!value || value === 0) return "$0";
+        // If value >= 1000, likely has 3 extra zeros, divide by 1000
+        const usdValue = value >= 1000 ? Math.round(value / 1000) : Math.round(value);
+        return "$" + new Intl.NumberFormat("en-US").format(usdValue);
     };
 
     // Get star icons
@@ -151,7 +155,7 @@ function HotelCard({ hotel, rank }) {
                     <div className="flex items-center justify-between mt-2">
                         <div>
                             <span className="font-bold text-blue-700">
-                                {formatVND(hotel.price_per_night)}
+                                {formatUSD(hotel.price_per_night)}
                             </span>
                             <span className="text-xs text-gray-500">/night</span>
                         </div>

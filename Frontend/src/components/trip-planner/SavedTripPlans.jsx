@@ -56,9 +56,9 @@ export default function SavedTripPlans() {
         setDeletingId(null);
     };
 
-    // Format currency
-    const formatVND = (value) => {
-        return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
+    // Format currency to USD (VND / 25000)
+    const formatUSD = (value) => {
+        return "$" + new Intl.NumberFormat("en-US").format(Math.round(value / 25000));
     };
 
     // Format date
@@ -96,97 +96,67 @@ export default function SavedTripPlans() {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {plans.map((plan) => (
                 <Card
                     key={plan.id}
-                    className="group hover:shadow-lg transition-shadow"
+                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-md bg-gradient-to-br from-white to-gray-50"
                 >
-                    <CardHeader className="pb-2">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <CardTitle className="text-lg line-clamp-1">
-                                    {plan.name || `Trip to ${plan.province}`}
-                                </CardTitle>
-                                <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-                                    <MapPin className="w-3.5 h-3.5" />
-                                    {plan.province}
-                                </div>
-                            </div>
-                            <Badge
-                                variant={
-                                    plan.status === "saved"
-                                        ? "secondary"
-                                        : plan.status === "completed"
-                                        ? "default"
-                                        : "outline"
-                                }
-                            >
-                                {plan.status}
-                            </Badge>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-xl font-bold text-gray-800 line-clamp-1">
+                            {plan.name || `Trip to ${plan.province}`}
+                        </CardTitle>
+                        <div className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
+                            <MapPin className="w-4 h-4" />
+                            {plan.province}
                         </div>
                     </CardHeader>
 
-                    <CardContent>
+                    <CardContent className="pt-0">
                         {/* Stats */}
-                        <div className="grid grid-cols-3 gap-2 py-3 border-y border-dashed">
+                        <div className="grid grid-cols-3 gap-3 py-4 px-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
                             <div className="text-center">
-                                <p className="text-xs text-gray-500">Days</p>
-                                <p className="font-bold text-gray-700">
+                                <p className="text-xs text-gray-500 uppercase tracking-wide">Days</p>
+                                <p className="font-bold text-xl text-emerald-700">
                                     {plan.num_days}
                                 </p>
                             </div>
-                            <div className="text-center">
-                                <p className="text-xs text-gray-500">Budget</p>
-                                <p className="font-bold text-gray-700 text-sm">
-                                    {formatVND(plan.budget)}
+                            <div className="text-center border-x border-emerald-200">
+                                <p className="text-xs text-gray-500 uppercase tracking-wide">Budget</p>
+                                <p className="font-bold text-lg text-emerald-700">
+                                    {formatUSD(plan.budget)}
                                 </p>
                             </div>
                             <div className="text-center">
-                                <p className="text-xs text-gray-500">People</p>
-                                <p className="font-bold text-gray-700">
+                                <p className="text-xs text-gray-500 uppercase tracking-wide">People</p>
+                                <p className="font-bold text-xl text-emerald-700">
                                     {plan.num_people}
                                 </p>
                             </div>
                         </div>
 
                         {/* Meta */}
-                        <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
+                        <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
+                            <span className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-full">
+                                <Clock className="w-3.5 h-3.5" />
                                 {plan.total_duration_hours}h total
                             </span>
-                            <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
+                            <span className="flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5" />
                                 {formatDate(plan.created_at)}
                             </span>
                         </div>
 
-                        {/* Tags */}
-                        {plan.preferred_tags && plan.preferred_tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-3">
-                                {plan.preferred_tags.slice(0, 3).map((tag, i) => (
-                                    <Badge
-                                        key={i}
-                                        variant="secondary"
-                                        className="text-xs"
-                                    >
-                                        {typeof tag === "object" ? tag.tag : tag}
-                                    </Badge>
-                                ))}
-                            </div>
-                        )}
-
                         {/* Actions */}
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex gap-3 mt-5">
                             <Button
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all"
                                 onClick={() =>
                                     navigate(`/trip-planner/${plan.id}`)
                                 }
                             >
-                                <Eye className="w-4 h-4 mr-1" />
-                                View
+                                <Eye className="w-4 h-4 mr-2" />
+                                View Plan
                             </Button>
 
                             <AlertDialog>

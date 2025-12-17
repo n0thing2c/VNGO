@@ -461,11 +461,11 @@ class HotelService:
         score = 0.0
         
         # Rating score (0-40 points)
-        rating = hotel.get('rating', 0)
+        rating = hotel.get('rating') or 0
         score += (rating / 5.0) * 40
         
         # Price fit score (0-30 points)
-        price = hotel.get('price_per_night', 0)
+        price = hotel.get('price_per_night') or 0
         if price > 0 and budget_per_night > 0:
             price_ratio = price / budget_per_night
             if price_ratio <= 0.7:
@@ -481,7 +481,7 @@ class HotelService:
         # Prioritize distance_to_tours (calculated from centroid of all tour places)
         distance = hotel.get('distance_to_tours')
         if distance is None:
-            distance = self._parse_distance(hotel.get('distance_to_center', 0))
+            distance = self._parse_distance(hotel.get('distance_to_center') or 0)
         
         if distance <= 1:
             score += 20  # Within 1km of tour centroid
@@ -497,7 +497,7 @@ class HotelService:
             score += 2
         
         # Review count score (0-10 points)
-        reviews = hotel.get('review_count', 0)
+        reviews = hotel.get('review_count') or 0
         if reviews >= 1000:
             score += 10
         elif reviews >= 500:

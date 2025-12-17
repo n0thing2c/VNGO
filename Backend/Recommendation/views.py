@@ -174,20 +174,20 @@ class TripPlanSaveView(APIView):
             for hotel_data in plan_data.get('hotels', []):
                 HotelSuggestion.objects.create(
                     trip_plan=trip_plan,
-                    external_id=hotel_data.get('external_id', ''),
-                    name=hotel_data.get('name', ''),
-                    address=hotel_data.get('address', ''),
+                    external_id=hotel_data.get('external_id') or '',
+                    name=hotel_data.get('name') or '',
+                    address=hotel_data.get('address') or '',
                     latitude=hotel_data.get('latitude'),
                     longitude=hotel_data.get('longitude'),
-                    price_per_night=hotel_data.get('price_per_night', 0),
-                    currency=hotel_data.get('currency', 'VND'),
+                    price_per_night=hotel_data.get('price_per_night') or 0,
+                    currency=hotel_data.get('currency') or 'VND',
                     rating=hotel_data.get('rating'),
-                    review_count=hotel_data.get('review_count', 0),
-                    thumbnail_url=hotel_data.get('thumbnail_url', ''),
-                    booking_url=hotel_data.get('booking_url', ''),
-                    source=hotel_data.get('source', 'mock'),
+                    review_count=hotel_data.get('review_count') or 0,
+                    thumbnail_url=hotel_data.get('thumbnail_url') or '',
+                    booking_url=hotel_data.get('booking_url') or '',
+                    source=hotel_data.get('source') or 'booking.com',
                     distance_to_center=hotel_data.get('distance_to_center'),
-                    match_score=hotel_data.get('match_score', 0),
+                    match_score=hotel_data.get('match_score') or 0,
                 )
         
         serializer = TripPlanSerializer(trip_plan)

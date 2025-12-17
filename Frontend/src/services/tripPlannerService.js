@@ -199,17 +199,19 @@ export const tripPlannerService = {
         excludeIds = [],
     }) => {
         try {
-            const res = await api.post("/api/recommendation/tours/", {
-                province,
-                tags,
-                price_min: priceMin,
-                price_max: priceMax,
-                duration_min: durationMin,
-                duration_max: durationMax,
-                min_rating: minRating,
-                limit,
-                exclude_ids: excludeIds,
-            });
+            // Build request body, only include non-null values
+            const requestBody = { limit };
+            
+            if (province) requestBody.province = province;
+            if (tags && tags.length > 0) requestBody.tags = tags;
+            if (priceMin !== null) requestBody.price_min = priceMin;
+            if (priceMax !== null) requestBody.price_max = priceMax;
+            if (durationMin !== null) requestBody.duration_min = durationMin;
+            if (durationMax !== null) requestBody.duration_max = durationMax;
+            if (minRating !== null) requestBody.min_rating = minRating;
+            if (excludeIds && excludeIds.length > 0) requestBody.exclude_ids = excludeIds;
+            
+            const res = await api.post("/api/recommendation/tours/", requestBody);
 
             return { success: true, data: res.data };
         } catch (err) {

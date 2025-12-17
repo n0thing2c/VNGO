@@ -387,16 +387,34 @@ def get_user_interaction_history(user_id: int) -> Dict[str, List[Dict[str, Any]]
         tour_data['last_viewed_at'] = view.last_viewed_at.isoformat()
         viewed_tours.append({'tour': tour_data, **tour_data})
     
-    # Get booked tours (completed)
+    # Get booked tours (completed from PastTour)
     past_tours = PastTour.objects.filter(
         tourist__user_id=user_id
     ).select_related('tour').order_by('-tour_date')[:50]
     
     booked_tours = []
+    completed_tour_ids = set()
     for pt in past_tours:
         if pt.tour:
             tour_data = _tour_to_dict(pt.tour)
             tour_data['created_at'] = pt.completed_at.isoformat()
+            tour_data['interaction_type'] = 'complete'  # Higher weight
+            booked_tours.append({'tour': tour_data, **tour_data})
+            completed_tour_ids.add(pt.tour.id)
+    
+    # Also get accepted bookings (not yet completed) - these have 'book' weight
+    accepted_bookings = Booking.objects.filter(
+        tourist__user_id=user_id,
+        status=BookingStatus.ACCEPTED
+    ).select_related('tour').exclude(
+        tour_id__in=completed_tour_ids  # Don't duplicate completed tours
+    ).order_by('-created_at')[:30]
+    
+    for booking in accepted_bookings:
+        if booking.tour:
+            tour_data = _tour_to_dict(booking.tour)
+            tour_data['created_at'] = booking.created_at.isoformat()
+            tour_data['interaction_type'] = 'book'
             booked_tours.append({'tour': tour_data, **tour_data})
     
     # Get rated tours

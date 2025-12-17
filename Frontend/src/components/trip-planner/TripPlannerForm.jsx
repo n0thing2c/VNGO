@@ -59,7 +59,7 @@ export default function TripPlannerForm({ onSubmit, isLoading }) {
     // Form state
     const [province, setProvince] = useState("");
     const [numDays, setNumDays] = useState(3);
-    const [budget, setBudget] = useState(3000000);
+    const [budget, setBudget] = useState(200); // USD
     const [numPeople, setNumPeople] = useState(1);
     const [selectedTags, setSelectedTags] = useState([]);
     const [maxHoursPerDay, setMaxHoursPerDay] = useState(8);
@@ -73,6 +73,9 @@ export default function TripPlannerForm({ onSubmit, isLoading }) {
         }
     };
 
+    // USD to VND conversion rate
+    const USD_TO_VND = 25000;
+
     // Handle submit
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -84,16 +87,16 @@ export default function TripPlannerForm({ onSubmit, isLoading }) {
         onSubmit({
             province,
             numDays,
-            budget,
+            budget: budget * USD_TO_VND, // Convert USD to VND for backend
             numPeople,
             preferredTags: selectedTags,
             maxHoursPerDay,
         });
     };
 
-    // Format currency
-    const formatVND = (value) => {
-        return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
+    // Format currency to USD
+    const formatUSD = (value) => {
+        return "$" + new Intl.NumberFormat("en-US").format(value);
     };
 
     return (
@@ -182,21 +185,21 @@ export default function TripPlannerForm({ onSubmit, isLoading }) {
                                 Total Budget
                             </span>
                             <span className="text-emerald-700 font-bold">
-                                {formatVND(budget)}
+                                {formatUSD(budget)}
                             </span>
                         </Label>
                         <Slider
                             value={[budget]}
                             onValueChange={([val]) => setBudget(val)}
-                            min={500000}
-                            max={50000000}
-                            step={500000}
+                            min={50}
+                            max={2000}
+                            step={10}
                             className="py-2"
                         />
                         <div className="flex justify-between text-xs text-gray-500">
-                            <span>500K</span>
-                            <span>~{formatVND(budget / numDays)} / day</span>
-                            <span>50M</span>
+                            <span>$50</span>
+                            <span>~{formatUSD(Math.round(budget / numDays))} / day</span>
+                            <span>$2,000</span>
                         </div>
                     </div>
 
