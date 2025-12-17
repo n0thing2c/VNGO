@@ -24,6 +24,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import GuidePolicyPage from "./pages/GuidePolicyPage";
+import TripPlannerPage from "./pages/TripPlannerPage";
 
 function App() {
   return (
@@ -65,6 +66,7 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/management" element={<ManagementTours />} />
+              <Route path="/trip-planner" element={<TripPlannerPage />} />
             </Route>
 
             {/* Tourist only routes */}

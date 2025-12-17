@@ -498,6 +498,11 @@ export default function Header() {
                         Message
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link to="/trip-planner" className="block w-full text-left">
+                        Trip Planner
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout} className="block w-full text-left !text-[#CC3737]"> {/* '!' to keep red color */}
                       Logout
                     </DropdownMenuItem>

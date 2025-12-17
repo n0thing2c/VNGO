@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "Profiles",
     "Chat",
     "Management",
+    "Recommendation",
 ]
 
 # daphne

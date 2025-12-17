@@ -41,6 +41,7 @@ urlpatterns = [
     path("profiles/", include("Profiles.urls")),
     path("chat/", include("Chat.urls")),
     path("management/", include("Management.urls")),
+    path("api/recommendation/", include("Recommendation.urls")),
 ]
 
 if settings.DEBUG:

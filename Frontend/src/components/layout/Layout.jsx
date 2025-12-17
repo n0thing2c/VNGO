@@ -45,6 +45,7 @@ export default function Layout() {
     /^\/guide-profile$/,
     /^\/tour\/create$/,
     /^\/tour\/edit\/.+$/,
+    /^\/trip-planner$/,
   ];
 
   const is404Page = !validRoutePatterns.some((pattern) =>
